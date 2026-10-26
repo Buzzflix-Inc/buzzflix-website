@@ -1,6 +1,6 @@
 # Move buzzflix.ca from Squarespace to Cloudflare Workers
 
-This moves the website to Cloudflare Workers and leaves everything else where it is. The domain stays registered with **Internic.ca**, and email stays on **Google Workspace**. Cloudflare publishes the site from the **jackbuzzflix/static** GitHub repository: every push to `main` updates the live site.
+This moves the website to Cloudflare Workers and leaves everything else where it is. The domain stays registered with **Internic.ca**, and email stays on **Google Workspace**. Cloudflare publishes the site from the **jackbuzzflix/buzzflix-website** GitHub repository: every push to `main` updates the live site.
 
 Steps 1 and 2 don't touch the domain. You can do them now and keep using the test address for as long as you like. The Squarespace site keeps running until step 6, so you can roll back at any point before you cancel it.
 
@@ -37,8 +37,8 @@ A public lookup can't list every DNS record. Log in to Internic and write down *
 ## 1. Connect the GitHub repository
 
 1. In Cloudflare, go to **Workers & Pages → Create application**, and choose to import an existing Git repository from **GitHub**.
-2. Authorize the Cloudflare GitHub app. When GitHub asks which repositories it can access, choose **Only select repositories → jackbuzzflix/static**.
-3. Select **jackbuzzflix/static** and use these settings:
+2. Authorize the Cloudflare GitHub app. When GitHub asks which repositories it can access, choose **Only select repositories → jackbuzzflix/buzzflix-website**.
+3. Select **jackbuzzflix/buzzflix-website** and use these settings:
    - **Project / Worker name:** `buzzflix-website`. This must match the name in `wrangler.jsonc`.
    - **Production branch:** `main`
    - **Build command:** leave empty
