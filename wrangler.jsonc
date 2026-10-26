@@ -14,5 +14,13 @@
 	},
 	// Keep the .workers.dev test address, and give each GitHub branch its own preview address.
 	"workers_dev": true,
-	"preview_urls": true
+	"preview_urls": true,
+	// Keep Workers Logs on; deploys from this file would otherwise reset the dashboard setting.
+	"observability": {
+		"logs": {
+			"enabled": true,
+			"invocation_logs": true,
+			"persist": true
+		}
+	}
 }
