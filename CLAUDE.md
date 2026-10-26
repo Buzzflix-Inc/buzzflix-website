@@ -17,6 +17,7 @@ Hand-built static site for Buzzflix (student film production company, Windsor ON
 - Match the existing look: tokens in `site.css` (`--yellow`, `--orange`, `--ink`, `--muted`), Space Grotesk 500 headings, Roboto 400 body, 800px breakpoint. Check every change at phone and desktop widths.
 - Images live in `assets/images/<slug>-<7 hex>.<ext>`, mostly WebP. `_headers` caches images and fonts for a year, so a new or changed file needs a new name. Every `<img>` carries the file's real `width`/`height`, `loading="lazy"` unless it is above the fold, and the page's top photo gets `fetchpriority="high"`. Focal points go in `style="object-position:…"` (omit it for the 50% 50% default).
 - Fonts in `fonts.css` section: only the faces in use (Roboto 400, 400 italic, 700; Space Grotesk 400, 500), Latin and Latin Extended. The two `<link rel="preload">` font tags in each page point at Roboto 400 and Space Grotesk 500 Latin.
+- Link text must describe the destination (Lighthouse SEO flags "More Info", "here", "learn more"). Keep a short visible label by adding hidden context, e.g. `More Info<span class="visually-hidden"> on YouTube</span>`.
 - `_headers` sets a Content-Security-Policy. Any new outside service (scripts, embeds, form endpoints, fonts) must be added there or browsers will block it.
 - Files that must not be public go in `.assetsignore` (Markdown, scripts, `apps-script`, homepage sources are already listed).
 

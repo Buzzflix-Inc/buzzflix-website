@@ -164,6 +164,18 @@ button:disabled {
 .skip-link:focus {
   top:0
 }
+/* Text for screen readers and search engines only, e.g. extra context on short button labels. */
+.visually-hidden {
+  position:absolute;
+  width:1px;
+  height:1px;
+  margin:-1px;
+  padding:0;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  white-space:nowrap;
+  border:0
+}
 .button {
   display:inline-flex;
   align-items:center;
