@@ -15,15 +15,14 @@ The Squarespace site keeps running until step 6, so you can roll back at any poi
 
 - **Registrar and DNS:** Internic.ca (`dns.internic.ca`, `dns2.internic.ca`). The registration renews on 8 October 2027.
 - **Main address:** `https://www.buzzflix.ca`. Visits to `buzzflix.ca` redirect to `www`. The new setup keeps this, so search results and shared links stay valid.
-- **Live pages:** `/`, `/home`, `/movies`, `/mentors`, `/about` and `/yearbook`.
+- **Live pages:** `/`, `/home`, `/movies`, `/mentors` and `/about`.
 
 A public lookup can't list every DNS record. Log in to Internic and write down **every** record shown there before you start. Anything not in the table above must also be copied to Cloudflare.
 
 ## Before you start
 
-1. **Decide what happens to `/yearbook`.** The live Summer 2026 Yearbook isn't in this repository, so it would stop working after the move. Either rebuild it in this repository first, or accept that it will show the "page not found" page. Save a copy of it from Squarespace either way.
-2. **Export anything else you need from Squarespace,** such as form submissions, newsletter contacts or analytics.
-3. **Create a Cloudflare account** at dash.cloudflare.com. The **Free** plan is enough.
+1. **Export anything you need from Squarespace,** such as form submissions, newsletter contacts or analytics.
+2. **Create a Cloudflare account** at dash.cloudflare.com. The **Free** plan is enough.
 
 ## 1. Connect the GitHub repository
 
