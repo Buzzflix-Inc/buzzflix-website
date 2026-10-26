@@ -83,6 +83,8 @@
 :root {
   --yellow:#fbe274;
   --orange:#ee5934;
+  /* Orange text on yellow; with 24px+ text it passes WCAG AA contrast (3:1). */
+  --orange-text:#eb4016;
   --ink:#1a1a1a;
   --paper:#fff;
   --muted:#f4f4f2;
@@ -415,8 +417,8 @@ li,summary {
 }
 .contact {
   font-family:var(--heading);
-  font-size:clamp(20px,2.25vw,32px);
-  color:var(--orange)
+  font-size:clamp(24px,2.25vw,32px);
+  color:var(--orange-text)
 }
 
 @media(max-width:800px) {
