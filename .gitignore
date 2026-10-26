@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Node (scripts/ uses Node; no dependencies are installed today)
+node_modules/
+
+# Personal Claude Code settings (the shared preview config in .claude/launch.json stays tracked)
+.claude/settings.local.json
