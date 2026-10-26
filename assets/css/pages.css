@@ -288,17 +288,13 @@
 
 /* Home sections follow the source site's tighter vertical rhythm. */
 .hero-content p { font-weight:500; }
-.updates, .partners { padding-top:45px; padding-bottom:45px; }
-.updates .section-title, .partners .section-title { margin-bottom:40px; }
-.updates .card>img { margin-bottom:16px; }
-.updates .card h3 { margin-bottom:10px; }
-.updates .card p { margin-bottom:12px; }
-.updates .carousel-track { padding-bottom:0; }
+.partners { padding-top:45px; padding-bottom:45px; }
+.partners .section-title { margin-bottom:40px; }
 .partner-grid { row-gap:35px; }
 .faq { padding-top:30px; padding-bottom:30px; }
 @media(max-width:800px) {
- .updates, .partners { padding-top:32px; padding-bottom:32px; }
- .updates .section-title, .partners .section-title { margin-bottom:26px; }
+ .partners { padding-top:32px; padding-bottom:32px; }
+ .partners .section-title { margin-bottom:26px; }
  .faq { padding-top:30px; padding-bottom:30px; }
 }
 
