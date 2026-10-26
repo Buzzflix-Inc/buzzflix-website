@@ -1,0 +1,24 @@
+# Files in this repository that are not part of the public website.
+# Same format as .gitignore. Everything not listed here is published.
+
+# Version control, editor and OS files
+.git
+.gitignore
+.assetsignore
+.claude
+.wrangler
+.DS_Store
+**/.DS_Store
+node_modules
+
+# Cloudflare settings
+wrangler.jsonc
+
+# Setup guides and tools
+*.md
+apps-script
+scripts
+
+# Homepage sources; scripts/switch-home.mjs copies the active one to index.html
+home-current.html
+home-applications.html

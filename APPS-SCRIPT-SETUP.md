@@ -55,7 +55,7 @@ Use the **Web app URL**, not the script editor URL or a test URL ending in `/dev
 
 ## 5. Test it
 
-1. Open your application page (**home-applications.html**) on your website, preferably in a private/incognito window.
+1. Open the homepage with the application form, preferably in a private/incognito window. `home-applications.html` isn't published on its own, so either switch the homepage to applications first, or push the switch to a separate GitHub branch and use that branch's Cloudflare preview address.
 2. Submit clearly marked test information with three different roles.
 3. Check that a row appears in **Submission Records** and the site confirms receipt.
 4. Confirm the form does not promise a confirmation email or accept a video yet.

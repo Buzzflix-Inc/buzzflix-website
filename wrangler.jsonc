@@ -1,0 +1,18 @@
+// Cloudflare Workers settings for the Buzzflix website.
+// The site is plain static files served straight from the repository root; there is no build step.
+// "name" must match the Worker's name in the Cloudflare dashboard.
+{
+	"$schema": "https://unpkg.com/wrangler@4/config-schema.json",
+	"name": "buzzflix-website",
+	"compatibility_date": "2026-10-26",
+	"assets": {
+		"directory": ".",
+		// Serve 404.html (with a 404 status) for any address that doesn't match a page.
+		"not_found_handling": "404-page",
+		// /about serves about.html, and /about.html redirects to /about.
+		"html_handling": "auto-trailing-slash"
+	},
+	// Keep the .workers.dev test address, and give each GitHub branch its own preview address.
+	"workers_dev": true,
+	"preview_urls": true
+}

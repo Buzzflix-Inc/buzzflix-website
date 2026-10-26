@@ -1,21 +1,8 @@
-# Cloudflare Pages redirects. Rules run before static files, top to bottom.
-# Pages already redirects /page.html to /page, so internal .html links keep working.
-# The apex-to-www redirect is a Cloudflare Redirect Rule, not a rule here (see CLOUDFLARE-CUTOVER.md).
+# Cloudflare redirects. Rules run before static files, top to bottom.
+# Cloudflare already redirects /page.html to /page, so internal .html links keep working.
+# Project files are kept off the site by .assetsignore, not by rules here.
+# The apex-to-www redirect is a Cloudflare Redirect Rule (see CLOUDFLARE-CUTOVER.md).
 
 # Squarespace served the homepage at /home as well as /.
 /home    /  301
 /home/   /  301
-
-# The homepage source pages are not public pages; the switch script publishes them at /.
-/home-current          /  301
-/home-current.html     /  301
-/home-applications     /  301
-/home-applications.html  /  301
-
-# Project files that live in the repository but aren't part of the website.
-/APPLICATIONS.md        /  301
-/APPS-SCRIPT-SETUP.md   /  301
-/CLOUDFLARE-CUTOVER.md  /  301
-/apps-script/*          /  301
-/scripts/*              /  301
-/.claude/*              /  301
