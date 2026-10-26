@@ -16,3 +16,6 @@ node_modules/
 
 # Personal Claude Code settings (the shared preview config in .claude/launch.json stays tracked)
 .claude/settings.local.json
+
+# Cloudflare local dev server (wrangler pages dev)
+.wrangler/
