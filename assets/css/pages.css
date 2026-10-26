@@ -319,3 +319,6 @@
 /* 404 page: keep the message at a readable width under the statement band. */
 .not-found p { font-size:20px; max-width:34em; }
 @media(max-width:800px) { .not-found p { font-size:18px; } }
+
+/* Mentors introduction: the source site's yellow-to-grey section gradient (#F6E081 to the muted palette colour). */
+.mentors-hero { background:linear-gradient(180deg,#f6e081 0%,#f6e28e 25%,#f5eab8 50%,#f4f0dc 75%,var(--muted) 100%); }
