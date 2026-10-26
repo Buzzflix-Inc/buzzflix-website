@@ -1,6 +1,6 @@
 # Buzzflix 2027 application homepage
 
-`home-applications.html` is the application-season clone. `home-current.html` is the other homepage snapshot. The active `index.html` and `/home/` remain unchanged until you switch them.
+`home-applications.html` is the application-season clone. `home-current.html` is the other homepage snapshot. The active `index.html` remains unchanged until you switch them.
 
 The form sends written applications to **2027 Applications** through Google Apps Script. Video uploads and confirmation emails are not enabled. The consent wording covers the written application.
 
@@ -18,13 +18,13 @@ From the website folder:
 node scripts/switch-home.mjs applications
 ```
 
-This copies the application page to `index.html` and `home/index.html`, preserving the directory route's asset paths. To switch back:
+This copies the application page to `index.html`. To switch back:
 
 ```sh
 node scripts/switch-home.mjs current
 ```
 
-Edit the named source pages before switching; the switch overwrites the active homepage files. Publish through your usual GitHub workflow.
+Edit the named source pages before switching; the switch overwrites the active homepage file. Publish through your usual GitHub workflow.
 
 ## Submission contract
 
