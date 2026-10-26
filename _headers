@@ -1,0 +1,10 @@
+# Cloudflare response headers.
+# Image and font filenames end in a content code (e.g. -7fdd711), so a changed file gets a new name
+# and browsers can keep the old one for a year. Give any new image or font a new name when it changes.
+# CSS and JS keep fixed names, so they use Cloudflare's default (recheck on each visit).
+
+/assets/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
