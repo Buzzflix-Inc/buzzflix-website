@@ -3,7 +3,8 @@
 # and browsers can keep the old one for a year. Give any new image or font a new name when it changes.
 # CSS and JS keep fixed names, so they use Cloudflare's default (recheck on each visit).
 # Security headers apply to every page. The application form posts to Google Apps Script, which answers
-# from script.googleusercontent.com, so both are allowed in connect-src. Inline styles hold image focal points.
+# from script.googleusercontent.com, so both are allowed in connect-src. Cloudflare Web Analytics injects its
+# beacon from static.cloudflareinsights.com and reports to cloudflareinsights.com. Inline styles hold image focal points.
 
 /*
   Strict-Transport-Security: max-age=31536000
@@ -11,7 +12,7 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://cloudflareinsights.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
 
 /assets/images/*
   Cache-Control: public, max-age=31536000, immutable
