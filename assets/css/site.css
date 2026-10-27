@@ -143,6 +143,7 @@ img {
 button {
   font:inherit;
   font-weight:400;
+  color:inherit;
   cursor:pointer
 }
 a,button,summary {
