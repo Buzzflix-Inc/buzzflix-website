@@ -246,6 +246,25 @@ li,summary {
 .site-header nav>a[aria-current=page] {
   text-decoration:underline
 }
+/* Yearbook link: a tilted "New" sticker beside the label. */
+.nav-badge {
+  display:inline-block;
+  margin-left:7px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:var(--ink);
+  color:var(--yellow);
+  font-size:11px;
+  line-height:1.2;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  vertical-align:4px;
+  transform:rotate(-6deg);
+  transition:transform .2s
+}
+.nav-new:hover .nav-badge {
+  transform:rotate(4deg) scale(1.08)
+}
 .site-header .button {
   padding:13px 35px;
   text-transform:none
@@ -831,6 +850,307 @@ li,summary {
   grid-row:4;
   justify-self:start;
   margin-top:0
+}
+
+}
+
+/* Yearbook: hero, stats, class grid with pages (assets/js/yearbook.js) and thank-you band. */
+.yearbook-hero {
+  display:grid;
+  grid-template-columns:1fr 1.1fr;
+  gap:8%;
+  align-items:center;
+  padding:90px 6%;
+  background:linear-gradient(180deg,#f6e081 0%,#f6e28e 25%,#f5eab8 50%,#f4f0dc 75%,var(--muted) 100%)
+}
+.yearbook-hero>img {
+  width:100%;
+  height:460px;
+  object-fit:cover
+}
+.yearbook-eyebrow {
+  font-size:16px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:14px
+}
+.yearbook-hero h1 {
+  margin-bottom:20px
+}
+.yearbook-hero p:last-of-type {
+  margin-bottom:34px
+}
+.yearbook-hero p {
+  font-size:20px
+}
+.yearbook-stats {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  background:var(--yellow)
+}
+.yearbook-stats p {
+  margin:0;
+  padding:34px var(--gutter);
+  text-align:center;
+  font-size:16px;
+  text-transform:uppercase;
+  letter-spacing:.06em
+}
+.yearbook-stats p+p {
+  border-left:1px solid #1a1a1a33
+}
+.yearbook-stats span {
+  display:block;
+  font-family:var(--heading);
+  font-weight:500;
+  font-size:clamp(44px,4.5vw,68px);
+  line-height:1.05;
+  letter-spacing:-.045em;
+  text-transform:none;
+  color:var(--orange-text)
+}
+.yearbook-grid {
+  display:grid;
+  /* At most five columns, so a page of 20 fills four full rows on wide screens. */
+  grid-template-columns:repeat(auto-fill,minmax(max(210px,calc((100% - 96px)/5)),1fr));
+  gap:34px 24px
+}
+/* A photo print taped into the book: white border, a strip of yellow tape and a slight tilt. */
+.yearbook-card {
+  position:relative;
+  background:var(--muted);
+  padding:12px 12px 22px;
+  transform:rotate(-.8deg);
+  transition:transform .2s,box-shadow .2s
+}
+.yearbook-card:nth-child(even) {
+  transform:rotate(.7deg)
+}
+.yearbook-card:nth-child(3n) {
+  transform:rotate(-.3deg)
+}
+.yearbook-card:hover {
+  transform:translateY(-6px);
+  box-shadow:8px 8px 0 var(--yellow)
+}
+.yearbook-card[hidden] {
+  display:none
+}
+.yearbook-card:before {
+  content:'';
+  position:absolute;
+  top:-9px;
+  left:50%;
+  z-index:1;
+  width:70px;
+  height:20px;
+  background:#fbe274d9;
+  transform:translateX(-50%) rotate(-3deg)
+}
+.yearbook-photo {
+  position:relative;
+  margin-bottom:18px
+}
+.yearbook-photo img,.yearbook-placeholder {
+  width:100%;
+  aspect-ratio:4/3;
+  object-fit:cover
+}
+.yearbook-placeholder {
+  display:grid;
+  place-items:center;
+  background:var(--yellow);
+  font-family:var(--heading);
+  font-weight:500;
+  font-size:56px;
+  letter-spacing:-.045em
+}
+.superlative {
+  position:absolute;
+  left:-6px;
+  bottom:-10px;
+  max-width:calc(100% + 6px);
+  margin:0;
+  padding:5px 10px;
+  background:var(--yellow);
+  font-size:13px;
+  line-height:1.3;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  box-shadow:2px 2px 0 var(--ink)
+}
+.yearbook-card h3 {
+  margin:0 4px 6px
+}
+/* One row per film: a small poster, the film name, then the role(s). */
+.yearbook-roles {
+  list-style:none;
+  margin:14px 4px 0;
+  padding:0;
+  display:grid;
+  gap:10px
+}
+.yearbook-roles li {
+  display:grid;
+  grid-template-columns:30px 1fr;
+  column-gap:10px;
+  align-items:center;
+  font-size:15px;
+  line-height:1.3
+}
+.yearbook-roles img {
+  grid-row:span 2;
+  width:30px;
+  aspect-ratio:3/4;
+  object-fit:cover;
+  box-shadow:1px 1px 0 #1a1a1a40
+}
+.yearbook-roles .film {
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:#595959
+}
+/* Pager: yellow round arrows either side of a grey pill of page numbers; the current page is orange. */
+.yearbook-pager {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  margin-top:64px
+}
+.yearbook-pages {
+  display:flex;
+  gap:4px;
+  padding:5px;
+  border-radius:999px;
+  background:var(--muted)
+}
+.yearbook-page {
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  font-family:var(--heading);
+  font-weight:500;
+  font-size:18px;
+  transition:background .2s,color .2s,transform .2s
+}
+.yearbook-page:not(:disabled):not([aria-current]):hover {
+  background:var(--yellow)
+}
+.yearbook-page[aria-current=page] {
+  background:var(--orange);
+  color:#fff;
+  cursor:default
+}
+.yearbook-page.step {
+  width:54px;
+  height:54px;
+  background:var(--yellow);
+  font-size:22px
+}
+.yearbook-page.step:not(:disabled):hover {
+  background:var(--ink);
+  color:var(--yellow)
+}
+.yearbook-page.step:disabled {
+  opacity:.3
+}
+.yearbook-status {
+  text-align:center;
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:#595959;
+  margin:16px 0 0
+}
+.yearbook-thanks h2 {
+  font-size:clamp(42px,5.55vw,88px);
+  margin-bottom:24px
+}
+.yearbook-thanks p {
+  max-width:42em;
+  font-size:20px;
+  margin:0
+}
+
+@media(max-width:800px) {
+  .yearbook-hero {
+  grid-template-columns:1fr;
+  gap:35px;
+  padding:45px 20px
+}
+.yearbook-hero>img {
+  height:280px
+}
+.yearbook-hero p {
+  font-size:18px
+}
+.yearbook-stats p {
+  padding:22px 8px;
+  font-size:13px
+}
+.yearbook-grid {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:26px 14px
+}
+.yearbook-card {
+  padding:8px 8px 16px
+}
+.yearbook-card:before {
+  width:50px;
+  height:16px;
+  top:-7px
+}
+.yearbook-card h3 {
+  font-size:18px
+}
+.yearbook-roles li {
+  grid-template-columns:24px 1fr;
+  column-gap:8px;
+  font-size:13px
+}
+.yearbook-roles img {
+  width:24px
+}
+.yearbook-roles .film {
+  font-size:11px
+}
+.yearbook-placeholder {
+  font-size:40px
+}
+.superlative {
+  font-size:11px;
+  padding:4px 7px
+}
+.yearbook-pager {
+  gap:8px;
+  margin-top:44px
+}
+.yearbook-pages {
+  gap:2px;
+  padding:4px
+}
+.yearbook-page {
+  width:38px;
+  height:38px;
+  font-size:16px
+}
+.yearbook-page.step {
+  width:46px;
+  height:46px;
+  font-size:20px
+}
+.yearbook-thanks h2 {
+  font-size:43px
+}
+.yearbook-thanks p {
+  font-size:18px
 }
 
 }
