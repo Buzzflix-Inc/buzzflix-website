@@ -591,10 +591,45 @@ li,summary {
 .movies .card>img {
   aspect-ratio:3/4
 }
-.card-link {
-  font-size:16px
+/* Synopses differ in length, so the docu-series link sits at the foot of each card. */
+.movies .card {
+  display:flex;
+  flex-direction:column
 }
-.card-link:hover,.episode-list a:hover {
+.movies .card>div {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start
+}
+/* A yellow pill with a small orange play button. */
+.card-link {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  margin-top:auto;
+  padding:6px 18px 6px 6px;
+  border-radius:999px;
+  background:var(--yellow);
+  font-family:var(--heading);
+  font-size:16px;
+  font-weight:500;
+  text-decoration:none;
+  transition:transform .2s,box-shadow .2s
+}
+.card-link:before {
+  content:'';
+  flex:none;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:var(--orange) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 6.5v11l9-5.5z' fill='%23fff'/%3E%3C/svg%3E") center/18px no-repeat
+}
+.card-link:hover {
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px #1a1a1a1f
+}
+.episode-list a:hover {
   text-decoration-color:var(--orange);
   text-decoration-thickness:2px
 }
