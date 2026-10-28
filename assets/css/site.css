@@ -591,6 +591,79 @@ li,summary {
 .movies .card>img {
   aspect-ratio:3/4
 }
+.card-link {
+  font-size:16px
+}
+.card-link:hover,.episode-list a:hover {
+  text-decoration-color:var(--orange);
+  text-decoration-thickness:2px
+}
+/* Docu-series: one row per film, the first episode's player beside its episode list. */
+.docuseries {
+  background:var(--muted);
+  text-align:center
+}
+.docuseries-eyebrow {
+  margin-bottom:14px;
+  font-size:16px;
+  letter-spacing:.08em;
+  text-transform:uppercase
+}
+.docuseries .section-title {
+  margin-bottom:20px
+}
+.docuseries-intro {
+  max-width:720px;
+  margin:0 auto 60px
+}
+.docuseries-film {
+  display:grid;
+  grid-template-columns:7fr 5fr;
+  gap:50px;
+  align-items:center;
+  max-width:1300px;
+  margin:0 auto 70px;
+  text-align:left
+}
+.docuseries-film .video {
+  width:100%;
+  box-shadow:0 1px 2px #1a1a1a14,0 18px 40px #1a1a1a26
+}
+.docuseries-range {
+  margin-bottom:8px;
+  font-size:14px;
+  letter-spacing:.08em;
+  text-transform:uppercase
+}
+.docuseries-film h3 {
+  margin-bottom:14px;
+  font-size:clamp(28px,2.6vw,40px)
+}
+.docuseries-text>p:not(.docuseries-range) {
+  font-size:16px
+}
+.episode-list {
+  margin:0;
+  padding:0;
+  list-style:none;
+  border-top:1px solid #1a1a1a1f
+}
+.episode-list li {
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:16px;
+  padding:11px 0;
+  border-bottom:1px solid #1a1a1a1f;
+  font-size:16px
+}
+.episode-number {
+  min-width:3em;
+  font-family:var(--heading);
+  font-weight:500
+}
+.episode-length {
+  color:#5c5c5c
+}
 .application-banner {
   position:relative;
   min-height:720px;
@@ -1000,6 +1073,14 @@ to {
 }
 .movies .card {
   flex-basis:76%
+}
+.docuseries-intro {
+  margin-bottom:36px
+}
+.docuseries-film {
+  grid-template-columns:1fr;
+  gap:24px;
+  margin-bottom:50px
 }
 .application-banner {
   min-height:550px;

@@ -97,6 +97,9 @@ function initVideos() {
     const poster = root.querySelector('.video-poster');
     poster.addEventListener('click', event => {
       event.preventDefault();
+      // One video at a time: pause any other player on the page.
+      document.querySelectorAll('.video.is-playing iframe').forEach(other =>
+        other.contentWindow?.postMessage(JSON.stringify({event: 'command', func: 'pauseVideo', args: []}), ORIGIN));
       const title = poster.textContent.trim();
       const frame = document.createElement('iframe');
       frame.src = `${ORIGIN}/embed/${root.dataset.video}?autoplay=1&controls=0&rel=0&playsinline=1&disablekb=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
