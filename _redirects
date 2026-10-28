@@ -6,3 +6,7 @@
 # Squarespace served the homepage at /home as well as /.
 /home    /  301
 /home/   /  301
+
+# The About page was merged into the homepage.
+/about    /  301
+/about/   /  301

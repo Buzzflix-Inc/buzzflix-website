@@ -1,5 +1,5 @@
-// Local preview that behaves like the Cloudflare Worker: /about serves about.html, /about.html
-// redirects to /about, _redirects and _headers apply, .assetsignore files and unknown paths get 404.html.
+// Local preview that behaves like the Cloudflare Worker: /movies serves movies.html, /movies.html
+// redirects to /movies, _redirects and _headers apply, .assetsignore files and unknown paths get 404.html.
 // Usage: node scripts/serve.mjs   (PORT defaults to 4173)
 import {createServer} from 'node:http';
 import {readFile, stat} from 'node:fs/promises';

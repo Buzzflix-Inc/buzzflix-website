@@ -4,7 +4,7 @@ Hand-built static site for Buzzflix (student film production company, Windsor ON
 
 ## Files
 
-- Pages: `index.html`, `about.html`, `mentors.html`, `movies.html`, `404.html`. Served at `/`, `/about`, `/mentors`, `/movies`; internal links use the `.html` names and Cloudflare redirects them.
+- Pages: `index.html`, `mentors.html`, `movies.html`, `404.html`. Served at `/`, `/mentors`, `/movies`; internal links use the `.html` names and Cloudflare redirects them.
 - Homepage: never edit `index.html` directly. Edit `home-current.html` (normal) or `home-applications.html` (application season, Jan to Mar/Apr), then run `node scripts/switch-home.mjs current|applications` to copy one to `index.html`. Keep shared changes in both sources.
 - Header, footer and `<head>` are repeated in every page. A change to them must be made in all six page files (and both homepage sources).
 - CSS: `assets/css/site.css` holds everything, in order: fonts, tokens, base, components, pages. Each part has its own `@media(max-width:800px)` block. `assets/css/application.css` loads only on the application homepage.

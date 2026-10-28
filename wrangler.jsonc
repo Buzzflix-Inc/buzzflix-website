@@ -9,7 +9,7 @@
 		"directory": ".",
 		// Serve 404.html (with a 404 status) for any address that doesn't match a page.
 		"not_found_handling": "404-page",
-		// /about serves about.html, and /about.html redirects to /about.
+		// /movies serves movies.html, and /movies.html redirects to /movies.
 		"html_handling": "auto-trailing-slash"
 	},
 	// Keep the .workers.dev test address, and give each GitHub branch its own preview address.
