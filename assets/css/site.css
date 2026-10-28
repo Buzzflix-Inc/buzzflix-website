@@ -584,11 +584,9 @@ li,summary {
 .split-hero p {
   font-size:20px
 }
-.movies .carousel-track {
-  gap:7.5%
-}
+/* Same 22px gap as the mentor cards; all four posters fit across. */
 .movies .card {
-  flex-basis:25%
+  flex-basis:calc((100% - 66px)/4)
 }
 .movies .card>img {
   aspect-ratio:3/4
@@ -680,6 +678,174 @@ li,summary {
 .goal p {
   font-size:20px
 }
+/* Sizzle reel on the yellow gradient used by the page intros. */
+.sizzle {
+  padding:80px var(--gutter) 70px;
+  background:linear-gradient(180deg,#f6e081 0%,#f6e28e 25%,#f5eab8 50%,#f4f0dc 75%,var(--paper) 100%);
+  text-align:center
+}
+.sizzle-eyebrow {
+  margin-bottom:14px;
+  font-size:16px;
+  letter-spacing:.08em;
+  text-transform:uppercase
+}
+.sizzle .section-title {
+  margin-bottom:44px
+}
+.sizzle .video {
+  box-shadow:0 1px 2px #1a1a1a14,0 18px 40px #1a1a1a26
+}
+.sizzle-link {
+  display:inline-block;
+  margin-top:26px;
+  font-size:16px
+}
+.sizzle-link:hover {
+  text-decoration-color:var(--orange);
+  text-decoration-thickness:2px
+}
+/* 16:9 player; the poster photo with an orange play button until clicked. */
+.video {
+  position:relative;
+  max-width:1100px;
+  margin:0 auto;
+  aspect-ratio:16/9;
+  background:var(--ink);
+  border-radius:var(--radius-lg,var(--radius));
+  overflow:hidden
+}
+.video iframe,.video-poster,.video-poster img {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0
+}
+.video-poster img {
+  object-fit:cover;
+  transition:transform .4s
+}
+.video-poster:after {
+  content:'';
+  position:absolute;
+  inset:0;
+  background:#0003;
+  transition:background .3s
+}
+.video-poster:hover img {
+  transform:scale(1.03)
+}
+.video-poster:hover:after {
+  background:#0001
+}
+.video-play {
+  position:absolute;
+  top:50%;
+  left:50%;
+  z-index:1;
+  width:96px;
+  height:96px;
+  border-radius:50%;
+  background:var(--orange);
+  transform:translate(-50%,-50%);
+  box-shadow:0 10px 30px #0004;
+  transition:transform .2s
+}
+.video-play:before {
+  content:'';
+  position:absolute;
+  top:50%;
+  left:54%;
+  border-style:solid;
+  border-width:16px 0 16px 26px;
+  border-color:transparent transparent transparent #fff;
+  transform:translate(-50%,-50%)
+}
+.video-poster:hover .video-play {
+  transform:translate(-50%,-50%) scale(1.08)
+}
+/* Our controls over the player (assets/js/main.js): YouTube's own are off and the frame ignores the pointer. */
+.video iframe {
+  pointer-events:none
+}
+.video-surface {
+  position:absolute;
+  inset:0;
+  width:100%;
+  border:0;
+  background:transparent
+}
+.video.is-playing:not(.show-controls):not(.is-paused) .video-surface {
+  cursor:none
+}
+/* Paused: dim the frame and show the big orange play button again. */
+.video.is-paused .video-surface {
+  background:#0004
+}
+.video.is-paused .video-surface:before {
+  content:'';
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:96px;
+  height:96px;
+  border-radius:50%;
+  background:var(--orange);
+  transform:translate(-50%,-50%);
+  box-shadow:0 10px 30px #0004
+}
+.video.is-paused .video-surface:after {
+  content:'';
+  position:absolute;
+  top:50%;
+  left:calc(50% + 4px);
+  border-style:solid;
+  border-width:16px 0 16px 26px;
+  border-color:transparent transparent transparent #fff;
+  transform:translate(-50%,-50%)
+}
+.video-bar {
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  display:flex;
+  gap:8px;
+  padding:40px 18px 16px;
+  background:linear-gradient(transparent,#0009);
+  opacity:0;
+  transition:opacity .2s;
+  pointer-events:none
+}
+.video.show-controls .video-bar,.video.is-paused .video-bar,.video-bar:has(:focus-visible) {
+  opacity:1;
+  pointer-events:auto
+}
+.video-button {
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:#ffffff26;
+  color:#fff;
+  transition:background .2s,color .2s
+}
+.video-button:hover {
+  background:var(--yellow);
+  color:var(--ink)
+}
+.video-button svg {
+  width:22px;
+  height:22px;
+  fill:currentColor
+}
+.video-full {
+  margin-left:auto
+}
 .partners {
   padding-top:45px;
   padding-bottom:45px
@@ -691,9 +857,112 @@ li,summary {
   padding-top:30px;
   padding-bottom:30px
 }
+/* 404: a film slate beside the message, on the yellow gradient. */
+.not-found {
+  display:grid;
+  grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+  gap:8%;
+  align-items:center;
+  padding:100px 6% 110px;
+  background:linear-gradient(180deg,#f6e081 0%,#f6e28e 25%,#f5eab8 50%,#f4f0dc 75%,var(--muted) 100%)
+}
+.not-found h1 {
+  font-size:clamp(40px,4.4vw,68px)
+}
 .not-found p {
   font-size:20px;
   max-width:34em
+}
+.not-found .button {
+  margin-top:10px
+}
+.not-found-links {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:34px
+}
+.not-found-links a {
+  padding:8px 18px;
+  border:1px solid var(--ink);
+  border-radius:999px;
+  font-size:16px;
+  text-decoration:none;
+  transition:background .2s
+}
+.not-found-links a:hover {
+  background:var(--yellow)
+}
+.slate {
+  width:min(440px,100%);
+  justify-self:center;
+  transform:rotate(-4deg);
+  filter:drop-shadow(0 18px 30px #1a1a1a33)
+}
+.slate-sticks {
+  height:52px;
+  margin-bottom:6px;
+  border-radius:8px 8px 0 0;
+  background:repeating-linear-gradient(-60deg,var(--ink) 0 26px,#fff 26px 52px);
+  transform-origin:4px 100%;
+  transform:rotate(-14deg);
+  animation:clap 1.2s .4s cubic-bezier(.5,0,.3,1.4) both
+}
+@keyframes clap {
+  from {
+  transform:rotate(-14deg)
+}
+55% {
+  transform:rotate(0)
+}
+to {
+  transform:rotate(-7deg)
+}
+
+}
+.slate-board {
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  background:var(--ink);
+  color:#fff;
+  border-radius:0 0 12px 12px;
+  overflow:hidden
+}
+.slate-board p {
+  margin:0;
+  padding:16px 22px;
+  border:1px solid #ffffff2e;
+  font-family:var(--heading);
+  font-weight:500;
+  font-size:24px;
+  line-height:1.1;
+  letter-spacing:-.02em
+}
+.slate-board span {
+  display:block;
+  margin-bottom:6px;
+  font-family:var(--body);
+  font-weight:400;
+  font-size:12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#bdbdbd
+}
+.slate-board .slate-wide {
+  grid-column:1/-1
+}
+.slate-board .slate-scene {
+  font-size:clamp(64px,7vw,104px);
+  line-height:.9;
+  letter-spacing:-.05em;
+  color:var(--yellow)
+}
+@media(prefers-reduced-motion:reduce) {
+  .slate-sticks {
+  animation:none;
+  transform:rotate(-7deg)
+}
+
 }
 
 @media(max-width:800px) {
@@ -732,9 +1001,6 @@ li,summary {
 .movies .card {
   flex-basis:76%
 }
-.movies .carousel-track {
-  gap:25px
-}
 .application-banner {
   min-height:550px;
   margin:10px 20px
@@ -770,6 +1036,30 @@ li,summary {
 .goal>img {
   height:350px
 }
+.sizzle {
+  padding:50px 20px 40px
+}
+.sizzle .section-title {
+  margin-bottom:30px
+}
+.video-play {
+  width:68px;
+  height:68px
+}
+.video-play:before {
+  border-width:12px 0 12px 19px
+}
+.video.is-paused .video-surface:before {
+  width:68px;
+  height:68px
+}
+.video.is-paused .video-surface:after {
+  border-width:12px 0 12px 19px;
+  left:calc(50% + 3px)
+}
+.video-bar {
+  padding:30px 10px 10px
+}
 .partners {
   padding-top:32px;
   padding-bottom:32px
@@ -777,8 +1067,26 @@ li,summary {
 .partners .section-title {
   margin-bottom:26px
 }
+.not-found {
+  grid-template-columns:1fr;
+  gap:44px;
+  padding:50px 20px 60px
+}
+.not-found h1 {
+  font-size:40px
+}
 .not-found p {
   font-size:18px
+}
+.slate {
+  width:min(320px,90%)
+}
+.slate-sticks {
+  height:40px
+}
+.slate-board p {
+  padding:12px 16px;
+  font-size:20px
 }
 /* Keep the slate holder in the mobile hero crop. */
 .home-hero>img {
@@ -1151,6 +1459,119 @@ li,summary {
 }
 .yearbook-thanks p {
   font-size:18px
+}
+
+}
+
+/* Modern refresh (preview): rounded corners, soft shadows, pill buttons, inset heroes and the
+   yearbook's yellow gradient on page intros. Same content, colours and fonts; remove this block to undo. */
+:root {
+  --radius-lg:18px;
+  --shadow:0 1px 2px #1a1a1a14,0 10px 30px #1a1a1a14;
+  --sunrise:linear-gradient(180deg,#f6e081 0%,#f6e28e 25%,#f5eab8 50%,#f4f0dc 75%,var(--muted) 100%)
+}
+.site-header {
+  box-shadow:0 1px 0 #1a1a1a14
+}
+.button {
+  border-radius:999px;
+  transition:background .2s,transform .2s,box-shadow .2s
+}
+.button:hover {
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px #ee593440
+}
+/* The orange statement sits inset as a rounded panel. */
+.statement {
+  margin:16px var(--gutter) 0;
+  border-radius:var(--radius-lg);
+  overflow:hidden
+}
+.statement {
+  padding:75px 5%
+}
+/* Page intros use the yellow gradient with a rounded photo, like the yearbook. */
+.split-hero:not(.mentors-hero) {
+  background:var(--sunrise);
+  padding:70px 6%;
+  gap:7%;
+  align-items:center;
+  min-height:0
+}
+.split-hero:not(.mentors-hero)>img {
+  min-height:0;
+  height:520px
+}
+.split-hero:not(.mentors-hero)>div {
+  padding:0;
+  align-items:flex-start
+}
+.split-hero:not(.mentors-hero) .button {
+  min-width:240px
+}
+.split-hero>img,.yearbook-hero>img,.goal>img,.card>img,.testimonials .card>img {
+  border-radius:var(--radius-lg)
+}
+.split-hero>img,.yearbook-hero>img {
+  box-shadow:var(--shadow)
+}
+.testimonials .card {
+  border-radius:var(--radius-lg)
+}
+.movies .card>img {
+  box-shadow:var(--shadow);
+  transition:transform .25s,box-shadow .25s
+}
+.movies .card:hover>img {
+  transform:translateY(-6px);
+  box-shadow:0 2px 4px #1a1a1a14,0 18px 40px #1a1a1a26
+}
+.photo-strip {
+  gap:12px;
+  padding:0 var(--gutter)
+}
+.photo-strip img {
+  border-radius:var(--radius-lg)
+}
+.yearbook-stats {
+  margin:0 var(--gutter);
+  border-radius:var(--radius-lg)
+}
+.yearbook-card {
+  border-radius:10px
+}
+.yearbook-photo img,.yearbook-placeholder {
+  border-radius:6px
+}
+/* The footer fades up from the page into the yellow: the yearbook gradient, reversed. */
+.site-footer {
+  margin-top:40px;
+  padding-top:130px;
+  background:linear-gradient(180deg,var(--paper) 0%,#f5eab8 18%,#f6e28e 32%,var(--yellow) 48%)
+}
+@media(max-width:800px) {
+  .statement {
+  margin:10px 10px 0
+}
+.statement {
+  padding:45px 22px
+}
+.split-hero:not(.mentors-hero) {
+  padding:40px 20px;
+  gap:30px
+}
+.split-hero:not(.mentors-hero)>img {
+  height:320px
+}
+.photo-strip {
+  gap:8px;
+  padding:0 10px
+}
+.yearbook-stats {
+  margin:0 10px
+}
+.site-footer {
+  padding-top:90px
 }
 
 }
