@@ -486,10 +486,12 @@ li,summary {
   margin-bottom:30px
 }
 .partner-grid {
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(2,1fr);
   gap:35px 25px
 }
 .partner-grid img {
+  width:100%;
+  max-width:160px;
   height:70px
 }
 .photo-strip {
@@ -1715,7 +1717,7 @@ to {
 
 }
 
-/* Modern refresh (preview): rounded corners, soft shadows, pill buttons, inset heroes and the
+/* Modern refresh (preview): rounded corners, soft shadows, rounded-rectangle buttons, inset heroes and the
    yearbook's yellow gradient on page intros. Same content, colours and fonts; remove this block to undo. */
 :root {
   --radius-lg:18px;
@@ -1726,7 +1728,7 @@ to {
   box-shadow:0 1px 0 #1a1a1a14
 }
 .button {
-  border-radius:999px;
+  border-radius:12px;
   transition:background .2s,transform .2s,box-shadow .2s
 }
 .button:hover {
