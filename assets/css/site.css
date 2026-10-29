@@ -402,7 +402,7 @@ li,summary {
 }
 .site-footer h2 {
   font-size:32px;
-  margin-bottom:22px
+  margin-bottom:6px
 }
 .site-footer>div:first-child h2 {
   font-size:36px
@@ -436,6 +436,8 @@ li,summary {
   width:100%
 }
 .contact {
+  display:inline-block;
+  line-height:1.1;
   font-family:var(--heading);
   font-size:clamp(24px,2.25vw,32px);
   color:var(--orange-text)
