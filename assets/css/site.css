@@ -439,6 +439,7 @@ li,summary {
   display:inline-block;
   line-height:1.1;
   font-family:var(--heading);
+  font-weight:500;
   font-size:clamp(24px,2.25vw,32px);
   color:var(--orange-text)
 }
