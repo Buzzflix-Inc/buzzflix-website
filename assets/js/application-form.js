@@ -36,10 +36,8 @@ if (form) {
     confirmation.hidden = false;
     confirmation.querySelector('[data-confirmation-eyebrow]').textContent = preview ? 'Submission preview' : 'Buzzflix 2027';
     const heading = confirmation.querySelector('[data-confirmation-title]');
-    heading.textContent = preview ? 'Your confirmation will appear here.' : 'Your application is in.';
-    confirmation.querySelector('[data-confirmation-message]').textContent = preview
-      ? 'Once submissions are connected, this screen will confirm that your application was received.'
-      : 'We’ve received your application. Expect to hear back from us within two weeks.';
+    heading.textContent = 'Your application is received.';
+    confirmation.querySelector('[data-confirmation-message]').textContent = 'You should receive an email confirmation soon.';
     confirmation.querySelector('[data-confirmation-note]').textContent = preview
       ? 'Preview only. No application was sent and no confirmation email will be delivered.'
       : `Your application reference is ${submissionId}. Thank you for sharing your story with Buzzflix.`;
