@@ -217,65 +217,7 @@ function initSlate() {
   });
 }
 
-/**
- * Mentor bios open in a dialog instead of expanding in the grid, so the cards never move. Without JS the
- * <details> still expands in place. The footer links (and arrow keys) step to the neighbouring mentors.
- */
-function initMentorBios() {
-  const mentors = [...document.querySelectorAll('.mentor:has(details)')];
-  if (!mentors.length) return;
-  const dialog = document.createElement('dialog');
-  dialog.className = 'mentor-dialog';
-  dialog.setAttribute('aria-labelledby', 'mentor-dialog-name');
-  dialog.innerHTML = `<div class="mentor-dialog-photo"></div>
-<div class="mentor-dialog-text">
- <button class="mentor-dialog-close" type="button">Close</button>
- <p class="mentor-dept"></p><h3 id="mentor-dialog-name"></h3><p class="mentor-role"></p><div class="mentor-dialog-bio"></div>
- <nav class="mentor-dialog-nav" aria-label="Other mentors">
-  <button type="button" data-step="-1"><small>Previous</small><span></span></button>
-  <button type="button" data-step="1"><small>Next</small><span></span></button>
- </nav>
-</div>`;
-  document.body.append(dialog);
-  const $ = selector => dialog.querySelector(selector);
-  const name = index => mentors[(index + mentors.length) % mentors.length].querySelector('h3').textContent;
-  let current = 0;
-
-  const show = index => {
-    current = (index + mentors.length) % mentors.length;
-    const mentor = mentors[current];
-    const photo = mentor.querySelector('img').cloneNode();
-    photo.loading = 'eager';
-    $('.mentor-dialog-photo').replaceChildren(photo);
-    $('.mentor-dept').textContent = mentor.querySelector('.mentor-dept').textContent;
-    $('h3').textContent = name(current);
-    $('.mentor-role').textContent = mentor.querySelector('.mentor-role').textContent;
-    $('.mentor-dialog-bio').innerHTML = mentor.querySelector('details p').innerHTML;
-    $('[data-step="-1"] span').textContent = name(current - 1);
-    $('[data-step="1"] span').textContent = name(current + 1);
-    $('.mentor-dialog-text').scrollTop = 0;
-    if (!dialog.open) dialog.showModal();
-  };
-
-  mentors.forEach((mentor, index) => {
-    mentor.querySelector('summary').addEventListener('click', event => { event.preventDefault(); show(index); });
-    mentor.querySelector('img').addEventListener('click', () => show(index));
-  });
-  $('.mentor-dialog-close').addEventListener('click', () => dialog.close());
-  dialog.querySelectorAll('[data-step]').forEach(button =>
-    button.addEventListener('click', () => show(current + Number(button.dataset.step))));
-  dialog.addEventListener('keydown', event => {
-    if (event.key === 'ArrowLeft') show(current - 1);
-    if (event.key === 'ArrowRight') show(current + 1);
-  });
-  // A click on the backdrop lands on the dialog element itself.
-  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
-  // Return focus to the card the visitor opened.
-  dialog.addEventListener('close', () => mentors[current].querySelector('summary').focus());
-}
-
 initNavigation();
 initCarousels();
 initVideos();
 initSlate();
-initMentorBios();
