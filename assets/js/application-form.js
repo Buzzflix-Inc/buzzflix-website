@@ -3,7 +3,7 @@ import {applicationEndpoint} from './application-config.js';
 const form = document.querySelector('[data-application-form]');
 if (form) {
   const endpoint = applicationEndpoint.trim();
-  const preview = !endpoint;
+  const preview = !endpoint || form.hasAttribute('data-preview');
   const button = form.querySelector('[type=submit]');
   const error = form.querySelector('.application-error');
   const status = form.querySelector('.application-submit-status');

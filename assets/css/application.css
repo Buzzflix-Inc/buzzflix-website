@@ -81,3 +81,69 @@
   .application-intro .application-intro-desktop,.application-intro .application-benefits { display:none; }
   .application-intro .application-intro-mobile { display:block; margin-bottom:0; }
 }
+
+/* Apply page: pick three positions by department (assets/js/apply-picker.js), then the form. */
+.apply-hero .application-eyebrow { font-size:16px; margin-bottom:12px; }
+.apply-hero h1 { margin-bottom:28px; }
+.picker { margin:16px var(--gutter) 0; padding:60px 5% 65px; border-radius:var(--radius-lg); background:var(--sunrise); scroll-margin-top:90px; }
+.picker .section-title { margin-bottom:22px; }
+/* Three numbered steps in a row, like a workflow. */
+.picker-steps { list-style:none; counter-reset:step; display:flex; justify-content:center; flex-wrap:wrap; gap:10px 34px; margin:0 0 34px; padding:0; }
+.picker-steps li { counter-increment:step; display:flex; align-items:center; gap:10px; font-size:17px; }
+.picker-steps li:before { content:counter(step); display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--ink); color:var(--paper); font-family:var(--heading); font-weight:500; font-size:15px; }
+/* The three slots fill as positions are picked. */
+.picker-tray { display:grid; grid-template-columns:auto repeat(3,minmax(0,1fr)); align-items:center; gap:12px; margin-bottom:22px; }
+.picker-status { margin:0; font-family:var(--heading); font-weight:500; font-size:18px; min-width:7.5em; }
+.picker-slots { display:contents; list-style:none; }
+.picker-slot { position:relative; display:flex; flex-direction:column; justify-content:center; min-height:62px; padding:10px 46px 10px 16px; border:2px dashed #c9bd8f; border-radius:var(--radius-lg); color:#5c5646; font-size:15px; }
+.picker-slot.is-filled { border:2px solid var(--paper); background:var(--paper); box-shadow:var(--shadow); color:var(--ink); }
+.picker-slot span { font-family:var(--heading); font-weight:500; font-size:17px; line-height:1.25; }
+.picker-slot small { font-size:13px; color:#5c5646; }
+.picker-slot button { position:absolute; top:50%; right:12px; width:28px; height:28px; margin-top:-14px; border:0; border-radius:50%; background:var(--muted); color:var(--ink); font-size:18px; line-height:1; cursor:pointer; }
+.picker-slot button:hover { background:var(--yellow); }
+/* Filled slots can be dragged into a new order (assets/js/apply-picker.js). */
+.picker-slot.is-filled { padding-left:34px; cursor:grab; touch-action:none; user-select:none; transition:box-shadow .2s,outline-color .2s; }
+.picker-slot.is-filled:before { content:"⠿"; position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#9a927c; font-size:16px; line-height:1; }
+.picker-slot.is-dragging { cursor:grabbing; z-index:2; box-shadow:0 2px 4px #1a1a1a14,0 18px 40px #1a1a1a2e; }
+.picker-slot.is-target { outline:2px solid var(--orange); outline-offset:2px; }
+.picker-hint { grid-column:1/-1; margin:0; text-align:center; font-size:14px; color:#5c5646; }
+.picker-hint[hidden] { display:none; }
+/* Department tiles; the open one's positions span the row beneath it. */
+.dept-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-auto-flow:dense; gap:12px; }
+.dept { display:flex; align-items:center; gap:10px; width:100%; padding:20px 22px; border:0; border-radius:var(--radius-lg); background:var(--paper); box-shadow:var(--shadow); color:var(--ink); font-family:var(--heading); font-weight:500; font-size:20px; line-height:1.25; text-align:left; cursor:pointer; transition:transform .2s,background .2s; }
+.dept:hover { transform:translateY(-2px); }
+.dept[aria-expanded=true] { background:var(--yellow); }
+.dept-name { flex:1; }
+.dept:after { content:''; width:9px; height:9px; margin:-4px 4px 0 0; border:solid var(--ink); border-width:0 2px 2px 0; transform:rotate(45deg); transition:transform .2s; flex-shrink:0; }
+.dept[aria-expanded=true]:after { transform:rotate(-135deg); margin-top:4px; }
+.dept-count { display:none; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--orange); color:var(--paper); font-family:var(--body); font-size:14px; }
+.dept.has-picks .dept-count { display:grid; }
+.dept-panel { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; padding:18px; border-radius:var(--radius-lg); background:var(--paper); box-shadow:var(--shadow); }
+.dept-panel[hidden] { display:none; }
+.pick { border:0; border-radius:999px; padding:9px 16px; background:var(--muted); color:var(--ink); font:inherit; font-size:15px; line-height:1.3; cursor:pointer; transition:background .2s; }
+.pick:hover { background:var(--yellow); }
+.pick[aria-pressed=true] { background:var(--orange); color:var(--paper); }
+.pick[aria-pressed=true]:before { content:'✓ '; }
+.pick:disabled { opacity:.45; cursor:not-allowed; background:var(--muted); }
+.picker-continue { display:table; margin:30px auto 0; border:0; }
+.picker-continue[hidden] { display:none; }
+/* The form shows the picks but only the picker changes them. */
+.application-roles input[readonly] { background:var(--muted); border-style:dashed; pointer-events:none; }
+.application-roles input[readonly]:not(:placeholder-shown) { background:var(--yellow); border:1px solid var(--yellow); font-family:var(--heading); font-weight:500; }
+@media(max-width:1000px) {
+  .picker-tray { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .picker-status { grid-column:1/-1; text-align:center; }
+}
+@media(max-width:800px) {
+  .picker { margin:10px 10px 0; padding:40px 14px; scroll-margin-top:70px; }
+  .picker-steps { flex-direction:column; align-items:flex-start; gap:8px; width:max-content; max-width:100%; margin:0 auto 22px; }
+  .picker-steps li { font-size:15px; }
+  .picker-steps li:before { width:26px; height:26px; font-size:14px; }
+  .picker-tray { grid-template-columns:1fr; gap:8px; }
+  .picker-slot { min-height:46px; padding:7px 46px 7px 14px; }
+  .dept-grid { grid-template-columns:1fr; gap:8px; }
+  .dept { padding:14px 16px; font-size:18px; }
+  .dept-panel { padding:14px; }
+  .pick { font-size:14px; padding:8px 13px; }
+  .picker-continue { width:100%; text-align:center; }
+}
