@@ -180,6 +180,44 @@ function initVideos() {
   });
 }
 
+/**
+ * The 404 slate claps shut and opens again on each click, and the take number goes up as the sticks meet.
+ * Take 04, 08, 12… opens the Buzz Run minigame (bee-game.js).
+ * The clap runs over the CSS one (ending it if it is still playing), so the sticks settle at the same angle
+ * and nothing restarts. With reduced motion the take still counts, without the clap.
+ */
+function initSlate() {
+  const slate = document.querySelector('.slate');
+  if (!slate) return;
+  const sticks = slate.querySelector('.slate-sticks');
+  const take = slate.querySelector('[data-take]').lastChild;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  slate.dataset.clap = '';
+  let count = parseInt(take.nodeValue, 10), clap, shut, game;
+  slate.addEventListener('click', () => {
+    count++;
+    const show = () => { take.nodeValue = String(count).padStart(2, '0'); };
+    clearTimeout(shut);
+    // Take 04 (and every fourth take after) opens the Buzz Run minigame once the sticks settle.
+    if (count % 4 === 0) {
+      clearTimeout(game);
+      game = setTimeout(() => import('./bee-game.js').then(m => m.openGame()), reduced.matches ? 0 : 650);
+    }
+    if (reduced.matches) return show();
+    // A click mid-clap starts from wherever the sticks are now.
+    const from = getComputedStyle(sticks).transform;
+    clap?.cancel();
+    sticks.getAnimations().forEach(a => a.animationName === 'clap' && a.finish());
+    clap = sticks.animate([
+      { transform: from, easing: 'cubic-bezier(.55,0,1,.45)' },
+      { transform: 'rotate(0)', offset: .3, easing: 'cubic-bezier(.25,.6,.3,1)' },
+      { transform: 'rotate(-7deg)' }
+    ], { duration: 650 });
+    shut = setTimeout(show, 195);
+  });
+}
+
 initNavigation();
 initCarousels();
 initVideos();
+initSlate();

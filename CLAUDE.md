@@ -8,7 +8,7 @@ Hand-built static site for Buzzflix (student film production company, Windsor ON
 - Homepage: never edit `index.html` directly. Edit `home-current.html` (normal) or `home-applications.html` (application season, Jan to Mar/Apr), then run `node scripts/switch-home.mjs current|applications` to copy one to `index.html`. Keep shared changes in both sources.
 - Header, footer and `<head>` are repeated in every page. A change to them must be made in all six page files (and both homepage sources).
 - CSS: `assets/css/site.css` holds everything, in order: fonts, tokens, base, components, pages. Each part has its own `@media(max-width:800px)` block. `assets/css/application.css` loads only on the application homepage.
-- JS: `assets/js/main.js` (mobile menu, carousel dragging and arrow keys). The application form is `application-form.js` and `application-config.js` (live Google Apps Script endpoint).
+- JS: `assets/js/main.js` (mobile menu, carousel dragging and arrow keys, the 404 slate). When the slate's take reaches 04 (and every fourth take after), it loads `bee-game.js`, the Buzz Run minigame. The application form is `application-form.js` and `application-config.js` (live Google Apps Script endpoint).
 - `apps-script/Code.gs` is the form backend. `consent_version` must match in `application-form.js` and `Code.gs`. Test with `node --test scripts/test-apps-script.mjs`.
 - Docs: `APPLICATIONS.md`, `APPS-SCRIPT-SETUP.md`, `CLOUDFLARE-CUTOVER.md`.
 

@@ -1041,6 +1041,120 @@ to {
 }
 
 }
+/* Buzz Run, the minigame the slate opens at take 04 (bee-game.js): an ink slate with clapper stripes. */
+.bee-game {
+  width:min(440px,calc(100% - 32px));
+  padding:0;
+  border:0;
+  border-radius:var(--radius-lg,18px);
+  overflow:hidden;
+  background:var(--ink);
+  color:#fff;
+  box-shadow:0 24px 60px #1a1a1a59
+}
+.bee-game[open] {
+  animation:bee-game-in .4s cubic-bezier(.2,.7,.3,1)
+}
+.bee-game::backdrop {
+  background:#1a1a1a99;
+  backdrop-filter:blur(3px)
+}
+.bee-game[open]::backdrop {
+  animation:bee-game-fade .4s ease-out
+}
+@keyframes bee-game-in {
+  from {
+  opacity:0;
+  transform:translateY(16px) scale(.97)
+}
+
+}
+@keyframes bee-game-fade {
+  from {
+  opacity:0
+}
+
+}
+@media(prefers-reduced-motion:reduce) {
+  .bee-game[open] {
+  animation-name:bee-game-fade
+}
+
+}
+.bee-game-sticks {
+  height:16px;
+  background:repeating-linear-gradient(-60deg,var(--ink) 0 18px,#fff 18px 36px)
+}
+.bee-game-bar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:14px 18px 12px
+}
+.bee-game-title {
+  margin:0;
+  font-family:var(--heading);
+  font-weight:500;
+  font-size:26px;
+  line-height:1.1;
+  letter-spacing:-.02em
+}
+.bee-game-title span,.bee-game-hint {
+  font-family:var(--body);
+  font-weight:400;
+  font-size:12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#bdbdbd
+}
+.bee-game-title span {
+  display:block;
+  margin-bottom:4px
+}
+.bee-game-close {
+  flex:none;
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:50%;
+  background:var(--yellow);
+  color:var(--ink);
+  font-size:26px;
+  line-height:1;
+  cursor:pointer;
+  transition:transform .2s,background .2s
+}
+.bee-game-close:hover {
+  background:#fff;
+  transform:rotate(90deg)
+}
+.bee-game-close:focus-visible,.bee-game canvas:focus-visible {
+  outline:2px solid var(--yellow);
+  outline-offset:3px
+}
+.bee-game canvas {
+  display:block;
+  width:min(calc(100% - 36px),calc((100dvh - 200px) * .75));
+  aspect-ratio:3/4;
+  margin:0 auto;
+  border-radius:10px;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  cursor:pointer
+}
+.bee-game-hint {
+  margin:0;
+  padding:12px 18px 16px;
+  text-align:center
+}
+/* Clicking the slate claps it again (main.js). */
+.slate[data-clap] {
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent
+}
 .slate-board {
   display:grid;
   grid-template-columns:2fr 1fr;
