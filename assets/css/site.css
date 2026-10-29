@@ -1717,6 +1717,110 @@ to {
 
 }
 
+/* Homepage: where you'll be working. Facts beside an OpenStreetMap frame, with set photos below. */
+.windsor {
+  display:grid;
+  grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);
+  gap:100px clamp(35px,6vw,95px);
+  padding-top:44px;
+  padding-bottom:48px;
+  scroll-margin-top:90px
+}
+.windsor-eyebrow {
+  margin-bottom:12px;
+  font-size:14px;
+  letter-spacing:.06em;
+  text-transform:uppercase
+}
+.windsor-intro h2 {
+  font-size:clamp(30px,2.6vw,42px);
+  max-width:12em;
+  margin-bottom:14px
+}
+.windsor-intro>p {
+  max-width:34em;
+  font-size:16px;
+  line-height:1.5
+}
+.windsor-facts {
+  max-width:34em;
+  margin:20px 0 0
+}
+.windsor-facts>div {
+  padding:14px 0;
+  border-top:1px solid #ddd
+}
+.windsor-facts>div:last-child {
+  border-bottom:1px solid #ddd
+}
+.windsor-facts dt {
+  font-family:var(--heading);
+  font-size:19px;
+  font-weight:500;
+  line-height:1.3;
+  margin-bottom:4px
+}
+.windsor-facts dd {
+  margin:0;
+  font-size:16px;
+  line-height:1.5
+}
+.windsor-map {
+  display:flex;
+  flex-direction:column;
+  margin:0
+}
+.windsor-map iframe {
+  flex:1;
+  width:100%;
+  min-height:340px;
+  border:0;
+  border-radius:var(--radius-lg,var(--radius));
+  background:var(--muted)
+}
+.windsor-map figcaption {
+  margin-top:10px;
+  font-size:15px
+}
+.windsor-photos {
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px
+}
+.windsor-photos img {
+  width:100%;
+  height:clamp(140px,12vw,190px);
+  object-fit:cover;
+  border-radius:var(--radius-lg,var(--radius));
+  background:var(--muted)
+}
+@media(max-width:800px) {
+.windsor {
+  grid-template-columns:1fr;
+  gap:28px;
+  padding:40px 20px 28px;
+  scroll-margin-top:70px
+}
+.windsor-intro h2 {
+  font-size:30px
+}
+.windsor-map iframe {
+  min-height:300px
+}
+.windsor-photos {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-top:24px
+}
+.windsor-photos img {
+  height:150px
+}
+.windsor-photos img:last-child {
+  display:none
+}
+}
+
 /* Modern refresh (preview): rounded corners, soft shadows, rounded-rectangle buttons, inset heroes and the
    yearbook's yellow gradient on page intros. Same content, colours and fonts; remove this block to undo. */
 :root {
