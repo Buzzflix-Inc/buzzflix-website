@@ -282,7 +282,10 @@ li,summary {
 .carousel {
   position:relative
 }
+/* Positioned so absolutely placed children (.visually-hidden link text) are clipped with the cards
+   instead of widening the page. */
 .carousel-track {
+  position:relative;
   display:flex;
   gap:22px;
   overflow-x:auto;
