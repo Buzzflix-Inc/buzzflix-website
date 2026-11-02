@@ -53,6 +53,7 @@
 .application-next-steps li { counter-increment:step; position:relative; padding:0 0 18px 48px; line-height:1.5; }
 .application-next-steps li::before { content:counter(step); position:absolute; left:0; top:0; width:32px; height:32px; border-radius:50%; background:var(--yellow); font-family:var(--heading); font-weight:500; display:grid; place-items:center; }
 .application-next-steps strong { display:block; font-family:var(--heading); font-weight:500; }
+.application-follow-links { margin:0 0 16px -7px; }
 .application-section [hidden] { display:none!important; }
 @media(max-width:1000px) {
   .application-section { grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr); gap:35px; }
