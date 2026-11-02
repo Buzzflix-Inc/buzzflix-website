@@ -1574,46 +1574,7 @@ to {
 
 }
 
-/* Mentors: four numbered stages on the hero's closing grey, then the mentor grid with expandable bios. */
-.mentorship {
-  background:var(--muted)
-}
-.mentorship-steps {
-  list-style:none;
-  counter-reset:stage;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:22px;
-  margin:0;
-  padding:0
-}
-.mentorship-steps li {
-  counter-increment:stage;
-  background:var(--paper);
-  border-radius:var(--radius-lg,var(--radius));
-  box-shadow:var(--shadow,none);
-  padding:30px 26px 32px
-}
-.mentorship-steps li:before {
-  content:counter(stage,decimal-leading-zero);
-  display:grid;
-  place-items:center;
-  width:46px;
-  height:46px;
-  margin-bottom:22px;
-  border-radius:50%;
-  background:var(--yellow);
-  font-family:var(--heading);
-  font-weight:500;
-  font-size:17px
-}
-.mentorship-steps h3 {
-  margin-bottom:12px
-}
-.mentorship-steps p {
-  margin:0;
-  font-size:16px
-}
+/* Mentors: the mentor grid with expandable bios. */
 .mentor-grid {
   list-style:none;
   display:grid;
@@ -1691,7 +1652,11 @@ to {
 .card .mentor-imdb a {
   text-underline-offset:3px
 }
-/* A student's words on a mentor: photo beside the quote on the grey card colour. */
+/* A student's words on a mentor: photo beside the quote on the grey card colour.
+   Pulled up toward the mentor cards above. */
+.mentor-quote {
+  padding-top:15px
+}
 .mentor-quote figure {
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);
@@ -1755,27 +1720,7 @@ to {
   object-fit:contain
 }
 @media(max-width:800px) {
-  .mentorship-steps {
-  grid-template-columns:1fr;
-  gap:14px
-}
-.mentorship-steps li {
-  display:grid;
-  grid-template-columns:auto 1fr;
-  column-gap:16px;
-  padding:22px 20px
-}
-.mentorship-steps li:before {
-  grid-row:span 2;
-  width:40px;
-  height:40px;
-  margin:0;
-  font-size:15px
-}
-.mentorship-steps h3 {
-  margin-bottom:6px
-}
-.mentor-grid {
+  .mentor-grid {
   grid-template-columns:repeat(2,1fr);
   gap:32px 14px
 }
