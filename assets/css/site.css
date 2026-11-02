@@ -88,6 +88,12 @@
   --ink:#1a1a1a;
   --paper:#fff;
   --muted:#f4f4f2;
+  /* 2027 teal accent: --teal and --teal-pale behind ink text or as shapes; --teal-text for teal text
+     (4.5:1 or better on white, yellow and grey); --teal-soft tints card and section backgrounds. */
+  --teal:#4cc3d1;
+  --teal-text:#0d6d82;
+  --teal-pale:#c9edf2;
+  --teal-soft:#e6f6f9;
   --heading:'Space Grotesk',Arial,sans-serif;
   --body:Roboto,Arial,sans-serif;
   --gutter:clamp(20px,2.25vw,48px);
@@ -151,7 +157,7 @@ a,button,summary {
   -webkit-tap-highlight-color:transparent
 }
 :focus-visible {
-  outline:3px solid #155ac4;
+  outline:3px solid var(--teal-text);
   outline-offset:5px
 }
 button:disabled {
@@ -284,25 +290,6 @@ li,summary {
 }
 .site-header nav>a:not(.button)[aria-current=page] {
   text-decoration:underline
-}
-/* Yearbook link: a tilted "New" sticker beside the label. */
-.nav-badge {
-  display:inline-block;
-  margin-left:7px;
-  padding:3px 8px;
-  border-radius:999px;
-  background:var(--ink);
-  color:var(--yellow);
-  font-size:11px;
-  line-height:1.2;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  vertical-align:4px;
-  transform:rotate(-6deg);
-  transition:transform .2s
-}
-.nav-new:hover .nav-badge {
-  transform:rotate(4deg) scale(1.08)
 }
 .site-header .button {
   padding:13px 35px;
@@ -2356,4 +2343,34 @@ to {
   padding-top:90px
 }
 
+}
+
+/* 2027 teal accent: labels, tags, quote cards and small lines beside the yellow and orange; never on buttons. */
+::selection {
+  background:var(--teal-pale)
+}
+.sizzle-eyebrow,.docuseries-eyebrow,.docuseries-range,.yearbook-eyebrow,.windsor-eyebrow,.application-eyebrow {
+  color:var(--teal-text);
+  font-weight:500
+}
+.mentor-dept {
+  background:var(--teal-pale)
+}
+.testimonials .card,.mentor-quote figure,.docuseries {
+  background:var(--teal-soft)
+}
+.faq summary:after {
+  color:var(--teal-text)
+}
+.yearbook-card:hover {
+  box-shadow:8px 8px 0 var(--teal)
+}
+.windsor-facts dt:before {
+  content:"";
+  display:block;
+  width:40px;
+  height:4px;
+  margin-bottom:12px;
+  border-radius:2px;
+  background:var(--teal)
 }
