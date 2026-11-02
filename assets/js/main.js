@@ -229,6 +229,9 @@ function initSlate() {
   });
 }
 
+/** Images can't be dragged out of the page (Firefox ignores -webkit-user-drag). */
+document.addEventListener('dragstart',e=>{if(e.target instanceof HTMLImageElement)e.preventDefault()});
+
 initNavigation();
 initAnnouncement();
 initCarousels();
