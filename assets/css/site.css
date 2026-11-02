@@ -269,8 +269,44 @@ li,summary {
   z-index:10
 }
 .brand {
+  position:relative;
   width:220px;
   flex-shrink:0
+}
+/* A small teal "2027" ribbon that dips across the foot of the bee bubble: an ink edge, the teal band,
+   then the year set along the same curve. Masks cut a V into each end (the band's cut sits further in,
+   so the ink edge outlines the notch). Sized as a share of the logo's width. */
+.brand-year {
+  position:absolute;
+  left:1%;
+  top:62%;
+  width:25%;
+  height:auto;
+  overflow:visible
+}
+.brand-year path {
+  fill:none
+}
+.brand-year-edge,.brand-year-band {
+  fill:none;
+  stroke-linecap:butt
+}
+.brand-year-edge {
+  stroke:var(--ink);
+  stroke-width:27
+}
+.brand-year-band {
+  stroke:var(--teal);
+  stroke-width:21
+}
+.brand-year text {
+  fill:var(--ink);
+  font-family:var(--heading);
+  font-weight:500;
+  font-size:20px;
+  letter-spacing:1px;
+  text-anchor:middle;
+  dominant-baseline:central
 }
 .brand img {
   width:100%;
