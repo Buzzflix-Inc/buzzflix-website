@@ -5,13 +5,25 @@
 	"$schema": "https://unpkg.com/wrangler@4/config-schema.json",
 	"name": "buzzflix-website",
 	"compatibility_date": "2026-10-26",
+	// The Worker answers /api/* (the Buzz Run leaderboard); everything else is the static files below.
+	"main": "worker/index.js",
 	"assets": {
 		"directory": ".",
+		"binding": "ASSETS",
+		"run_worker_first": ["/api/*"],
 		// Serve 404.html (with a 404 status) for any address that doesn't match a page.
 		"not_found_handling": "404-page",
 		// /movies serves movies.html, and /movies.html redirects to /movies.
 		"html_handling": "auto-trailing-slash"
 	},
+	// Buzz Run leaderboard scores (schema in worker/schema.sql).
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "buzzflix-buzz-run",
+			"database_id": "b71cd36d-8508-40d3-9a29-7fc0b160aa73"
+		}
+	],
 	// Keep the .workers.dev test address, and give each GitHub branch its own preview address.
 	"workers_dev": true,
 	"preview_urls": true,

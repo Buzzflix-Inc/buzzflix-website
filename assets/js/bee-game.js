@@ -1,19 +1,28 @@
 /**
  * Buzz Run: the 404 easter egg (the slate opens it at take 04). The Buzzflix bee flies between film strips;
  * click, tap or press Space to flap. Loaded only when opened. Drawn on a canvas in fixed game units
- * (W × H) and scaled to fit, so it plays the same on a phone and a desktop.
+ * (W × H) and scaled to fit, so it plays the same on a phone and a desktop. The shared top 10 comes from
+ * the Worker's /api/buzz-run (worker/leaderboard.js); the game still plays if it can't be reached.
  */
 const W = 360, H = 480, FLOOR = 440;
 const GRAVITY = 1400, FLAP = -420, SPEED = 150, GAP = 150, SPACING = 210;
 const STRIP = 60, BEE = 62, BEE_X = 96, HIT = 20;
 const INK = '#1a1a1a', YELLOW = '#fbe274', ORANGE = '#ee5934', PAPER = '#fff';
-const BEST_KEY = 'buzzflix-buzz-run-best';
+const BEST_KEY = 'buzzflix-buzz-run-best', NAME_KEY = 'buzzflix-buzz-run-name', API = '/api/buzz-run';
 
 const bee = new Image();
 bee.src = new URL('../images/bee-32d3992.png', import.meta.url).href; // 160 × 129, the logo's bee alone
 
 const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
 const saveBest = n => { try { localStorage.setItem(BEST_KEY, String(n)); } catch {} };
+const readName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
+const saveName = name => { try { localStorage.setItem(NAME_KEY, name); } catch {} };
+const api = async (path, body) => {
+  const response = await fetch(API + path, body && {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'The leaderboard is offline.');
+  return data;
+};
 
 let open = false;
 
@@ -30,13 +39,38 @@ export function openGame() {
       <p class="bee-game-title"><span>Now shooting</span>Buzz Run</p>
       <button type="button" class="bee-game-close" aria-label="Close game">×</button>
     </div>
-    <canvas tabindex="0" role="img" aria-label="Buzz Run: fly the Buzzflix bee between the film strips"></canvas>
+    <div class="bee-game-stage">
+      <canvas tabindex="0" role="img" aria-label="Buzz Run: fly the Buzzflix bee between the film strips"></canvas>
+      <div class="bee-game-over" hidden>
+        <div class="bee-game-card">
+          <p class="bee-game-wrap">That's a wrap</p>
+          <p class="bee-game-score"></p>
+          <form class="bee-game-entry" hidden>
+            <label for="bee-game-name">Top 10! Your initials</label>
+            <div>
+              <input id="bee-game-name" name="name" maxlength="3" autocomplete="off" autocapitalize="characters" spellcheck="false" required pattern="[A-Za-z]{3}" title="Three letters">
+              <button type="submit">Save</button>
+            </div>
+          </form>
+          <p class="bee-game-note" aria-live="polite"></p>
+          <p class="bee-game-board-title">Top 10</p>
+          <ol class="bee-game-board"></ol>
+          <button type="button" class="bee-game-again">Fly again</button>
+        </div>
+      </div>
+    </div>
     <p class="bee-game-hint">Click, tap or press Space to fly.</p>
     <p class="visually-hidden" aria-live="polite"></p>`;
   document.body.append(dialog);
   const canvas = dialog.querySelector('canvas');
   const close = dialog.querySelector('.bee-game-close');
-  const status = dialog.querySelector('[aria-live]');
+  const status = dialog.querySelector('.visually-hidden[aria-live]');
+  const over = dialog.querySelector('.bee-game-over');
+  const entry = dialog.querySelector('.bee-game-entry');
+  const nameInput = entry.elements.name;
+  const note = dialog.querySelector('.bee-game-note');
+  const list = dialog.querySelector('.bee-game-board');
+  const again = dialog.querySelector('.bee-game-again');
   const ctx = canvas.getContext('2d');
 
   // Keep the canvas sharp at any size.
@@ -51,15 +85,59 @@ export function openGame() {
   resize.observe(canvas);
 
   let state, y, v, strips, score, best = readBest(), time = 0, floorX = 0, overAt = 0, last, frame;
-  const reset = () => { state = 'ready'; y = 220; v = 0; strips = []; score = 0; };
+  let board = null, run = null; // board: the shared top 10, null until it loads (or if it can't)
+  const reset = () => { state = 'ready'; y = 220; v = 0; strips = []; score = 0; over.hidden = true; };
   reset();
+
+  const showBoard = (rank = null) => {
+    list.replaceChildren(...(board ?? []).map(({name, score}, i) => {
+      const li = document.createElement('li');
+      li.className = i + 1 === rank ? 'is-you' : '';
+      li.append(Object.assign(document.createElement('span'), {textContent: name}), Object.assign(document.createElement('span'), {textContent: score}));
+      return li;
+    }));
+    if (!board?.length) {
+      const li = document.createElement('li');
+      li.className = 'bee-game-empty';
+      li.textContent = board ? 'No scores yet. Be the first.' : 'The leaderboard is offline.';
+      list.append(li);
+    }
+  };
+  api('/scores').then(data => { board = data.scores; }).catch(() => {});
+
+  entry.addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = nameInput.value.toUpperCase(), submitted = score;
+    entry.elements[1].disabled = true;
+    note.textContent = 'Saving…';
+    try {
+      const data = await api('/scores', {run: await run, name, score: submitted});
+      saveName(name);
+      board = data.scores;
+      if (state === 'over' && score === submitted) {
+        entry.hidden = true;
+        showBoard(data.rank);
+        note.textContent = data.rank ? `You're number ${data.rank}.` : 'Saved.';
+        again.focus();
+      }
+    } catch (error) {
+      note.textContent = error.message;
+    } finally {
+      entry.elements[1].disabled = false;
+    }
+  });
 
   const flap = () => {
     if (state === 'over') {
       if (performance.now() - overAt < 500) return; // don't restart from a panicked double tap
       reset();
     }
-    if (state === 'ready') { state = 'playing'; strips.push(strip(W + 60)); status.textContent = ''; }
+    if (state === 'ready') {
+      state = 'playing';
+      strips.push(strip(W + 60));
+      status.textContent = '';
+      run = api('/runs', {}).then(data => data.run, () => null); // the server times the run to check the score
+    }
     v = FLAP;
   };
   const strip = x => ({ x, gap: 60 + GAP / 2 + Math.random() * (FLOOR - 120 - GAP), passed: false });
@@ -68,6 +146,15 @@ export function openGame() {
     overAt = performance.now();
     if (score > best) { best = score; saveBest(best); }
     status.textContent = `That's a wrap. You scored ${score}. Best ${best}.`;
+    dialog.querySelector('.bee-game-score').textContent = `Score ${score}  ·  Best ${best}`;
+    const qualifies = board && score > 0 && (board.length < 10 || score > board.at(-1).score);
+    entry.hidden = !qualifies;
+    note.textContent = '';
+    nameInput.value = readName();
+    showBoard();
+    over.hidden = false;
+    // Wait a moment so a flap already on its way doesn't land in the form.
+    setTimeout(() => { if (state === 'over') (qualifies ? nameInput : again).focus({preventScroll: true}); }, 500);
   };
 
   // The bee's circle against a rectangle.
@@ -198,21 +285,13 @@ export function openGame() {
     drawBee();
 
     if (state === 'ready') {
-      card(300, 96);
+      const top = board?.[0];
+      card(300, top ? 116 : 96);
       text('Fly the bee through the film', W / 2, 330, 18);
       text('Tap to start', W / 2, 366, 16, 400);
+      if (top) text(`Top score ${top.score} by ${top.name}`, W / 2, 392, 14, 400, '#5f5f5f');
     } else {
       text(String(score), W / 2, 56, 48);
-    }
-    if (state === 'over') {
-      card(150, 170);
-      text("That's a wrap", W / 2, 186, 28);
-      text(`Score ${score}   ·   Best ${best}`, W / 2, 228, 18, 400);
-      ctx.fillStyle = ORANGE;
-      ctx.beginPath();
-      ctx.roundRect(W / 2 - 80, 256, 160, 40, 20);
-      ctx.fill();
-      text('Fly again', W / 2, 277, 16, 400, PAPER);
     }
   };
 
@@ -226,11 +305,12 @@ export function openGame() {
 
   canvas.addEventListener('pointerdown', e => { e.preventDefault(); canvas.focus({ preventScroll: true }); flap(); });
   dialog.addEventListener('keydown', e => {
-    if (e.target === close || ![' ', 'ArrowUp', 'w', 'W'].includes(e.key)) return;
+    if (e.target.closest('button, input') || ![' ', 'ArrowUp', 'w', 'W'].includes(e.key)) return;
     e.preventDefault();
     if (!e.repeat) flap();
   });
   close.addEventListener('click', () => dialog.close());
+  again.addEventListener('click', () => { flap(); canvas.focus({preventScroll: true}); });
   dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); }); // backdrop
   dialog.addEventListener('close', () => {
     cancelAnimationFrame(frame);

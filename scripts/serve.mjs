@@ -1,13 +1,19 @@
 // Local preview that behaves like the Cloudflare Worker: /movies serves movies.html, /movies.html
 // redirects to /movies, _redirects and _headers apply, .assetsignore files and unknown paths get 404.html.
+// /api/buzz-run/* runs the Worker's leaderboard against an in-memory store that empties on restart.
 // Usage: node scripts/serve.mjs   (PORT defaults to 4173)
 import {createServer} from 'node:http';
 import {readFile, stat} from 'node:fs/promises';
 import {extname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {webcrypto} from 'node:crypto';
+import {leaderboard, memoryStore} from '../worker/leaderboard.js';
+
+globalThis.crypto ??= webcrypto; // Node 18 has no global crypto
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const port = Number(process.env.PORT) || 4173;
+const scores = memoryStore();
 const types = {'.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json',
   '.xml': 'application/xml', '.txt': 'text/plain', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
   '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ico': 'image/x-icon'};
@@ -41,6 +47,14 @@ async function resolve(path) {
 
 createServer(async (req, res) => {
   const path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+  if (path.startsWith('/api/buzz-run/')) {
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : Buffer.concat(chunks);
+    const response = await leaderboard(new Request(new URL(req.url, 'http://localhost'), {method: req.method, body}), scores);
+    res.writeHead(response.status, Object.fromEntries(response.headers)).end(await response.text());
+    return;
+  }
   const rule = redirects.find(([from]) => from === path);
   const target = rule ? {redirect: rule[1], status: Number(rule[2]) || 302} : await resolve(path);
   if (target.redirect !== undefined) {

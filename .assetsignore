@@ -11,8 +11,9 @@
 **/.DS_Store
 node_modules
 
-# Cloudflare settings
+# Cloudflare settings and the Worker's code
 wrangler.jsonc
+worker
 
 # Setup guides and tools
 *.md
