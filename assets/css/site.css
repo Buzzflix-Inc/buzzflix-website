@@ -1798,9 +1798,6 @@ to {
   grid-column:span 2
 }
 /* The yearbook's yellow stats band (shared rules): three figures in ink, then a row of network logos. */
-.yearbook-stats.mentor-stats span {
-  color:var(--ink)
-}
 .mentor-networks {
   grid-column:1/-1;
   border-top:1px solid #1a1a1a33;
@@ -1959,7 +1956,7 @@ to {
   line-height:1.05;
   letter-spacing:-.045em;
   text-transform:none;
-  color:var(--orange-text)
+  color:var(--ink)
 }
 .yearbook-grid {
   display:grid;
