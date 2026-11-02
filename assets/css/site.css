@@ -2179,6 +2179,79 @@ to {
 
 }
 
+/* Stills: a grid of film stills, each tagged with its film's poster and name, like the yearbook's roles.
+   Grey placeholders until the stills arrive. */
+.stills-eyebrow {
+  margin-bottom:14px;
+  font-size:16px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  text-align:center
+}
+.stills .section-title {
+  margin-bottom:40px
+}
+.stills-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:34px 22px
+}
+.still {
+  margin:0
+}
+.still>img,.still-placeholder {
+  display:block;
+  width:100%;
+  aspect-ratio:16/9;
+  object-fit:cover;
+  border-radius:var(--radius-lg,var(--radius))
+}
+.still-placeholder {
+  display:grid;
+  place-items:center;
+  background:var(--muted)
+}
+.still-placeholder:before {
+  content:"Still coming soon";
+  color:#6b6b6b;
+  font-size:15px
+}
+.film-tag {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:12px;
+  font-size:12px;
+  line-height:1.3;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:#595959
+}
+.film-tag img {
+  width:24px;
+  aspect-ratio:3/4;
+  object-fit:cover;
+  border-radius:2px;
+  box-shadow:1px 1px 0 #1a1a1a40
+}
+@media(max-width:800px) {
+.stills-grid {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:22px 12px
+}
+.still-placeholder:before {
+  font-size:13px
+}
+.film-tag {
+  gap:8px;
+  margin-top:8px;
+  font-size:11px
+}
+.film-tag img {
+  width:20px
+}
+}
+
 /* Homepage: where you'll be working. Facts beside a tall OpenStreetMap frame. */
 .windsor {
   display:grid;
@@ -2385,7 +2458,7 @@ to {
 ::selection {
   background:var(--teal-pale)
 }
-.sizzle-eyebrow,.docuseries-eyebrow,.docuseries-range,.yearbook-eyebrow,.windsor-eyebrow,.application-eyebrow {
+.sizzle-eyebrow,.stills-eyebrow,.docuseries-eyebrow,.docuseries-range,.yearbook-eyebrow,.windsor-eyebrow,.application-eyebrow {
   color:var(--teal-text);
   font-weight:500
 }
