@@ -2204,7 +2204,9 @@ to {
 
 }
 
-/* Stills: a grid of film stills, each tagged with its film's poster and name, like the yearbook's roles. */
+/* Stills: a grid of film stills, each tagged with its film's poster and name, like the yearbook's roles.
+   Rows are centred so a short last row sits in the middle. Hovering or focusing a still (tapping, on phones)
+   joins a card of the film's details to the bottom of the photo, as one tile over the rows underneath. */
 .stills-eyebrow {
   margin-bottom:14px;
   font-size:16px;
@@ -2216,12 +2218,31 @@ to {
   margin-bottom:40px
 }
 .stills-grid {
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
   gap:34px 22px
 }
 .still {
-  margin:0
+  position:relative;
+  flex:0 0 calc((100% - 44px)/3);
+  margin:0;
+  outline:none
+}
+.still:hover,.still:focus-within {
+  z-index:2
+}
+.still:focus-visible>img {
+  outline:3px solid var(--orange);
+  outline-offset:3px
+}
+.still>img {
+  transition:border-radius .2s,box-shadow .2s
+}
+.still:hover>img,.still:focus-within>img {
+  border-bottom-left-radius:0;
+  border-bottom-right-radius:0;
+  box-shadow:0 14px 36px #1a1a1a2e
 }
 .still>img {
   display:block;
@@ -2248,14 +2269,102 @@ to {
   border-radius:2px;
   box-shadow:1px 1px 0 #1a1a1a40
 }
+.still-details {
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  /* Starts at the photo's bottom edge: a 16:9 photo is 56.25% of the tile's width tall. */
+  margin-top:56.25%;
+  padding:18px 22px 20px;
+  border-radius:0 0 var(--radius-lg,var(--radius)) var(--radius-lg,var(--radius));
+  background:#fff;
+  box-shadow:0 14px 36px #1a1a1a2e;
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.5;
+  text-transform:none;
+  letter-spacing:normal;
+  opacity:0;
+  visibility:hidden;
+  transition:opacity .2s,visibility .2s
+}
+.still:hover .still-details,.still:focus-within .still-details {
+  opacity:1;
+  visibility:visible
+}
+.still-heading {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px
+}
+.still-heading img {
+  width:34px;
+  aspect-ratio:3/4;
+  object-fit:cover;
+  border-radius:3px;
+  box-shadow:1px 1px 0 #1a1a1a40
+}
+.still-title {
+  font-family:var(--heading);
+  font-weight:500;
+  font-size:22px
+}
+.still-details p {
+  margin:0 0 14px
+}
+.still-details dl {
+  display:grid;
+  gap:6px;
+  margin:0;
+  padding-top:12px;
+  border-top:1px solid #1a1a1a1f;
+  font-size:14px
+}
+.still-details dl div {
+  display:flex;
+  gap:8px
+}
+.still-details dt {
+  color:#595959
+}
+.still-details dd {
+  margin:0;
+  font-weight:700
+}
+@media(prefers-reduced-motion:reduce) {
+.still-details {
+  transition:none
+}
+}
 @media(max-width:800px) {
 .stills-grid {
-  grid-template-columns:repeat(2,minmax(0,1fr));
   gap:22px 12px
 }
-/* Nine stills in two columns: the first runs full width so none is left alone at the end. */
-.still:first-child {
-  grid-column:1/-1
+.still {
+  flex-basis:calc((100% - 12px)/2)
+}
+/* The details card spans both columns, from whichever side the still is on,
+   square only at the corner where it meets the photo. */
+.still-details {
+  right:auto;
+  width:calc(200% + 12px);
+  padding:16px 18px;
+  border-top-right-radius:var(--radius-lg,var(--radius));
+  font-size:14px
+}
+.still:nth-child(even) .still-details {
+  left:auto;
+  right:0;
+  border-top-left-radius:var(--radius-lg,var(--radius));
+  border-top-right-radius:0
+}
+.still-heading img {
+  width:28px
+}
+.still-title {
+  font-size:19px
 }
 .film-tag {
   gap:8px;
