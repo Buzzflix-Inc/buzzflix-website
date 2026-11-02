@@ -2697,6 +2697,11 @@ to {
 .testimonials .card,.mentor-quote figure,.docuseries {
   background:var(--teal-soft)
 }
+/* When the docuseries ends the page (movies.html), the footer picks up its teal and fades to yellow. */
+main:has(>.docuseries:last-child)+.site-footer {
+  margin-top:0;
+  background:linear-gradient(180deg,var(--teal-soft) 0%,#f1f2e2 20%,#f5eab8 34%,#f6e28e 46%,var(--yellow) 60%)
+}
 .faq summary:after {
   color:var(--teal-text)
 }
