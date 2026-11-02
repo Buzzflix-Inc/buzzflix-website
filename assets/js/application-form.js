@@ -10,6 +10,11 @@ if (form) {
   const note = document.querySelector('#application-preview-note');
   const confirmation = document.querySelector('[data-application-confirmation]');
   const roles = [form.elements.role_1, form.elements.role_2, form.elements.role_3];
+  const answerFields = ['name', 'email', 'school', 'experience', 'role_1', 'role_2', 'role_3', 'additional_roles'];
+  const draftSave = form.querySelector('[data-draft-save]');
+  const draftButton = form.querySelector('[data-draft-send]');
+  const draftStatus = form.querySelector('[data-draft-status]');
+  const restored = document.querySelector('[data-draft-restored]');
   let sending = false;
   let submissionId;
   let lastAnswers;
@@ -49,6 +54,75 @@ if (form) {
     form.hidden = false;
     button.focus();
   });
+  // Not every page has every field (apply.html has no additional_roles).
+  const answers = () => {
+    const data = {};
+    for (const name of [...answerFields, 'website']) data[name] = (form.elements[name]?.value || '').trim();
+    return data;
+  };
+  const getJSON = async (url, options = {}) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
+    try {
+      const response = await fetch(url, {credentials: 'omit', redirect: 'follow', signal: controller.signal, ...options});
+      return await response.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+
+  // Before applications open, applicants can email themselves a link that brings their answers back.
+  if (draftSave && endpoint && form.hasAttribute('data-preview')) {
+    draftSave.hidden = false;
+    // Nothing can be submitted yet, so the save box takes the submit button's place.
+    button.hidden = true;
+    let saving = false;
+    draftButton.addEventListener('click', async () => {
+      if (saving) return;
+      const email = form.elements.email;
+      if (!email.value.trim()) email.setCustomValidity('Enter your email so we can send you the link.');
+      if (!email.reportValidity()) { email.setCustomValidity(''); return; }
+      saving = true;
+      draftButton.disabled = true;
+      draftStatus.textContent = 'Saving your answers…';
+      try {
+        // text/plain avoids the cross-origin preflight that Apps Script cannot handle.
+        const result = await getJSON(endpoint, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
+          body: JSON.stringify({action: 'save_draft', ...answers()})});
+        if (result.saved !== true) throw Object.assign(new Error('draft-failed'), {userMessage: result.message});
+        draftStatus.textContent = `Sent! Check ${email.value.trim()} for your link. If it isn’t there in a few minutes, look in your spam folder.`;
+      } catch (failure) {
+        draftStatus.textContent = (typeof failure.userMessage === 'string' && failure.userMessage)
+          || 'We couldn’t save your answers. Your entries are still here. Please try again.';
+      } finally {
+        saving = false;
+        draftButton.disabled = false;
+      }
+    });
+  }
+
+  const draftId = location.hash.match(/^#draft=([0-9a-f]{32})$/)?.[1];
+  if (draftId && endpoint) {
+    history.replaceState(null, '', location.pathname + location.search + '#apply');
+    restored.hidden = false;
+    restored.textContent = 'Loading your saved answers…';
+    form.closest('section').scrollIntoView();
+    getJSON(`${endpoint}?draft=${draftId}`).then(result => {
+      if (result.found !== true) throw new Error('draft-missing');
+      answerFields.forEach(name => {
+        if (form.elements[name] && typeof result.draft[name] === 'string') form.elements[name].value = result.draft[name];
+      });
+      // The position picker owns the role fields on apply.html, so it restores the picks itself.
+      form.dispatchEvent(new CustomEvent('application:restore', {detail: {roles: [result.draft.role_1, result.draft.role_2, result.draft.role_3]}}));
+      validate();
+      restored.textContent = preview
+        ? 'Your saved answers are filled in. You can keep editing them until applications open.'
+        : 'Your saved answers are filled in. Check them over, agree to the terms and submit your application.';
+    }).catch(() => {
+      restored.textContent = 'We couldn’t find those saved answers. The link may be incomplete, so try opening it from your email again.';
+    });
+  }
+
   form.addEventListener('submit', async event => {
     event.preventDefault();
     if (sending) return;
@@ -56,10 +130,7 @@ if (form) {
     if (!form.reportValidity()) return;
     error.hidden = true;
     if (preview) { showConfirmation(); return; }
-    const data = {};
-    for (const name of ['name', 'email', 'school', 'experience', 'role_1', 'role_2', 'role_3', 'additional_roles', 'website']) {
-      data[name] = form.elements[name].value.trim();
-    }
+    const data = answers();
     data.consent = form.elements.consent.checked ? 'agreed' : '';
     data.application_year = '2027';
     data.consent_version = '2027-text-v1';
@@ -88,6 +159,7 @@ if (form) {
       }
       showConfirmation();
       form.reset();
+      restored.hidden = true;
     } catch (failure) {
       error.textContent = failure.userMessage || (failure.name === 'AbortError'
         ? 'We couldn’t confirm your submission in time. Your entries are still here. Please try again.'

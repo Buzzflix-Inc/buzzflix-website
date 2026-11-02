@@ -32,4 +32,8 @@ The browser POSTs a JSON string using `Content-Type: text/plain;charset=utf-8`. 
 
 After saving, the script returns JSON with `accepted:true`, `submissionId`, `duplicate`, and `confirmationEmailQueued:false`. Apps Script returns errors in JSON with `accepted:false` and a message, rather than a custom HTTP error status. The browser checks `accepted`, not just the HTTP status, and preserves answers on failure.
 
+## Saved drafts
+
+While the form has `data-preview` (before applications open), it shows **Email me my answers**. The browser POSTs the answers with `action:"save_draft"`; Apps Script stores them in the **Saved Drafts** tab under a random 32-character ID and emails the applicant `https://www.buzzflix.ca/apply#draft=<ID>`. The email holds only fixed text and the link, never the answers. Opening the link GETs `?draft=<ID>` from Apps Script and fills in the form and position picks; this keeps working after `data-preview` is removed. Each address can save 3 times an hour, and everyone together 10 times a minute. Clear the Saved Drafts tab once applications close.
+
 Update consent_version in both the form code and Code.gs if terms change. Video storage and email delivery require additional implementation.

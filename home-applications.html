@@ -84,6 +84,7 @@
  </div>
  <div class="application-panel">
   <p class="application-preview-note" id="application-preview-note">Preview only. Applications are not being sent yet.</p>
+  <p class="application-restored" data-draft-restored role="status" hidden></p>
   <form class="application-form" data-application-form method="post" action="#apply" aria-describedby="application-preview-note">
    <div class="application-honeypot" aria-hidden="true">
     <label for="applicant-website">Leave this field empty</label>
@@ -131,6 +132,12 @@
    <p class="application-error" id="application-error" role="alert" hidden></p>
    <button class="button application-submit" type="submit" disabled>Preview submission</button>
    <p class="application-help application-submit-status" role="status" aria-live="polite"></p>
+   <div class="application-save" data-draft-save hidden>
+    <h3>Applications Not Open Yet</h3>
+    <p class="application-help">Applications open January 18, 2027. Until then, you can fill in this form and email yourself a link to your answers. When applications open, the link brings you back here with everything filled in, ready to submit. We keep saved answers only to send them back to you.</p>
+    <button class="button application-save-button" type="button" data-draft-send>Email me my answers</button>
+    <p class="application-help application-save-status" data-draft-status role="status" aria-live="polite"></p>
+   </div>
    <noscript><p>This application form needs JavaScript to submit. Please enable JavaScript in your browser.</p></noscript>
   </form>
   <div class="application-confirmation" data-application-confirmation hidden>

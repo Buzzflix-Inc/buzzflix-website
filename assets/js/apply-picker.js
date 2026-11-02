@@ -136,6 +136,16 @@ if (picker && form) {
     if (move(from, from + step)) slots[from + step].focus();
   });
 
+  // application-form.js fires this when it fills the form from a saved draft.
+  form.addEventListener('application:restore', event => {
+    picks.length = 0;
+    event.detail.roles.forEach(role => {
+      const button = [...picker.querySelectorAll('.pick')].find(b => b.textContent === role);
+      if (button && picks.length < 3 && !picks.some(p => p.role === role)) picks.push({ role, dept:deptOf(button) });
+    });
+    render();
+  });
+
   // The position fields are read-only, so the browser won't require them; stop the form here
   // (capture runs before application-form.js) and send the applicant back to the picker.
   document.addEventListener('submit', event => {

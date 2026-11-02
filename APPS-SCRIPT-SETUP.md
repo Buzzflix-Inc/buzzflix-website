@@ -64,6 +64,10 @@ The browser sends the JSON answers as a plain-text POST so it does not require a
 
 If the form reports an error, keep the answers and retry. If Google displays a login page or a browser blocks the response, verify the deployment is accessible to **Anyone**, its URL ends in `/exec`, and the private-window readiness check works. Check **Executions** in Apps Script for server failures. Do not treat a network request being sent as proof that the application was saved.
 
+## Turning on saved drafts
+
+The **Email me my answers** button needs the newer Code.gs, which sends email. Paste it in, then run **setupApplications** once more: it adds a **Saved Drafts** tab and Google asks you to allow the script to send email as you. Then deploy a new version (below). Until then, saving shows an error and nothing is lost from the form.
+
 ## Updating the script later
 
 After editing Code.gs, save, then select **Deploy → Manage deployments → Edit** (pencil) → **Version: New version** → **Deploy**. This updates the existing deployment without changing the URL. Saving code alone does not update the public deployment.

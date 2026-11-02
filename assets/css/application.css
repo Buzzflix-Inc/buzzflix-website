@@ -45,6 +45,13 @@
 .application-error { color:#a52d16; font-size:16px; padding:16px; background:#fff0eb; border-left:3px solid var(--orange); }
 .application-submit-status { margin:16px 0 0; }
 .application-submit-status:empty { display:none; }
+.application-save { margin-top:36px; padding:25px; background:var(--muted); border-radius:var(--radius); }
+.application-save h3 { font-size:24px; margin-bottom:8px; }
+.application-save-button { background:var(--paper); color:var(--ink); border:1px solid var(--ink); padding:16px 28px; }
+.application-save-button:hover { background:var(--yellow); }
+.application-save-status { margin:16px 0 0; }
+.application-save-status:empty { display:none; }
+.application-restored { background:var(--muted); padding:16px 20px; border-radius:var(--radius); font-size:16px; }
 .application-confirmation { background:var(--muted); border-radius:var(--radius); padding:40px; }
 .application-confirmation h3 { font-size:clamp(30px,3vw,44px); }
 .application-confirmation .button { border:0; margin-top:12px; }
