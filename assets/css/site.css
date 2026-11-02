@@ -243,7 +243,7 @@ li,summary {
   text-decoration:none;
   letter-spacing:0
 }
-.site-header nav>a[aria-current=page] {
+.site-header nav>a:not(.button)[aria-current=page] {
   text-decoration:underline
 }
 /* Yearbook link: a tilted "New" sticker beside the label. */
@@ -271,6 +271,24 @@ li,summary {
 }
 .menu-toggle {
   display:none
+}
+/* Tighter header between the phone menu and wide screens, so all six nav items fit on one line. */
+@media(min-width:801px) and (max-width:1150px) {
+  .brand {
+  width:170px
+}
+.site-header nav {
+  gap:20px
+}
+.site-header nav>a {
+  white-space:nowrap
+}
+.site-header nav>a:not(.button) {
+  font-size:18px
+}
+.site-header .button {
+  padding:13px 20px
+}
 }
 .section {
   padding:55px var(--gutter) 75px
