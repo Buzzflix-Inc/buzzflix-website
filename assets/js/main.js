@@ -32,7 +32,7 @@ function initCarousels() {
 
     // Arrow keys move by the actual spacing between cards.
     const move = direction => {
-      const cards = track.querySelectorAll('.card');
+      const cards = track.children;
       if (!cards.length) return;
       const first = cards[0].getBoundingClientRect();
       const step = cards.length > 1

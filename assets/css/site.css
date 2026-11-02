@@ -1067,6 +1067,44 @@ li,summary {
 .partners .section-title {
   margin-bottom:40px
 }
+/* Homepage: the core team. A carousel of small photo cards, dragged or scrolled like the others;
+   the yearbook's yellow initials stand in for missing photos. */
+.team-member {
+  flex:0 0 220px;
+  min-width:0;
+  text-align:center;
+  font-size:15px
+}
+.team-member img,.team-placeholder {
+  display:block;
+  width:100%;
+  aspect-ratio:4/5;
+  object-fit:cover;
+  margin-bottom:12px;
+  border-radius:var(--radius-lg,var(--radius))
+}
+.team-placeholder {
+  display:grid;
+  place-items:center;
+  background:var(--yellow);
+  font-family:var(--heading);
+  font-weight:500;
+  font-size:52px;
+  letter-spacing:-.045em
+}
+.team-member h3 {
+  margin:0 0 2px;
+  font-size:20px
+}
+.team-role {
+  margin:0 0 6px;
+  color:#595959;
+  line-height:1.35
+}
+.team-member a {
+  text-underline-offset:3px;
+  overflow-wrap:anywhere
+}
 /* Same gap above the FAQ as around the partner logos. */
 .faq {
   padding-top:75px;
@@ -1555,6 +1593,16 @@ to {
 .video-bar {
   padding:30px 10px 10px
 }
+.team-member {
+  flex-basis:170px;
+  font-size:14px
+}
+.team-placeholder {
+  font-size:40px
+}
+.team-member h3 {
+  font-size:16px
+}
 .partners {
   padding-top:24px;
   padding-bottom:55px
@@ -1738,42 +1786,45 @@ to {
 .card .mentor-imdb a {
   text-underline-offset:3px
 }
-/* A student's words on a mentor: photo beside the quote on the grey card colour.
-   Pulled up toward the mentor cards above. */
+/* Students' words on their mentors: two cards side by side on the grey card colour, each with a small
+   photo beside the name and the quote underneath. Pulled up toward the mentor cards above. */
 .mentor-quote {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:22px;
   padding-top:15px
 }
 .mentor-quote figure {
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);
-  gap:22px 56px;
-  align-items:center;
+  grid-template-columns:96px 1fr;
+  grid-template-rows:auto 1fr;
+  gap:22px 20px;
   margin:0;
-  padding:48px;
+  padding:32px;
   border-radius:var(--radius-lg,var(--radius));
   background:var(--muted)
 }
 .mentor-quote img {
-  grid-row:span 2;
   width:100%;
   aspect-ratio:3/4;
   object-fit:cover;
-  border-radius:var(--radius-lg,var(--radius))
+  border-radius:var(--radius)
 }
 .mentor-quote blockquote {
-  align-self:end;
+  grid-column:1/-1;
+  grid-row:2;
   margin:0
 }
 .mentor-quote blockquote p {
   margin:0;
   font-family:var(--heading);
   font-weight:500;
-  font-size:22px;
-  line-height:1.45;
+  font-size:18px;
+  line-height:1.5;
   letter-spacing:-.01em
 }
 .mentor-quote figcaption {
-  align-self:start;
+  align-self:center;
   color:#5c5c5c;
   font-size:15px
 }
@@ -1854,24 +1905,14 @@ to {
 .mentor-role,.mentor summary {
   font-size:15px
 }
+.mentor-quote {
+  grid-template-columns:1fr
+}
 .mentor-quote figure {
-  grid-template-columns:96px 1fr;
   gap:20px 16px;
   padding:24px 20px
 }
-.mentor-quote img {
-  grid-row:auto;
-  border-radius:var(--radius)
-}
-.mentor-quote blockquote {
-  grid-column:1/-1;
-  grid-row:2
-}
-.mentor-quote blockquote p {
-  font-size:18px
-}
 .mentor-quote figcaption {
-  align-self:center;
   font-size:14px
 }
 .mentor-gallery-grid {
