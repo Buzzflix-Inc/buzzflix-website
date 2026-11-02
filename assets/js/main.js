@@ -10,6 +10,18 @@ function initNavigation(){
  matchMedia('(min-width:801px)').addEventListener('change',close);
 }
 
+/** Announcement bar: the X removes it, and it stays closed on later visits until its key changes. */
+function initAnnouncement(){
+ const bar=document.querySelector('[data-announcement]');
+ if(!bar)return;
+ const key=`announcement-closed:${bar.dataset.announcement}`;
+ try{if(localStorage.getItem(key))return bar.remove()}catch{}
+ bar.querySelector('.announcement-close')?.addEventListener('click',()=>{
+  bar.remove();
+  try{localStorage.setItem(key,'1')}catch{}
+ });
+}
+
 /** Mouse dragging enhances native touch scrolling and keyboard access. */
 function initCarousels() {
   document.querySelectorAll('[data-carousel]').forEach(root => {
@@ -218,6 +230,7 @@ function initSlate() {
 }
 
 initNavigation();
+initAnnouncement();
 initCarousels();
 initVideos();
 initSlate();
