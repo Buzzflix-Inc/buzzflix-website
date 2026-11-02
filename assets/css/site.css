@@ -222,7 +222,7 @@ li,summary {
 .announcement {
   position:relative;
   padding:10px 56px;
-  background:var(--orange);
+  background:var(--teal);
   color:var(--ink);
   text-align:center;
   font-family:var(--heading);
