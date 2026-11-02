@@ -2207,8 +2207,7 @@ to {
 
 }
 
-/* Stills: a grid of film stills, each tagged with its film's poster and name, like the yearbook's roles.
-   Grey placeholders until the stills arrive. */
+/* Stills: a grid of film stills, each tagged with its film's poster and name, like the yearbook's roles. */
 .stills-eyebrow {
   margin-bottom:14px;
   font-size:16px;
@@ -2227,22 +2226,12 @@ to {
 .still {
   margin:0
 }
-.still>img,.still-placeholder {
+.still>img {
   display:block;
   width:100%;
   aspect-ratio:16/9;
   object-fit:cover;
   border-radius:var(--radius-lg,var(--radius))
-}
-.still-placeholder {
-  display:grid;
-  place-items:center;
-  background:var(--muted)
-}
-.still-placeholder:before {
-  content:"Still coming soon";
-  color:#6b6b6b;
-  font-size:15px
 }
 .film-tag {
   display:flex;
@@ -2267,8 +2256,9 @@ to {
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:22px 12px
 }
-.still-placeholder:before {
-  font-size:13px
+/* Nine stills in two columns: the first runs full width so none is left alone at the end. */
+.still:first-child {
+  grid-column:1/-1
 }
 .film-tag {
   gap:8px;
