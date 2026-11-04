@@ -103,9 +103,128 @@
 * {
   box-sizing:border-box
 }
+/* Bee cursor: the Buzz Run bee (bee-32d3992.png) flipped so its antenna is the click point; links and
+   buttons get it tilted nose-up, as when it flaps (the no-JS fallback; see .bee-cursor). Use var(--pointer) and var(--cursor) for new rules
+   instead of cursor:pointer and cursor:default. */
+:root {
+  --cursor:url('../images/bee-cursor-16cc316.png') 1 7,auto;
+  --pointer:url('../images/bee-cursor-tilt-4c319d5.png') 4 2,pointer
+}
+@supports (cursor:image-set(url('x.png') 1x) 1 1,auto) {
+  :root {
+    --cursor:image-set(url('../images/bee-cursor-16cc316.png') 1x,url('../images/bee-cursor-2x-d676e31.png') 2x) 1 7,auto;
+    --pointer:image-set(url('../images/bee-cursor-tilt-4c319d5.png') 1x,url('../images/bee-cursor-tilt-2x-373a52e.png') 2x) 4 2,pointer
+  }
+}
+@supports not (cursor:image-set(url('x.png') 1x) 1 1,auto) {
+  @supports (cursor:-webkit-image-set(url('x.png') 1x) 1 1,auto) {
+    :root {
+      --cursor:-webkit-image-set(url('../images/bee-cursor-16cc316.png') 1x,url('../images/bee-cursor-2x-d676e31.png') 2x) 1 7,auto;
+      --pointer:-webkit-image-set(url('../images/bee-cursor-tilt-4c319d5.png') 1x,url('../images/bee-cursor-tilt-2x-373a52e.png') 2x) 4 2,pointer
+    }
+  }
+}
 html {
   scroll-behavior:smooth;
-  scroll-padding-top:110px
+  scroll-padding-top:110px;
+  cursor:var(--cursor)
+}
+a:any-link,label[for],select {
+  cursor:var(--pointer)
+}
+/* Touch screens, and anyone who turns the bee off with the footer switch, get the regular cursor. */
+@media not ((hover:hover) and (pointer:fine)) {
+  :root {
+    --cursor:auto;
+    --pointer:pointer
+  }
+}
+html.regular-cursor {
+  --cursor:auto;
+  --pointer:pointer
+}
+/* main.js swaps in a bee that follows the mouse and eases into its tilt; these blank cursors tell it the state. */
+html.bee-cursor-on {
+  --cursor:url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7') 0 0,none;
+  --pointer:url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7') 1 1,none
+}
+.bee-cursor {
+  position:fixed;
+  top:-7px;
+  left:-1px;
+  z-index:2147483647;
+  width:32px;
+  height:32px;
+  background:url('../images/bee-cursor-2x-d676e31.png') 0 0/32px 32px no-repeat;
+  pointer-events:none;
+  transform-origin:1px 7px;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .15s;
+  will-change:translate,transform
+}
+.bee-cursor[data-state=hover] {
+  transform:rotate(22deg) scale(1.25)
+}
+.bee-cursor.is-pressed {
+  transform:scale(.85);
+  transition-duration:.12s,.15s
+}
+.bee-cursor[data-state=hover].is-pressed {
+  transform:rotate(22deg) scale(1.05)
+}
+.bee-cursor[data-state=hidden] {
+  opacity:0
+}
+/* The footer switch (added by main.js on mouse and trackpad devices only). */
+.cursor-switch {
+  grid-column:1/-1;
+  justify-self:center;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 4px;
+  border:0;
+  background:none;
+  color:var(--ink);
+  font-size:15px
+}
+.cursor-switch-track {
+  position:relative;
+  width:40px;
+  height:22px;
+  border-radius:999px;
+  background:#1a1a1a40;
+  transition:background .25s
+}
+.cursor-switch-track:after {
+  content:'';
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 1px 2px #1a1a1a40;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1)
+}
+.cursor-switch[aria-checked=true] .cursor-switch-track {
+  background:var(--ink)
+}
+.cursor-switch[aria-checked=true] .cursor-switch-track:after {
+  transform:translateX(18px)
+}
+@media not ((hover:hover) and (pointer:fine)) {
+  .cursor-switch {
+    display:none
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .bee-cursor,.cursor-switch-track,.cursor-switch-track:after {
+    transition:none
+  }
+}
+input:not([type=checkbox],[type=radio],[type=file],[type=submit],[type=button]),textarea {
+  cursor:text
 }
 body {
   margin:0;
@@ -151,7 +270,7 @@ button {
   font:inherit;
   font-weight:400;
   color:inherit;
-  cursor:pointer
+  cursor:var(--pointer)
 }
 a,button,summary {
   -webkit-tap-highlight-color:transparent
@@ -162,7 +281,7 @@ a,button,summary {
 }
 button:disabled {
   opacity:.35;
-  cursor:default
+  cursor:var(--cursor)
 }
 .skip-link {
   position:fixed;
@@ -247,7 +366,7 @@ li,summary {
   color:inherit;
   font-size:26px;
   line-height:1;
-  cursor:pointer
+  cursor:var(--pointer)
 }
 .announcement-close:hover {
   background:#1a1a1a1f
@@ -450,7 +569,7 @@ li,summary {
 }
 .faq summary {
   list-style:none;
-  cursor:pointer;
+  cursor:var(--pointer);
   display:flex;
   justify-content:space-between;
   gap:20px;
@@ -1254,7 +1373,7 @@ to {
   color:var(--ink);
   font-size:26px;
   line-height:1;
-  cursor:pointer;
+  cursor:var(--pointer);
   transition:transform .2s,background .2s
 }
 .bee-game-close:hover {
@@ -1279,7 +1398,7 @@ to {
   user-select:none;
   -webkit-user-select:none;
   -webkit-tap-highlight-color:transparent;
-  cursor:pointer
+  cursor:var(--pointer)
 }
 .bee-game-hint {
   margin:0;
@@ -1362,7 +1481,7 @@ to {
   background:var(--orange);
   color:#fff;
   font:400 16px/1 var(--body);
-  cursor:pointer;
+  cursor:var(--pointer);
   transition:background .2s
 }
 .bee-game-entry button {
@@ -1370,7 +1489,7 @@ to {
 }
 .bee-game-entry button:disabled {
   opacity:.6;
-  cursor:default
+  cursor:var(--cursor)
 }
 .bee-game-entry button:hover,.bee-game-again:hover {
   background:var(--ink)
@@ -1439,7 +1558,7 @@ to {
 }
 /* Clicking the slate claps it again (main.js). */
 .slate[data-clap] {
-  cursor:pointer;
+  cursor:var(--pointer);
   -webkit-tap-highlight-color:transparent
 }
 .slate-board {
@@ -1752,7 +1871,7 @@ to {
   list-style:none;
   display:inline-flex;
   gap:8px;
-  cursor:pointer;
+  cursor:var(--pointer);
   font-size:16px;
   font-weight:700;
   text-decoration:underline;
@@ -2189,7 +2308,7 @@ to {
 .yearbook-page[aria-current=page] {
   background:var(--orange);
   color:#fff;
-  cursor:default
+  cursor:var(--cursor)
 }
 .yearbook-page.step {
   width:54px;

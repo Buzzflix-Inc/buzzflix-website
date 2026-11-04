@@ -229,6 +229,65 @@ function initSlate() {
   });
 }
 
+/** Bee cursor (mouse and trackpad only): a bee drawn on the page follows the mouse, so it can ease into its tilt
+ *  over links and buttons (a CSS cursor can only swap images). With it on, the CSS cursor tokens become blank
+ *  images whose hotspot says the state: 0 0 resting bee, 1 1 clickable; any other cursor (text, grab) hides the
+ *  bee for the native one. A switch added to the footer turns it off for a regular cursor, remembered per browser. */
+function initBeeCursor(){
+ if(!matchMedia('(hover:hover) and (pointer:fine)').matches)return;
+ const root=document.documentElement,KEY='cursor';
+ let on=true;
+ try{on=localStorage.getItem(KEY)!=='regular'}catch{}
+ const bee=document.createElement('div');
+ bee.className='bee-cursor';
+ bee.dataset.state='hidden';
+ document.body.append(bee);
+ let x=0,y=0,target=null,frame=0;
+ const place=()=>{frame=0;bee.style.translate=`${x}px ${y}px`};
+ const update=()=>{
+  if(!on||!target?.isConnected||target.tagName==='IFRAME'){bee.dataset.state='hidden';return}
+  const c=getComputedStyle(target).cursor;
+  bee.dataset.state=/\) 1 1, none$/.test(c)?'hover':/\) 0 0, none$/.test(c)?'idle':'hidden';
+  const host=target.closest('dialog[open]')||document.body; // a modal dialog sits above everything else
+  if(bee.parentNode!==host)host.append(bee);
+ };
+ document.addEventListener('pointermove',e=>{
+  if(e.pointerType!=='mouse'){target=null;update();return}
+  x=e.clientX;y=e.clientY;
+  if(!frame)frame=requestAnimationFrame(place);
+  if(e.target!==target||bee.dataset.state==='hidden'){target=e.target;update()}
+ },{passive:true});
+ document.addEventListener('pointerout',e=>{if(!e.relatedTarget){target=null;update()}});
+ document.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')bee.classList.add('is-pressed')});
+ addEventListener('pointerup',()=>bee.classList.remove('is-pressed'));
+ setInterval(update,250); // states that change under a still mouse: video controls hiding, buttons disabling
+ // A new page doesn't know where the mouse is until it moves, so each page hands its position to the next.
+ addEventListener('pagehide',()=>{try{target?sessionStorage.setItem(KEY+'-at',`${x},${y}`):sessionStorage.removeItem(KEY+'-at')}catch{}});
+ try{
+  const [sx,sy]=(sessionStorage.getItem(KEY+'-at')||'').split(',').map(Number);
+  if(sx>=0&&sy>=0&&sx<=innerWidth&&sy<=innerHeight){x=sx;y=sy;place();target=document.elementFromPoint(x,y)}
+ }catch{}
+
+ const toggle=document.createElement('button');
+ toggle.type='button';
+ toggle.className='cursor-switch';
+ toggle.setAttribute('role','switch');
+ toggle.innerHTML='<span class="cursor-switch-track" aria-hidden="true"></span>Bee cursor';
+ const apply=()=>{
+  root.classList.toggle('bee-cursor-on',on);
+  root.classList.toggle('regular-cursor',!on);
+  toggle.setAttribute('aria-checked',String(on));
+  update();
+ };
+ toggle.addEventListener('click',()=>{
+  on=!on;
+  try{on?localStorage.removeItem(KEY):localStorage.setItem(KEY,'regular')}catch{}
+  apply();
+ });
+ document.querySelector('.site-footer')?.append(toggle);
+ apply();
+}
+
 /** Images can't be dragged out of the page (Firefox ignores -webkit-user-drag). */
 document.addEventListener('dragstart',e=>{if(e.target instanceof HTMLImageElement)e.preventDefault()});
 
@@ -237,3 +296,4 @@ initAnnouncement();
 initCarousels();
 initVideos();
 initSlate();
+initBeeCursor();

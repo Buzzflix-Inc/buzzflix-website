@@ -36,10 +36,10 @@
 .application-extra-roles { margin-top:20px; }
 .application-video { background:var(--muted); padding:25px; border-radius:var(--radius); }
 .application-form input[type=file] { background:var(--paper); font-size:14px; padding:10px; }
-.application-form input[type=file]::file-selector-button { font:inherit; border:0; border-radius:4px; padding:10px 14px; margin-right:10px; background:var(--yellow); color:var(--ink); cursor:pointer; }
+.application-form input[type=file]::file-selector-button { font:inherit; border:0; border-radius:4px; padding:10px 14px; margin-right:10px; background:var(--yellow); color:var(--ink); cursor:var(--pointer); }
 .application-file-selection { margin:12px 0 0; overflow-wrap:anywhere; }
 .application-file-selection:empty { display:none; }
-.application-consent { display:flex; gap:14px; align-items:flex-start; margin:30px 0; font-size:15px; line-height:1.5; cursor:pointer; }
+.application-consent { display:flex; gap:14px; align-items:flex-start; margin:30px 0; font-size:15px; line-height:1.5; cursor:var(--pointer); }
 .application-consent input { width:22px; height:22px; flex-shrink:0; margin:1px 0 0; accent-color:var(--orange); }
 .application-submit { border:0; }
 .application-error { color:#a52d16; font-size:16px; padding:16px; background:#fff0eb; border-left:3px solid var(--orange); }
@@ -112,7 +112,7 @@
 .picker-slot.is-filled { border:2px solid var(--paper); background:var(--paper); box-shadow:var(--shadow); color:var(--ink); }
 .picker-slot span { font-family:var(--heading); font-weight:500; font-size:17px; line-height:1.25; }
 .picker-slot small { font-size:13px; color:#5c5646; }
-.picker-slot button { position:absolute; top:50%; right:12px; width:28px; height:28px; margin-top:-14px; border:0; border-radius:50%; background:var(--muted); color:var(--ink); font-size:18px; line-height:1; cursor:pointer; }
+.picker-slot button { position:absolute; top:50%; right:12px; width:28px; height:28px; margin-top:-14px; border:0; border-radius:50%; background:var(--muted); color:var(--ink); font-size:18px; line-height:1; cursor:var(--pointer); }
 .picker-slot button:hover { background:var(--yellow); }
 /* Filled slots can be dragged into a new order (assets/js/apply-picker.js). */
 .picker-slot.is-filled { padding-left:34px; cursor:grab; touch-action:none; user-select:none; transition:box-shadow .2s,outline-color .2s; }
@@ -123,7 +123,7 @@
 .picker-hint[hidden] { display:none; }
 /* Department tiles; the open one's positions span the row beneath it. */
 .dept-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-auto-flow:dense; gap:12px; }
-.dept { display:flex; align-items:center; gap:10px; width:100%; padding:20px 22px; border:0; border-radius:var(--radius-lg); background:var(--paper); box-shadow:var(--shadow); color:var(--ink); font-family:var(--heading); font-weight:500; font-size:20px; line-height:1.25; text-align:left; cursor:pointer; transition:transform .2s,background .2s; }
+.dept { display:flex; align-items:center; gap:10px; width:100%; padding:20px 22px; border:0; border-radius:var(--radius-lg); background:var(--paper); box-shadow:var(--shadow); color:var(--ink); font-family:var(--heading); font-weight:500; font-size:20px; line-height:1.25; text-align:left; cursor:var(--pointer); transition:transform .2s,background .2s; }
 .dept:hover { transform:translateY(-2px); }
 .dept[aria-expanded=true] { background:var(--yellow); }
 .dept-name { flex:1; }
@@ -133,7 +133,7 @@
 .dept.has-picks .dept-count { display:grid; }
 .dept-panel { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; padding:18px; border-radius:var(--radius-lg); background:var(--paper); box-shadow:var(--shadow); }
 .dept-panel[hidden] { display:none; }
-.pick { border:0; border-radius:999px; padding:9px 16px; background:var(--muted); color:var(--ink); font:inherit; font-size:15px; line-height:1.3; cursor:pointer; transition:background .2s; }
+.pick { border:0; border-radius:999px; padding:9px 16px; background:var(--muted); color:var(--ink); font:inherit; font-size:15px; line-height:1.3; cursor:var(--pointer); transition:background .2s; }
 .pick:hover { background:var(--yellow); }
 .pick[aria-pressed=true] { background:var(--orange); color:var(--paper); }
 .pick[aria-pressed=true]:before { content:'✓ '; }
