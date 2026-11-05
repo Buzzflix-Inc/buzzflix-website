@@ -275,7 +275,8 @@ function initBeeCursor(){
   const c=getComputedStyle(target).cursor;
   bee.dataset.state=/\) 1 1, none$/.test(c)?'hover':/\) 0 0, none$/.test(c)?'idle':'hidden';
   // Over a YouTube, Instagram, Facebook or LinkedIn link the bee holds up that site's icon, so you can see where it goes.
-  const site=target.closest('a[href]')?.hostname?.replace(/^www\./,'')||'';
+  // Not over the sizzle reel's player itself, where it would only cover the video.
+  const site=target.closest('#sizzle .video')?'':target.closest('a[href]')?.hostname?.replace(/^www\./,'')||'';
   const holding={'youtube.com':'youtube','youtu.be':'youtube','instagram.com':'instagram','facebook.com':'facebook','linkedin.com':'linkedin'}[site]||'';
   if(bee.dataset.holding!==holding)holding?bee.dataset.holding=holding:delete bee.dataset.holding;
   const host=target.closest('dialog[open]')||document.body; // a modal dialog sits above everything else
