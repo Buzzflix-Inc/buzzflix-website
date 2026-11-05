@@ -246,7 +246,7 @@ function initBeeCursor(){
  try{on=localStorage.getItem(KEY)!=='regular'}catch{}
  const bee=document.createElement('div');
  bee.className='bee-cursor';
- bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i><i class="bee-antenna"></i>';
+ bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i><i class="bee-antenna"></i><i class="bee-holding"></i>';
  // The first video to play with sound startles the bee: its antenna springs up (initVideos sends bee:startle).
  if(document.querySelector('[data-video]'))new Image().src=new URL('../images/bee-cursor-startled-2x-98c8b8a.png',import.meta.url).href;
  document.addEventListener('bee:startle',()=>{ // only the first sound on the page startles it
@@ -267,6 +267,10 @@ function initBeeCursor(){
   if(!on||!target?.isConnected||target.tagName==='IFRAME'){bee.dataset.state='hidden';return}
   const c=getComputedStyle(target).cursor;
   bee.dataset.state=/\) 1 1, none$/.test(c)?'hover':/\) 0 0, none$/.test(c)?'idle':'hidden';
+  // Over a YouTube or Instagram link the bee holds up that site's icon, so you can see where it goes.
+  const site=target.closest('a[href]')?.hostname?.replace(/^www\./,'')||'';
+  const holding=/^(youtube\.com|youtu\.be)$/.test(site)?'youtube':site==='instagram.com'?'instagram':'';
+  if(bee.dataset.holding!==holding)holding?bee.dataset.holding=holding:delete bee.dataset.holding;
   const host=target.closest('dialog[open]')||document.body; // a modal dialog sits above everything else
   if(bee.parentNode!==host)host.append(bee);
  };

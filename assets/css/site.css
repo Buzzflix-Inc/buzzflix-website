@@ -356,6 +356,30 @@ html.bee-cursor-on {
   82% { scale:1 .96 }
   100% { scale:1 }
 }
+/* Over a YouTube or Instagram link (main.js), the bee holds up that site's icon in front of it. */
+.bee-holding {
+  position:absolute;
+  left:-5px;
+  top:19px;
+  width:12px;
+  height:10px;
+  background:0 0/100% 100% no-repeat;
+  transform-origin:50% 0;
+  display:none
+}
+.bee-cursor[data-holding] .bee-holding {
+  display:block;
+  animation:bee-hold .35s cubic-bezier(.34,1.6,.64,1)
+}
+.bee-cursor[data-holding=youtube] .bee-holding {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Crect x='.8' y='1.8' width='18.4' height='12.4' rx='3.6' fill='%23ff0033' stroke='%231a1a1a' stroke-width='1.2'/%3E%3Cpath d='M8 5.2v5.6l4.8-2.8z' fill='%23fff'/%3E%3C/svg%3E")
+}
+.bee-cursor[data-holding=instagram] .bee-holding {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3ClinearGradient id='g' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%23feda75'/%3E%3Cstop offset='.5' stop-color='%23d62976'/%3E%3Cstop offset='1' stop-color='%234f5bd5'/%3E%3C/linearGradient%3E%3Crect x='3.4' y='1.4' width='13.2' height='13.2' rx='4' fill='url(%23g)' stroke='%231a1a1a' stroke-width='1.1'/%3E%3Ccircle cx='10' cy='8' r='3' fill='none' stroke='%23fff' stroke-width='1.4'/%3E%3Ccircle cx='13.4' cy='4.6' r='.9' fill='%23fff'/%3E%3C/svg%3E")
+}
+@keyframes bee-hold {
+  from { scale:0; translate:0 -4px }
+}
 /* Switching the bee off: it shrinks away as a cloud puffs out where it was (main.js adds the cloud). */
 .bee-cursor.is-popping[data-state=hidden] {
   transform:scale(.2);
