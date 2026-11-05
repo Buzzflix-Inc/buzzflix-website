@@ -302,6 +302,64 @@ function initBeeCursor(){
  apply();
 }
 
+/** Click the header logo four times in quick succession and a swarm of bees bursts out of it and buzzes off
+ *  the screen. On the homepage the logo scrolls to the top instead of reloading, so the clicks can add up;
+ *  elsewhere the first click goes home and the count carries over. Skipped for people who prefer reduced motion. */
+function initLogoSwarm(){
+ const logo=document.querySelector('.site-header .brand');
+ if(!logo)return;
+ const KEY='logo-clicks',CLICKS=4,GAP=1500,reduced=matchMedia('(prefers-reduced-motion:reduce)');
+ const home=new URL(logo.href,location.href).pathname.replace(/(index)?(\.html)?$/,'');
+ const onHome=()=>location.pathname.replace(/(index)?(\.html)?$/,'')===home;
+ let swarming=false;
+ const swarm=()=>{
+  if(swarming||reduced.matches)return;
+  swarming=true;
+  const r=logo.getBoundingClientRect(),ox=r.left+r.width*.12,oy=r.top+r.height*.5;
+  const box=document.createElement('div');
+  box.className='bee-swarm';
+  box.setAttribute('aria-hidden','true');
+  const W=innerWidth,H=innerHeight,rand=(a,b)=>a+Math.random()*(b-a);
+  const flights=[];
+  for(let i=0;i<18;i++){
+   // The outer box flies the path, the middle one turns the bee to face where it's heading, the image flaps.
+   const bee=document.createElement('div'),face=document.createElement('span'),img=document.createElement('img');
+   img.src=new URL('../images/bee-32d3992.png',import.meta.url).href;
+   img.alt='';img.width=160;img.height=129;
+   img.style.animationDelay=`${-rand(0,.2)}s`;
+   face.append(img);bee.append(face);box.append(bee);
+   const size=rand(26,46);bee.style.width=`${size}px`;
+   // Two wandering stops on screen, then out past a random edge.
+   const pts=[[ox,oy],[rand(.1,.9)*W,rand(.1,.8)*H],[rand(.05,.95)*W,rand(.1,.9)*H]];
+   const side=Math.floor(rand(0,4)),m=80;
+   pts.push(side===0?[-m,rand(0,H)]:side===1?[W+m,rand(0,H)]:side===2?[rand(0,W),H+m]:[rand(0,W),-m]);
+   const last=pts.length-1,timing={duration:rand(2200,3400),delay:i*45,fill:'both'};
+   flights.push(bee.animate(pts.map(([x,y],k)=>({
+    transform:`translate(${x-size/2}px,${y-size*.4}px) scale(${k?1:.2})`,opacity:k?1:0,offset:k/last,easing:'ease-in-out'
+   })),timing).finished);
+   const turns=[];
+   for(let k=0;k<last;k++){
+    const f=pts[k+1][0]<pts[k][0]?-1:1,o=k/last;
+    turns.push({transform:`scaleX(${f})`,offset:k?Math.min(o+.04,1):0},{transform:`scaleX(${f})`,offset:(k+1)/last-(k+1<last?.04:0)});
+   }
+   face.animate(turns,timing);
+  }
+  document.body.append(box);
+  Promise.all(flights).finally(()=>{box.remove();swarming=false});
+ };
+ logo.addEventListener('click',e=>{
+  if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+  let n=1;
+  try{
+   const [c,t]=(sessionStorage.getItem(KEY)||'').split(',').map(Number);
+   if(Date.now()-t<GAP)n=c+1;
+  }catch{}
+  if(n>=CLICKS){swarm();n=0}
+  try{sessionStorage.setItem(KEY,`${n},${Date.now()}`)}catch{}
+  if(onHome()){e.preventDefault();scrollTo({top:0,behavior:reduced.matches?'auto':'smooth'})}
+ });
+}
+
 /** Images can't be dragged out of the page (Firefox ignores -webkit-user-drag). */
 document.addEventListener('dragstart',e=>{if(e.target instanceof HTMLImageElement)e.preventDefault()});
 
@@ -367,3 +425,4 @@ initReels();
 initVideos();
 initSlate();
 initBeeCursor();
+initLogoSwarm();

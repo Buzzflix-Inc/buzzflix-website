@@ -215,6 +215,31 @@ html.bee-cursor-on {
   40% { opacity:1; transform:scale(1.15) }
   100% { opacity:0; transform:scale(1.4) }
 }
+/* The logo's bee swarm (main.js): each bee flies its path while its image bobs as if flapping. */
+.bee-swarm {
+  position:fixed;
+  inset:0;
+  z-index:2147483646;
+  overflow:hidden;
+  pointer-events:none
+}
+.bee-swarm div {
+  position:absolute;
+  top:0;
+  left:0
+}
+.bee-swarm span {
+  display:block
+}
+.bee-swarm img {
+  display:block;
+  width:100%;
+  height:auto;
+  animation:bee-swarm-bob .16s ease-in-out infinite alternate
+}
+@keyframes bee-swarm-bob {
+  to { transform:translateY(-3px) rotate(-4deg) }
+}
 /* The footer switch (added by main.js on mouse and trackpad devices only). */
 .cursor-switch {
   grid-column:1/-1;
