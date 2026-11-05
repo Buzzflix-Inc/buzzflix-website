@@ -245,6 +245,7 @@ function initBeeCursor(){
  let x=0,y=0,target=null,frame=0;
  const place=()=>{frame=0;bee.style.translate=`${x}px ${y}px`};
  const update=()=>{
+  bee.classList.toggle('has-glasses',!!document.querySelector('.video.is-playing:not(.is-paused)'));
   if(!on||!target?.isConnected||target.tagName==='IFRAME'){bee.dataset.state='hidden';return}
   const c=getComputedStyle(target).cursor;
   bee.dataset.state=/\) 1 1, none$/.test(c)?'hover':/\) 0 0, none$/.test(c)?'idle':'hidden';
