@@ -374,6 +374,25 @@ body {
   font-weight:400;
   line-height:1.5
 }
+/* Moving between pages cross-fades the page (in browsers with cross-document view transitions; others just
+   load it). The header is its own layer so it stays put, and the bee cursor stays on top. */
+@view-transition {
+  navigation:auto
+}
+.site-header {
+  view-transition-name:site-header
+}
+.bee-cursor {
+  view-transition-name:bee-cursor
+}
+::view-transition-group(*) {
+  animation-duration:.25s
+}
+@media(prefers-reduced-motion:reduce) {
+  @view-transition {
+    navigation:none
+  }
+}
 h1,h2,h3,h4 {
   font-family:var(--heading);
   font-weight:500;
