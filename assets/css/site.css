@@ -199,12 +199,12 @@ html.bee-cursor-on {
   opacity:1;
   transition:rotate .5s cubic-bezier(.34,1.7,.64,1),opacity .1s
 }
-/* Highlighting text (main.js) gets the bee into round reading specs, slipped on the same way. They take the
+/* Highlighting text (main.js) gets the bee into round reading specs (cloudy lenses that hide its eyes), slipped on the same way. They take the
    place of the 3D glasses while both apply. */
 .bee-specs {
   position:absolute;
   inset:0;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg stroke='%231a1a1a' stroke-width='1.2'%3E%3Ccircle cx='8.8' cy='26.8' r='3.3' fill='%23fff' fill-opacity='.3'/%3E%3Ccircle cx='15.3' cy='27.3' r='3.3' fill='%23fff' fill-opacity='.3'/%3E%3Cpath d='M12 26.6q.3-.7.1 0M18.6 27l6.4-2.4' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3Cpath d='M7 25.4q.8-1 2-1M13.5 25.9q.8-1 2-1' fill='none' stroke='%23fff' stroke-width='.9' stroke-linecap='round'/%3E%3C/svg%3E") 0 0/32px 32px no-repeat;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg stroke='%231a1a1a' stroke-width='1.2'%3E%3Ccircle cx='8.7' cy='26.8' r='3.6' fill='%23d9eaf3'/%3E%3Ccircle cx='15.5' cy='27.4' r='3.6' fill='%23d9eaf3'/%3E%3Cpath d='M19.1 27.1l5.9-2.5' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3Cpath d='M6.6 25.6q.8-1.3 2.2-1.4M13.4 26.2q.8-1.3 2.2-1.4' fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E") 0 0/32px 32px no-repeat;
   transform-origin:12.5px 12.3px;
   rotate:40deg;
   opacity:0;
