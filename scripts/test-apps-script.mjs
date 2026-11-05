@@ -58,6 +58,16 @@ test('validation rejects invalid email, duplicate roles, missing consent, spam a
   }
   assert.equal(h.rows.length, 1);
 });
+test('at most two positions from one department are accepted', () => {
+  const h = harness(); h.setup();
+  const crowded = h.submit(application({role_1: 'Gaffer', role_2: 'Key Grip', role_3: 'grip'}));
+  assert.equal(crowded.accepted, false);
+  assert.match(crowded.message, /^Please choose at most two Grip & Electric positions/);
+  assert.equal(h.submit(application({role_1: 'Gaffer', role_2: 'Key Grip', role_3: 'Editor'})).accepted, true);
+  // Free-text roles from the homepage form aren't in the position list, so they aren't counted.
+  assert.equal(h.submit(application({submission_id: '31c6c122-661e-4710-85db-5397543696c2', role_1: 'Lighting', role_2: 'Gaffer', role_3: 'Grip'})).accepted, true);
+  assert.equal(h.rows.length, 3);
+});
 test('formula-like answers are stored as text and remain safe on retry', () => {
   const h = harness(); h.setup();
   const data = application({experience: '=SUM(A1:A3)'});

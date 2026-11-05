@@ -6,6 +6,19 @@ const DRAFT_TAB = 'Saved Drafts';
 const DRAFT_HEADERS = ['Draft ID', 'Saved At', 'Email', 'Answers'];
 const DRAFT_FIELDS = ['name', 'email', 'school', 'experience', 'role_1', 'role_2', 'role_3', 'additional_roles'];
 const DRAFT_LINK = 'https://www.buzzflix.ca/apply#draft=';
+// The positions in the apply.html picker, by department. Keep in step with apply.html.
+// An applicant may choose at most two from one department; free-text roles from the homepage form are not counted.
+const DEPARTMENT_LIMIT = 2;
+const DEPARTMENTS = {
+  'Production': ['Production Assistant', 'Production Coordinator', 'Assistant Director', 'Script Supervisor', 'Location Scout', 'Production Accountant'],
+  'Camera': ['Director of Photography', 'Camera Operator', '1st Assistant Camera', '2nd Assistant Camera', 'Digital Imaging Technician'],
+  'Grip & Electric': ['Gaffer', 'Electrician', 'Key Grip', 'Grip', 'Dolly Grip'],
+  'Sound': ['Production Sound Mixer', 'Boom Operator', 'Sound Utility'],
+  'Art & Wardrobe': ['Production Designer', 'Set Decorator', 'Props Master', 'Costume Designer', 'Wardrobe Stylist', 'Makeup Artist', 'Hair Stylist'],
+  'Post-Production': ['Editor', 'Assistant Editor', 'Colourist', 'Sound Editor', 'VFX Artist', 'Composer'],
+  'Social Media': ['Content Creator', 'Stills Photographer', 'BTS Videographer', 'Publicist'],
+  'Acting': ['Actor', 'Background Performer']
+};
 
 // Run once from the editor while this script is attached to 2027 Applications.
 function setupApplications() {
@@ -104,6 +117,11 @@ function validateApplication_(input) {
   });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.email)) throw new Error('Please enter a valid email address.');
   if (new Set([result.role_1, result.role_2, result.role_3].map(role => role.toLowerCase())).size !== 3) throw new Error('Please list three different roles.');
+  const crowded = Object.keys(DEPARTMENTS).find(department => {
+    const positions = DEPARTMENTS[department].map(position => position.toLowerCase());
+    return [result.role_1, result.role_2, result.role_3].filter(role => positions.indexOf(role.toLowerCase()) >= 0).length > DEPARTMENT_LIMIT;
+  });
+  if (crowded) throw new Error('Please choose at most two ' + crowded + ' positions. Pick your third from another department.');
   if (result.application_year !== '2027' || result.consent_version !== '2027-text-v1' || result.consent !== 'agreed') throw new Error('Please agree to the application terms.');
   return result;
 }

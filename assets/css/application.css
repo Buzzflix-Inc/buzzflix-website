@@ -138,6 +138,8 @@
 .pick[aria-pressed=true] { background:var(--orange); color:var(--paper); }
 .pick[aria-pressed=true]:before { content:'✓ '; }
 .pick:disabled { opacity:.45; cursor:not-allowed; background:var(--muted); }
+.dept-limit { flex-basis:100%; margin:4px 0 0; font-size:14px; color:#5c5646; }
+.dept-limit[hidden] { display:none; }
 .picker-continue { display:table; margin:30px auto 0; border:0; }
 .picker-continue[hidden] { display:none; }
 /* The form shows the picks but only the picker changes them. */

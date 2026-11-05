@@ -12,9 +12,22 @@ if (picker && form) {
   const slotList = picker.querySelector('[data-picker-slots]');
   const fields = [form.elements.role_1, form.elements.role_2, form.elements.role_3];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  // At most two picks may come from one department (apps-script/Code.gs checks this too).
+  const perDept = 2;
+  const countIn = dept => picks.filter(p => p.dept === dept).length;
+  const canPick = (role, dept) => picks.length < 3 && countIn(dept) < perDept && !picks.some(p => p.role === role);
 
   const panelOf = dept => document.getElementById(dept.getAttribute('aria-controls'));
   const deptOf = button => button.closest('.dept-panel').previousElementSibling.dataset.dept;
+  // Each panel says when its department is full, so a greyed-out position isn't a mystery.
+  const limits = new Map(depts.map(dept => {
+    const note = document.createElement('p');
+    note.className = 'dept-limit';
+    note.hidden = true;
+    note.textContent = `You’ve picked two ${dept.dataset.dept} positions, the most from one department. Pick your third from another department.`;
+    panelOf(dept).append(note);
+    return [dept.dataset.dept, note];
+  }));
 
   // One department open at a time; the open panel spans the row under its tile.
   const toggle = dept => {
@@ -35,12 +48,13 @@ if (picker && form) {
     picker.querySelectorAll('.pick').forEach(button => {
       const picked = picks.some(p => p.role === button.textContent);
       button.setAttribute('aria-pressed', String(picked));
-      button.disabled = full && !picked;
+      button.disabled = !picked && (full || countIn(deptOf(button)) >= perDept);
     });
     depts.forEach(dept => {
-      const count = picks.filter(p => p.dept === dept.dataset.dept).length;
+      const count = countIn(dept.dataset.dept);
       dept.querySelector('.dept-count').textContent = count || '';
       dept.classList.toggle('has-picks', count > 0);
+      limits.get(dept.dataset.dept).hidden = full || count < perDept;
     });
     slots.forEach((slot, i) => {
       const pick = picks[i];
@@ -79,7 +93,7 @@ if (picker && form) {
     if (pick) {
       const at = picks.findIndex(p => p.role === pick.textContent);
       if (at >= 0) picks.splice(at, 1);
-      else if (picks.length < 3) picks.push({ role:pick.textContent, dept:deptOf(pick) });
+      else if (canPick(pick.textContent, deptOf(pick))) picks.push({ role:pick.textContent, dept:deptOf(pick) });
       render();
       return;
     }
@@ -141,7 +155,7 @@ if (picker && form) {
     picks.length = 0;
     event.detail.roles.forEach(role => {
       const button = [...picker.querySelectorAll('.pick')].find(b => b.textContent === role);
-      if (button && picks.length < 3 && !picks.some(p => p.role === role)) picks.push({ role, dept:deptOf(button) });
+      if (button && canPick(role, deptOf(button))) picks.push({ role, dept:deptOf(button) });
     });
     render();
   });
@@ -149,11 +163,15 @@ if (picker && form) {
   // The position fields are read-only, so the browser won't require them; stop the form here
   // (capture runs before application-form.js) and send the applicant back to the picker.
   document.addEventListener('submit', event => {
-    if (event.target !== form || picks.length === 3) return;
+    if (event.target !== form) return;
+    const crowded = depts.map(dept => dept.dataset.dept).find(dept => countIn(dept) > perDept);
+    if (picks.length === 3 && !crowded) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     const error = form.querySelector('.application-error');
-    error.textContent = `Pick three positions above before you submit. You have ${picks.length} so far.`;
+    error.textContent = crowded
+      ? `Pick at most two ${crowded} positions. Choose your third from another department.`
+      : `Pick three positions above before you submit. You have ${picks.length} so far.`;
     error.hidden = false;
     picker.scrollIntoView({ behavior:reduced.matches ? 'instant' : 'smooth' });
   }, true);
