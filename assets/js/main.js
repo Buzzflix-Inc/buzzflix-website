@@ -240,7 +240,12 @@ function initBeeCursor(){
  try{on=localStorage.getItem(KEY)!=='regular'}catch{}
  const bee=document.createElement('div');
  bee.className='bee-cursor';
- bee.innerHTML='<i class="bee-glasses"></i>';
+ bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i>';
+ // Highlighting text puts the bee's reading specs on; clearing the selection takes them off.
+ document.addEventListener('selectionchange',()=>{
+  const sel=getSelection();
+  bee.classList.toggle('has-specs',!!sel&&!sel.isCollapsed&&sel.toString().trim()!=='');
+ });
  bee.dataset.state='hidden';
  document.body.append(bee);
  let x=0,y=0,target=null,frame=0;
