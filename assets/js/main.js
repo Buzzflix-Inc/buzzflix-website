@@ -291,9 +291,65 @@ function initBeeCursor(){
 /** Images can't be dragged out of the page (Firefox ignores -webkit-user-drag). */
 document.addEventListener('dragstart',e=>{if(e.target instanceof HTMLImageElement)e.preventDefault()});
 
+/**
+ * Homepage photo reel: a second, hidden copy of the photos makes the loop
+ * seamless. Only the Pause button stops it (shown on hover or tap); stays a
+ * plain scroller for people who prefer reduced motion.
+ */
+function initReels() {
+  const PIXELS_PER_SECOND = 40;
+  // The desktop intro fills the screen below the header, so it re-measures
+  // when the header can change height: on resize and when the announcement closes.
+  const intro = document.querySelector('.home-intro');
+  if (intro) {
+    const fit = () => intro.style.setProperty('--intro-top',
+      `${intro.getBoundingClientRect().top + scrollY}px`);
+    fit();
+    addEventListener('resize', fit);
+    // initAnnouncement's click handler runs first and removes the bar.
+    document.querySelector('.announcement-close')?.addEventListener('click', fit);
+  }
+  document.querySelectorAll('[data-reel]').forEach(reel => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const track = reel.querySelector('.reel-track');
+    const toggle = reel.querySelector('.reel-toggle');
+    [...track.children].forEach(img => {
+      const copy = img.cloneNode();
+      copy.alt = '';
+      copy.loading = 'lazy';
+      copy.removeAttribute('fetchpriority');
+      copy.setAttribute('aria-hidden', 'true');
+      track.append(copy);
+    });
+    const setSpeed = () => reel.style.setProperty('--reel-duration',
+      `${track.scrollWidth / 2 / PIXELS_PER_SECOND}s`);
+    setSpeed();
+    new ResizeObserver(setSpeed).observe(track);
+    reel.scrollLeft = 0;
+    reel.dataset.running = '';
+    // Moving, the reel can't be scrolled, so it needn't take focus (a tap would focus it).
+    reel.removeAttribute('tabindex');
+    if (!toggle) return;
+    toggle.hidden = false;
+    // Touch screens have no hover: a tap on the reel shows the button for a few seconds.
+    let hide;
+    reel.addEventListener('pointerdown', event => {
+      if (event.pointerType === 'mouse') return;
+      reel.dataset.touched = '';
+      clearTimeout(hide);
+      hide = setTimeout(() => delete reel.dataset.touched, 3000);
+    });
+    toggle.addEventListener('click', () => {
+      const paused = reel.toggleAttribute('data-paused');
+      toggle.firstChild.textContent = paused ? 'Play' : 'Pause';
+    });
+  });
+}
+
 initNavigation();
 initAnnouncement();
 initCarousels();
+initReels();
 initVideos();
 initSlate();
 initBeeCursor();
