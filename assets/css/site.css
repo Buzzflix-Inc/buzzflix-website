@@ -1697,7 +1697,7 @@ li,summary {
   gap:8%;
   align-items:center;
   padding:100px 6% 110px;
-  background:linear-gradient(180deg,#f6e081 0%,#f6e28e 25%,#f5eab8 50%,#f4f0dc 75%,var(--muted) 100%)
+  background:var(--sunrise)
 }
 .not-found h1 {
   font-size:clamp(40px,4.4vw,68px)
@@ -2241,8 +2241,7 @@ to {
   gap:8%;
   min-height:650px;
   align-items:center;
-  /* The source site's yellow-to-grey section gradient (#F6E081 to the muted palette colour). */
-  background:linear-gradient(180deg,#f6e081 0%,#f6e28e 25%,#f5eab8 50%,#f4f0dc 75%,var(--muted) 100%)
+  background:var(--sunrise)
 }
 .mentors-hero>div {
   grid-column:1;
@@ -3480,7 +3479,8 @@ to {
 :root {
   --radius-lg:18px;
   --shadow:0 1px 2px #1a1a1a14,0 10px 30px #1a1a1a14;
-  --sunrise:linear-gradient(180deg,#f6e081 0%,#f6e28e 25%,#f5eab8 50%,#f4f0dc 75%,var(--muted) 100%)
+  /* Eases from the brand yellow into the white page, so the intro has no visible bottom edge. */
+  --sunrise:linear-gradient(180deg,#f6e081 0%,#f6e28e 20%,#f5e9b0 40%,#f7f0d2 60%,#fbf8ec 80%,var(--paper) 100%)
 }
 .site-header {
   box-shadow:0 1px 0 #1a1a1a14
