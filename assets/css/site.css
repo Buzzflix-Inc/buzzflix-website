@@ -1283,10 +1283,16 @@ li,summary {
   margin-bottom:40px
 }
 /* Homepage: the core team. A carousel of small photo cards, dragged or scrolled like the others;
-   the yearbook's yellow initials stand in for missing photos. */
+   the yearbook's yellow initials stand in for missing photos. It is the page's last section, so the
+   footer's own top margin and fade supply the space below it. */
+.team {
+  padding-bottom:0
+}
 .team-member {
-  flex:0 0 220px;
+  flex:0 0 236px;
   min-width:0;
+  display:flex;
+  flex-direction:column;
   text-align:center;
   font-size:15px
 }
@@ -1313,10 +1319,14 @@ li,summary {
 }
 .team-role {
   margin:0 0 6px;
+  font-size:12px;
+  white-space:nowrap; /* the longest roles fit on one line at this size and card width */
   color:#595959;
   line-height:1.35
 }
 .team-member a {
+  margin-top:auto; /* a role that wraps to two lines doesn't push its email below the others */
+  align-self:center;
   text-underline-offset:3px;
   overflow-wrap:anywhere
 }
@@ -1824,7 +1834,7 @@ to {
   padding:30px 10px 10px
 }
 .team-member {
-  flex-basis:170px;
+  flex-basis:232px;
   font-size:14px
 }
 .team-placeholder {
