@@ -183,11 +183,21 @@ html.bee-cursor-on {
   --bee-open:var(--bee-face);
   --bee-eyes-shut:var(--bee-shut),var(--bee-face)
 }
-/* While a video plays (main.js), the bee watches in 3D glasses, drawn over its eyes awake or asleep. */
-.bee-cursor.has-glasses {
-  --bee-glasses:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg stroke='%231a1a1a' stroke-width='1.4' stroke-linejoin='round'%3E%3Crect x='5' y='23.4' width='6.8' height='6.4' rx='1.6' fill='%23e63946'/%3E%3Crect x='12.6' y='23.9' width='6.8' height='6.4' rx='1.6' fill='%2322b8d0'/%3E%3Cpath d='M11.8 26.4h.8M19.4 26.6l5.6-2' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
-  --bee-open:var(--bee-glasses),var(--bee-face);
-  --bee-eyes-shut:var(--bee-glasses),var(--bee-shut),var(--bee-face)
+/* While a video plays (main.js), the bee watches in 3D glasses: they flip down from its head onto its eyes
+   when the video starts, pivoting where the arm meets its head, and flip back up and off when it stops. */
+.bee-glasses {
+  position:absolute;
+  inset:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg stroke='%231a1a1a' stroke-width='1.4' stroke-linejoin='round'%3E%3Crect x='5' y='23.4' width='6.8' height='6.4' rx='1.6' fill='%23e63946'/%3E%3Crect x='12.6' y='23.9' width='6.8' height='6.4' rx='1.6' fill='%2322b8d0'/%3E%3Cpath d='M11.8 26.4h.8M19.4 26.6l5.6-2' fill='none' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E") 0 0/32px 32px no-repeat;
+  transform-origin:12.5px 12.3px;
+  rotate:65deg;
+  opacity:0;
+  transition:rotate .3s cubic-bezier(.5,0,.75,0),opacity .15s .2s
+}
+.bee-cursor.has-glasses .bee-glasses {
+  rotate:0deg;
+  opacity:1;
+  transition:rotate .5s cubic-bezier(.34,1.7,.64,1),opacity .1s
 }
 .bee-cursor.is-asleep {
   background-image:var(--bee-eyes-shut);
