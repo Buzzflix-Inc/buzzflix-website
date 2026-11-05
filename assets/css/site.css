@@ -942,7 +942,8 @@ li,summary {
 /* Docu-series: one row per film, the first episode's player beside its episode list. */
 .docuseries {
   background:var(--muted);
-  text-align:center
+  text-align:center;
+  scroll-margin-top:-16px /* a link to #docuseries lands with the teal right under the 94px header */
 }
 .docuseries-eyebrow {
   margin-bottom:14px;
@@ -1761,6 +1762,9 @@ to {
 }
 .movies .card {
   flex-basis:76%
+}
+.docuseries {
+  scroll-margin-top:-32px /* 78px header */
 }
 .docuseries-intro {
   margin-bottom:36px
@@ -2894,6 +2898,11 @@ to {
 .movies .card:hover>img {
   transform:translateY(-6px);
   box-shadow:0 2px 4px #1a1a1a14,0 18px 40px #1a1a1a26
+}
+/* The track scrolls sideways, which clips anything above it, so give the lifted poster room. */
+.movies .carousel-track {
+  padding-top:10px;
+  margin-top:-10px
 }
 .yearbook-stats {
   margin:0 var(--gutter);
