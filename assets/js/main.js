@@ -261,7 +261,14 @@ function initBeeCursor(){
  bee.dataset.state='hidden';
  document.body.append(bee);
  let x=0,y=0,target=null,frame=0;
- const place=()=>{frame=0;bee.style.translate=`${x}px ${y}px`};
+ // The drawn bee reaches 1px left of the pointer to 31px right, 7px above to 19px below. Pushed against an edge
+ // of the window it squashes flat against it (and bulges the other way), like a bee bumping into glass.
+ const squash=()=>{
+  const W=root.clientWidth,H=root.clientHeight,clamp=v=>Math.min(1,Math.max(.5,v));
+  const sx=Math.min(clamp((W-x)/31),x<5?.82+.036*x:1),sy=Math.min(clamp(y/7),clamp((H-y)/19));
+  bee.style.scale=sx===1&&sy===1?'':`${(sx*(1+(1-sy)*.5)).toFixed(3)} ${(sy*(1+(1-sx)*.5)).toFixed(3)}`;
+ };
+ const place=()=>{frame=0;bee.style.translate=`${x}px ${y}px`;squash()};
  const update=()=>{
   bee.classList.toggle('has-glasses',!!document.querySelector('.video.is-playing:not(.is-paused)'));
   if(!on||!target?.isConnected||target.tagName==='IFRAME'){bee.dataset.state='hidden';return}

@@ -159,7 +159,7 @@ html.bee-cursor-on {
   background-image:var(--bee-open);
   pointer-events:none;
   transform-origin:1px 7px;
-  transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .15s;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .15s,scale .12s ease-out;
   will-change:translate,transform
 }
 .bee-cursor[data-state=hover] {
