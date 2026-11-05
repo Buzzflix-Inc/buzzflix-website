@@ -881,17 +881,25 @@ li,summary {
   font-size:14px;
   padding:15px 26px
 }
-.partner-grid {
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:35px 65px;
-  align-items:center;
-  justify-items:center
+/* Partner logos: one line that scrolls on its own, reusing the photo reel's loop (main.js), with no Pause button.
+   The files are cropped to their artwork and each carries a --logo-h (in the markup) that gives every logo
+   about the same area of ink, so wide wordmarks and square badges read at a similar size. */
+/* .reel.partner-reel outranks the photo reel's later desktop min-height. */
+.reel.partner-reel {
+  --reel-gap:120px;
+  --logo-scale:1;
+  min-height:0;
+  padding:0;
+  mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)
 }
-.partner-grid img {
-  width:160px;
-  height:90px;
-  object-fit:contain
+.partner-reel .reel-track {
+  height:calc(84px*var(--logo-scale));
+  align-items:center
+}
+.partner-reel .reel-track img {
+  height:calc(var(--logo-h,48)*var(--logo-scale)*1px);
+  width:auto;
+  border-radius:0
 }
 .faq {
   display:grid;
@@ -1053,14 +1061,9 @@ li,summary {
 .section-title {
   margin-bottom:30px
 }
-.partner-grid {
-  grid-template-columns:repeat(2,1fr);
-  gap:35px 25px
-}
-.partner-grid img {
-  width:100%;
-  max-width:160px;
-  height:70px
+.reel.partner-reel {
+  --reel-gap:70px;
+  --logo-scale:.75
 }
 .faq {
   grid-template-columns:1fr;
@@ -1630,12 +1633,17 @@ li,summary {
   margin-left:auto
 }
 /* The gap under the logos matches the gap above the title. */
+/* Under the sizzle reel's YouTube link, above the two cards. */
 .partners {
-  padding-top:30px;
-  padding-bottom:75px
+  margin-top:48px
 }
-.partners .section-title {
-  margin-bottom:40px
+/* A small label rather than a section title, so the slim logo strip under the sizzle reel stays quiet. */
+.partners-eyebrow {
+  margin-bottom:22px;
+  font-size:16px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  text-align:center
 }
 /* Homepage: the core team. A carousel of small photo cards, dragged or scrolled like the others;
    the yearbook's yellow initials stand in for missing photos. It is the page's last section, so the
@@ -1685,7 +1693,7 @@ li,summary {
   text-underline-offset:3px;
   overflow-wrap:anywhere
 }
-/* Same gap above the FAQ as around the partner logos. */
+/* Gap above the FAQ. */
 .faq {
   padding-top:75px;
   padding-bottom:30px
@@ -2202,14 +2210,14 @@ to {
   font-size:16px
 }
 .partners {
-  padding-top:24px;
-  padding-bottom:55px
+  margin-top:32px
 }
 .faq {
   padding-top:55px
 }
-.partners .section-title {
-  margin-bottom:26px
+.partners-eyebrow {
+  margin-bottom:16px;
+  font-size:14px
 }
 .not-found {
   grid-template-columns:1fr;
@@ -3614,7 +3622,7 @@ to {
 ::selection {
   background:var(--teal-pale)
 }
-.sizzle-eyebrow,.stills-eyebrow,.docuseries-eyebrow,.docuseries-range,.yearbook-eyebrow,.windsor-eyebrow,.application-eyebrow {
+.sizzle-eyebrow,.partners-eyebrow,.stills-eyebrow,.docuseries-eyebrow,.docuseries-range,.yearbook-eyebrow,.windsor-eyebrow,.application-eyebrow {
   color:var(--teal-text);
   font-weight:500
 }
