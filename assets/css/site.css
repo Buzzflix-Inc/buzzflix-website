@@ -176,13 +176,16 @@ html.bee-cursor-on {
 }
 /* Left still for 20 seconds (main.js), the bee nods off: eyes closed (an SVG layer painted over them),
    breathing slowly, with z's drifting up. */
+.bee-cursor {
+  --bee-eyes-shut:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='%23fff'%3E%3Cellipse cx='8.8' cy='26.7' rx='3' ry='4.4'/%3E%3Cellipse cx='15.3' cy='27.2' rx='3' ry='4.4'/%3E%3C/g%3E%3Cpath d='M6.6 27.4q2.2 2.4 4.4 0M13.1 27.9q2.2 2.4 4.4 0' fill='none' stroke='%231a1a1a' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"),url('../images/bee-cursor-2x-d676e31.png')
+}
 .bee-cursor.is-asleep {
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='%23fff'%3E%3Cellipse cx='8.8' cy='26.7' rx='3' ry='4.4'/%3E%3Cellipse cx='15.3' cy='27.2' rx='3' ry='4.4'/%3E%3C/g%3E%3Cpath d='M6.6 27.4q2.2 2.4 4.4 0M13.1 27.9q2.2 2.4 4.4 0' fill='none' stroke='%231a1a1a' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"),url('../images/bee-cursor-2x-d676e31.png');
+  background-image:var(--bee-eyes-shut);
   rotate:-14deg;
   transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .15s,rotate 1.2s ease-in-out;
   animation:bee-breathe 2.4s ease-in-out infinite
 }
-.bee-cursor.is-asleep:before,.bee-cursor.is-asleep:after {
+.bee-cursor.is-asleep:before,.bee-cursor.is-asleep:after,.bee-cursor.is-waking:before,.bee-cursor.is-waking:after {
   content:'z';
   position:absolute;
   left:24px;
@@ -192,7 +195,7 @@ html.bee-cursor-on {
   opacity:0;
   animation:bee-snooze 2.4s ease-out infinite
 }
-.bee-cursor.is-asleep:after {
+.bee-cursor.is-asleep:after,.bee-cursor.is-waking:after {
   font-size:14px;
   animation-delay:1.2s
 }
@@ -204,14 +207,43 @@ html.bee-cursor-on {
   25% { opacity:1 }
   100% { opacity:0; transform:translate(10px,-18px) rotate(14deg) }
 }
+/* Waking (main.js, about .7s): a startled little jolt, the bee springs level, the z's scatter, and its eyes
+   open, close once more and open for good. */
+.bee-cursor.is-waking {
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .15s,rotate .5s cubic-bezier(.34,1.56,.64,1);
+  animation:bee-jolt .45s cubic-bezier(.3,.7,.4,1),bee-blink .7s linear
+}
+.bee-cursor.is-waking:before,.bee-cursor.is-waking:after {
+  animation:bee-scatter .35s ease-out both
+}
+.bee-cursor.is-waking:after {
+  animation-delay:0s;
+  --scatter:14px
+}
+@keyframes bee-jolt {
+  0% { scale:1 }
+  25% { scale:1.22 .86 }
+  55% { scale:.94 1.06 }
+  100% { scale:1 }
+}
+@keyframes bee-blink {
+  0%,30% { background-image:var(--bee-eyes-shut) }
+  31%,58% { background-image:url('../images/bee-cursor-2x-d676e31.png') }
+  59%,72% { background-image:var(--bee-eyes-shut) }
+  73%,100% { background-image:url('../images/bee-cursor-2x-d676e31.png') }
+}
+@keyframes bee-scatter {
+  0% { opacity:.9; transform:translate(0,-6px) rotate(14deg) }
+  100% { opacity:0; transform:translate(var(--scatter,-6px),-22px) rotate(14deg) scale(.6) }
+}
 @media(prefers-reduced-motion:reduce) {
-  .bee-cursor.is-asleep,.bee-cursor.is-asleep:before {
+  .bee-cursor.is-asleep,.bee-cursor.is-asleep:before,.bee-cursor.is-waking,.bee-cursor.is-waking:before {
     animation:none
   }
   .bee-cursor.is-asleep:before {
     opacity:1
   }
-  .bee-cursor.is-asleep:after {
+  .bee-cursor.is-asleep:after,.bee-cursor.is-waking:before,.bee-cursor.is-waking:after {
     display:none
   }
 }

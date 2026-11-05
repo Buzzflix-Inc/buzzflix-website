@@ -252,8 +252,16 @@ function initBeeCursor(){
   if(bee.parentNode!==host)host.append(bee);
  };
  // Left still for 20 seconds, the bee dozes off; any movement wakes it.
- let nap=0;
- const wake=()=>{clearTimeout(nap);bee.classList.remove('is-asleep');nap=setTimeout(()=>bee.classList.add('is-asleep'),20000)};
+ // Waking plays a short jolt and blink (CSS .is-waking) instead of snapping straight back.
+ let nap=0,stir=0;
+ const wake=()=>{
+  clearTimeout(nap);
+  if(bee.classList.contains('is-asleep')){
+   bee.classList.replace('is-asleep','is-waking');
+   clearTimeout(stir);stir=setTimeout(()=>bee.classList.remove('is-waking'),700);
+  }
+  nap=setTimeout(()=>{clearTimeout(stir);bee.classList.remove('is-waking');bee.classList.add('is-asleep')},20000);
+ };
  document.addEventListener('pointermove',e=>{
   wake();
   if(e.pointerType!=='mouse'){target=null;update();return}
