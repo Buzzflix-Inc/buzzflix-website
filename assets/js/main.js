@@ -237,8 +237,8 @@ function initSlate() {
 
 /** Bee cursor (mouse and trackpad only): a bee drawn on the page follows the mouse, so it can ease into its tilt
  *  over links and buttons (a CSS cursor can only swap images). With it on, the CSS cursor tokens become blank
- *  images whose hotspot says the state: 0 0 resting bee, 1 1 clickable; any other cursor (text, grab) hides the
- *  bee for the native one. A switch added to the footer turns it off for a regular cursor, remembered per browser. */
+ *  images whose hotspot says the state: 0 0 resting bee, 1 1 clickable, 2 2 grab and 3 3 grabbing (carousels, where
+ *  it shows a little hand); any other cursor (text) hides the bee for the native one. A switch added to the footer turns it off for a regular cursor, remembered per browser. */
 function initBeeCursor(){
  if(!matchMedia('(hover:hover) and (pointer:fine)').matches)return;
  const root=document.documentElement,KEY='cursor';
@@ -246,7 +246,7 @@ function initBeeCursor(){
  try{on=localStorage.getItem(KEY)!=='regular'}catch{}
  const bee=document.createElement('div');
  bee.className='bee-cursor';
- bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i><i class="bee-antenna"></i><i class="bee-holding"></i>';
+ bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i><i class="bee-antenna"></i><i class="bee-holding"></i><i class="bee-hand"></i>';
  // The first video to play with sound startles the bee: its antenna springs up (initVideos sends bee:startle).
  if(document.querySelector('[data-video]'))new Image().src=new URL('../images/bee-cursor-startled-2x-98c8b8a.png',import.meta.url).href;
  document.addEventListener('bee:startle',()=>{ // only the first sound on the page startles it
@@ -273,7 +273,7 @@ function initBeeCursor(){
   bee.classList.toggle('has-glasses',!!document.querySelector('.video.is-playing:not(.is-paused)'));
   if(!on||!target?.isConnected||target.tagName==='IFRAME'){bee.dataset.state='hidden';return}
   const c=getComputedStyle(target).cursor;
-  bee.dataset.state=/\) 1 1, none$/.test(c)?'hover':/\) 0 0, none$/.test(c)?'idle':'hidden';
+  bee.dataset.state={'0 0':'idle','1 1':'hover','2 2':'grab','3 3':'grabbing'}[c.match(/\) (\d \d), none$/)?.[1]]||'hidden';
   // Over a YouTube, Instagram, Facebook or LinkedIn link the bee holds up that site's icon, so you can see where it goes.
   // Not over the sizzle reel's player itself, where it would only cover the video.
   const site=target.closest('#sizzle .video')?'':target.closest('a[href]')?.hostname?.replace(/^www\./,'')||'';
@@ -342,7 +342,7 @@ function initBeeCursor(){
   x=e.clientX;y=e.clientY;
   shake(x);
   if(!frame)frame=requestAnimationFrame(place);
-  if(e.target!==target||bee.dataset.state==='hidden'){target=e.target;update()}
+  if(e.target!==target||bee.dataset.state==='hidden'||bee.dataset.state.startsWith('grab')){target=e.target;update()}
  },{passive:true});
  // Leaving the window across an edge, the bee squishes flat against it and goes poof (as when switched off).
  let leaving=0;
@@ -363,9 +363,9 @@ function initBeeCursor(){
   }
   target=null;update();
  });
- document.addEventListener('pointerdown',e=>{wake();if(e.pointerType==='mouse')bee.classList.add('is-pressed')});
+ document.addEventListener('pointerdown',e=>{wake();if(e.pointerType==='mouse')bee.classList.add('is-pressed');setTimeout(update)});
  addEventListener('keydown',wake);addEventListener('scroll',wake,{passive:true});
- addEventListener('pointerup',()=>bee.classList.remove('is-pressed'));
+ addEventListener('pointerup',()=>{bee.classList.remove('is-pressed');setTimeout(update)});
  // Double-click: a quick backflip, one smooth turn round its middle while it hops (added on top of whatever it's doing).
  let flip=null;
  document.addEventListener('dblclick',()=>{
