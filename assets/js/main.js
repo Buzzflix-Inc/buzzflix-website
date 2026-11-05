@@ -140,7 +140,8 @@ function initVideos() {
 
       const send = (func, args = []) =>
         frame.contentWindow?.postMessage(JSON.stringify({event: 'command', func, args}), ORIGIN);
-      let playing = true, muted = false, idle;
+      let playing = true, muted = false, heard = false, idle;
+      const startle = () => document.dispatchEvent(new Event('bee:startle'));
       const render = () => {
         root.classList.toggle('is-paused', !playing);
         toggle.innerHTML = icon(playing ? 'pause' : 'play');
@@ -157,7 +158,10 @@ function initVideos() {
       });
       surface.addEventListener('click', () => (tapShowsControls ? wake() : playPause()));
       toggle.addEventListener('click', playPause);
-      mute.addEventListener('click', () => { send(muted ? 'unMute' : 'mute'); muted = !muted; render(); });
+      mute.addEventListener('click', () => {
+        send(muted ? 'unMute' : 'mute'); muted = !muted; render();
+        if (!muted && playing) { heard = true; startle(); }
+      });
       full.addEventListener('click', () =>
         document.fullscreenElement ? document.exitFullscreen() : root.requestFullscreen());
 
@@ -180,8 +184,10 @@ function initVideos() {
         try { data = JSON.parse(e.data); } catch { return; }
         const state = data.event === 'onStateChange' ? data.info : data.info?.playerState;
         if (state === 1 || state === 3) playing = true;
-        else if (state === 0 || state === 2) playing = false;
+        else if (state === 0 || state === 2) { playing = false; heard = false; }
         if (typeof data.info?.muted === 'boolean') muted = data.info.muted;
+        // The bee cursor jumps the first time each play is actually heard.
+        if (state === 1 && !muted && !heard) { heard = true; startle(); }
         render();
       });
 
@@ -240,7 +246,15 @@ function initBeeCursor(){
  try{on=localStorage.getItem(KEY)!=='regular'}catch{}
  const bee=document.createElement('div');
  bee.className='bee-cursor';
- bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i>';
+ bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i><i class="bee-antenna"></i>';
+ // A video starting with sound startles the bee: its antenna springs up (initVideos sends bee:startle).
+ if(document.querySelector('[data-video]'))new Image().src=new URL('../images/bee-cursor-startled-2x-98c8b8a.png',import.meta.url).href;
+ let startle=0;
+ document.addEventListener('bee:startle',()=>{
+  bee.classList.remove('is-startled');void bee.offsetWidth; // restart the boing if it's still going
+  bee.classList.add('is-startled');
+  clearTimeout(startle);startle=setTimeout(()=>bee.classList.remove('is-startled'),1600);
+ });
  // Highlighting text puts the bee's reading specs on; clearing the selection takes them off.
  document.addEventListener('selectionchange',()=>{
   const sel=getSelection();
