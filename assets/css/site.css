@@ -633,6 +633,23 @@ li,summary {
   font-size:clamp(24px,2.25vw,32px);
   color:var(--orange-text)
 }
+/* Copyright, privacy policy link and the bee cursor switch (main.js adds it here; touch screens
+   get none) share one row under the three columns, split by thin lines. */
+.footer-legal {
+  grid-column:1/-1;
+  justify-self:center;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  margin:0;
+  font-size:15px
+}
+.footer-legal>*+* {
+  padding-left:16px;
+  border-left:1px solid #1a1a1a40
+}
 
 @media(max-width:800px) {
   .announcement {
@@ -2903,6 +2920,34 @@ to {
 }
 .site-footer {
   padding-top:90px
+}
+
+}
+
+/* Privacy policy: one readable column of text. */
+.legal {
+  max-width:760px;
+  margin:0 auto
+}
+.legal-eyebrow {
+  color:var(--teal-text);
+  font-weight:500;
+  margin-bottom:12px
+}
+.legal-lede {
+  font-size:21px
+}
+.legal h2 {
+  font-size:32px;
+  margin:44px 0 14px
+}
+@media(max-width:800px) {
+  .legal-lede {
+  font-size:19px
+}
+.legal h2 {
+  font-size:26px;
+  margin-top:34px
 }
 
 }

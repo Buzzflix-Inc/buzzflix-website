@@ -284,7 +284,7 @@ function initBeeCursor(){
   try{on?localStorage.removeItem(KEY):localStorage.setItem(KEY,'regular')}catch{}
   apply();
  });
- document.querySelector('.site-footer')?.append(toggle);
+ (document.querySelector('.footer-legal')||document.querySelector('.site-footer'))?.append(toggle);
  apply();
 }
 
