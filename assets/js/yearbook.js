@@ -15,7 +15,7 @@ function initYearbook() {
     [cards[i], cards[j]] = [cards[j], cards[i]];
   }
   grid.append(...cards);
-  // Name, superlative, films and roles: everything the card shows.
+  // Name, superlative, movies and roles: everything the card shows.
   const text = new Map(cards.map(card => [card, fold(card.textContent)]));
   const heading = document.getElementById('class-title');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -23,9 +23,9 @@ function initYearbook() {
   const search = document.createElement('div');
   search.className = 'yearbook-search';
   search.setAttribute('role', 'search');
-  search.innerHTML = '<label for="yearbook-query" class="visually-hidden">Search the class by name, film or role</label>'
+  search.innerHTML = '<label for="yearbook-query" class="visually-hidden">Search the class by name, movie or role</label>'
     + '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>'
-    + '<input id="yearbook-query" type="search" placeholder="Search by name, film or role" autocomplete="off" spellcheck="false">';
+    + '<input id="yearbook-query" type="search" placeholder="Search by name, movie or role" autocomplete="off" spellcheck="false">';
   const input = search.querySelector('input');
   // The heading and the search share a row.
   const head = document.createElement('div');
