@@ -4,6 +4,7 @@
  * (W × H) and scaled to fit, so it plays the same on a phone and a desktop. The shared top 10 comes from
  * the Worker's /api/buzz-run (worker/leaderboard.js); the game still plays if it can't be reached.
  */
+import {egg} from './hive.js';
 const W = 360, H = 480, FLOOR = 440;
 const GRAVITY = 1400, FLAP = -420, SPEED = 150, GAP = 150, SPACING = 210;
 const STRIP = 60, BEE = 62, BEE_X = 96, HIT = 20;
@@ -320,6 +321,7 @@ export function openGame() {
   });
 
   dialog.showModal();
+  egg('buzzrun'); // after showModal, so the hive's "easter egg found" note shows inside the game
   canvas.focus({ preventScroll: true });
   fit();
   frame = requestAnimationFrame(loop);

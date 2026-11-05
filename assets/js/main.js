@@ -1,3 +1,5 @@
+import {egg, initHive, onChange, outfit, dress, wearLayers, trail} from './hive.js';
+
 /** Accessible mobile navigation; desktop navigation remains visible without JS. */
 function initNavigation(){
  const toggle=document.querySelector('.menu-toggle'),nav=document.querySelector('#main-nav');
@@ -246,7 +248,7 @@ function initBeeCursor(){
  try{on=localStorage.getItem(KEY)!=='regular'}catch{}
  const bee=document.createElement('div');
  bee.className='bee-cursor';
- bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i><i class="bee-antenna"></i><i class="bee-holding"></i><i class="bee-hand"></i>';
+ bee.innerHTML=wearLayers()+'<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i><i class="bee-antenna"></i><i class="bee-holding"></i><i class="bee-hand"></i>';
  // The first video to play with sound startles the bee: its antenna springs up (initVideos sends bee:startle).
  if(document.querySelector('[data-video]'))new Image().src=new URL('../images/bee-cursor-startled-2x-98c8b8a.png',import.meta.url).href;
  document.addEventListener('bee:startle',()=>{ // only the first sound on the page startles it
@@ -256,8 +258,13 @@ function initBeeCursor(){
  // Highlighting text puts the bee's reading specs on; clearing the selection takes them off.
  document.addEventListener('selectionchange',()=>{
   const sel=getSelection();
-  bee.classList.toggle('has-specs',!!sel&&!sel.isCollapsed&&sel.toString().trim()!=='');
+  const reading=!!sel&&!sel.isCollapsed&&sel.toString().trim()!=='';
+  bee.classList.toggle('has-specs',reading);
+  if(reading&&on&&bee.dataset.state!=='hidden')egg('specs');
  });
+ // What the bee wears, from the hive (hive.js); trails are dropped from its tail as it flies.
+ let trailKind='',trailX=0,trailY=0;
+ onChange(()=>{const look=outfit();dress(bee,look);trailKind=look.trail});
  bee.dataset.state='hidden';
  document.body.append(bee);
  let x=0,y=0,target=null,frame=0;
@@ -268,9 +275,16 @@ function initBeeCursor(){
   const sx=Math.min(clamp((W-x)/31),x<5?.82+.036*x:1),sy=Math.min(clamp(y/7),clamp((H-y)/19));
   bee.style.scale=sx===1&&sy===1?'':`${(sx*(1+(1-sy)*.5)).toFixed(3)} ${(sy*(1+(1-sx)*.5)).toFixed(3)}`;
  };
- const place=()=>{frame=0;bee.style.translate=`${x}px ${y}px`;squash()};
+ const place=()=>{
+  frame=0;bee.style.translate=`${x}px ${y}px`;squash();
+  if(trailKind&&on&&bee.dataset.state!=='hidden'&&Math.hypot(x-trailX,y-trailY)>(trailKind==='honey'?22:14)){
+   trailX=x;trailY=y;trail(x+26,y+12,trailKind,bee.parentNode);
+  }
+ };
  const update=()=>{
-  bee.classList.toggle('has-glasses',!!document.querySelector('.video.is-playing:not(.is-paused)'));
+  const watching=!!document.querySelector('.video.is-playing:not(.is-paused)');
+  bee.classList.toggle('has-glasses',watching);
+  if(watching&&on)egg('glasses');
   if(!on||!target?.isConnected||target.tagName==='IFRAME'){bee.dataset.state='hidden';return}
   const c=getComputedStyle(target).cursor;
   bee.dataset.state={'0 0':'idle','1 1':'hover','2 2':'grab','3 3':'grabbing'}[c.match(/\) (\d \d), none$/)?.[1]]||'hidden';
@@ -298,7 +312,7 @@ function initBeeCursor(){
    bee.classList.replace('is-asleep','is-waking');
    clearTimeout(stir);stir=setTimeout(()=>bee.classList.remove('is-waking'),700);
   }
-  nap=setTimeout(()=>{clearTimeout(stir);bee.classList.remove('is-waking');bee.classList.add('is-asleep')},20000);
+  nap=setTimeout(()=>{clearTimeout(stir);bee.classList.remove('is-waking');bee.classList.add('is-asleep');if(on&&bee.dataset.state!=='hidden')egg('nap')},20000);
  };
  // Shaking the mouse (five quick changes of direction, each a real swing) sets the bee spinning, and it keeps
  // spinning until the shaking stops: then it slows to a stop and wobbles, dizzy, with stars round its head.
@@ -312,6 +326,7 @@ function initBeeCursor(){
   bee.animate([{rotate:`${angle}deg`},{rotate:'720deg'}],{duration:700,easing:'cubic-bezier(.2,.6,.35,1)'}).onfinish=()=>{
    if(spin)return;
    bee.classList.add('is-dizzy');
+   if(on)egg('dizzy');
    dizzy=setTimeout(()=>bee.classList.remove('is-dizzy'),1500);
   };
  };
@@ -357,6 +372,7 @@ function initBeeCursor(){
     // A smaller cloud centred on the edge itself, puffing only inwards, so it sits flat against the side.
     const cx={left:-15,right:W-15}[edge]??Math.min(Math.max(x,0),W-30),cy={top:-9,bottom:H-9}[edge]??Math.min(Math.max(y,0),H-18);
     poof(cx,cy,{left:0,right:180,top:90,bottom:270}[edge]);
+    egg('poof');
     target=null;update();
    },130);
    return;
@@ -377,6 +393,7 @@ function initBeeCursor(){
    {transform:'translateY(0)'}
   ],{duration:D,composite:'add'});
   flip=bee.animate([{transform:pivot(0)},{transform:pivot(360)}],{duration:D,easing:'cubic-bezier(.45,.05,.3,1)',composite:'add'});
+  egg('flip');
  });
  setInterval(update,250); // states that change under a still mouse: video controls hiding, buttons disabling
  // A new page doesn't know where the mouse is until it moves, so each page hands its position to the next.
@@ -436,6 +453,7 @@ function initLogoSwarm(){
  const swarm=()=>{
   if(swarming||reduced.matches)return;
   swarming=true;
+  egg('swarm');
   const r=logo.getBoundingClientRect(),ox=r.left+r.width*.12,oy=r.top+r.height*.5;
   const box=document.createElement('div');
   box.className='bee-swarm';
@@ -553,3 +571,4 @@ initVideos();
 initSlate();
 initBeeCursor();
 initLogoSwarm();
+initHive();

@@ -558,6 +558,437 @@ html.bee-cursor-on {
     transition:none
   }
 }
+/* The hive (hive.js): easter eggs found unlock things for the bee to wear, one per slot. Each look is drawn in
+   the bee image's own 64-unit frame, on a layer twice the bee's size (viewBox -32 -32 128 128) so hats can rise
+   above its head. */
+.bee-wear {
+  position:absolute;
+  top:-16px;
+  left:-16px;
+  width:64px;
+  height:64px;
+  background:0 0/64px 64px no-repeat;
+  pointer-events:none
+}
+.bee-wear:not([data-item]) {
+  display:none
+}
+/* The 3D glasses and reading specs take the place of the shades while they're on. */
+.bee-cursor:is(.has-glasses,.has-specs) .bee-wear[data-slot=eyes] {
+  opacity:0
+}
+.bee-wear[data-item=crown] {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-32 -32 128 128'%3E%3Cg transform='translate(15 18) rotate(-10) scale(1.25) translate(-14 -18.5)' stroke='%231a1a1a' stroke-width='1.3' stroke-linejoin='round'%3E%3Cpath d='M7 19.5 6 9l4.5 4.5L14 6.5l3.5 6.5L22 9l-1 10.5z' fill='%23ffcf33'/%3E%3Cpath d='M7.2 17h13.8' fill='none'/%3E%3Ccircle cx='14' cy='14.6' r='1.3' fill='%23e63946'/%3E%3Ccircle cx='6' cy='8.6' r='1' fill='%23ffcf33'/%3E%3Ccircle cx='14' cy='6.2' r='1' fill='%23ffcf33'/%3E%3Ccircle cx='22' cy='8.6' r='1' fill='%23ffcf33'/%3E%3C/g%3E%3C/svg%3E")
+}
+.bee-wear[data-item=beret] {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-32 -32 128 128'%3E%3Cg transform='rotate(-14 14 17)' stroke='%231a1a1a' stroke-width='1.3' stroke-linejoin='round'%3E%3Cpath d='M13.6 11.6l.6-3' fill='none' stroke-width='1.6' stroke-linecap='round'/%3E%3Cellipse cx='12.5' cy='15.6' rx='11.5' ry='4.6' fill='%232b2d42'/%3E%3Cpath d='M5.5 18.2q7 2.6 15 0' fill='none' stroke='%23555a75'/%3E%3C/g%3E%3C/svg%3E")
+}
+.bee-wear[data-item=propeller] {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-32 -32 128 128'%3E%3Cg transform='rotate(-12 14 19)' stroke='%231a1a1a' stroke-width='1.3' stroke-linejoin='round'%3E%3Cpath d='M14 13.2V8.4' fill='none' stroke-width='1.2'/%3E%3Cpath d='M5.5 20.4C5.5 11.5 22.5 11.2 22.8 19.8z' fill='%2322b8d0'/%3E%3Cpath d='M11.6 20.2c0-7 5.2-7 5.6-.2z' fill='%23ffcf33'/%3E%3Cpath d='M3.4 20.6l20.6-.6' fill='none' stroke-width='1.6' stroke-linecap='round'/%3E%3Cg transform='translate(14 8.2)'%3E%3Cg%3E%3Cellipse cx='-3.6' cy='0' rx='3.6' ry='1.2' fill='%23e63946'/%3E%3Cellipse cx='3.6' cy='0' rx='3.6' ry='1.2' fill='%23ffcf33'/%3E%3CanimateTransform attributeName='transform' type='scale' values='1 1;-1 1;1 1' dur='.35s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle r='1' fill='%231a1a1a'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
+}
+.bee-wear[data-item=nightcap] {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-32 -32 128 128'%3E%3Cg transform='rotate(-8 14 18)' stroke='%231a1a1a' stroke-width='1.3' stroke-linejoin='round'%3E%3Cpath d='M6.4 17.6C8 7.6 20 3 28.6 5.4c3.4 1 2.6 4.4.2 4.8C24.6 9.6 22.6 13 22.4 17.6z' fill='%235b7bea'/%3E%3Cpath d='M12 12.4q4-3.6 9.6-4.6M17.4 15.4q2.4-4.4 7.8-6.4' fill='none' stroke='%23fff' stroke-width='1.3' stroke-linecap='round'/%3E%3Crect x='5' y='16' width='19' height='5' rx='2.5' fill='%23fff'/%3E%3Ccircle cx='29.6' cy='8.6' r='2.8' fill='%23fff'/%3E%3C/g%3E%3C/svg%3E")
+}
+.bee-wear[data-item=shades] {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-32 -32 128 128'%3E%3Cg stroke='%231a1a1a' stroke-width='1.3' stroke-linejoin='round'%3E%3Cpath d='M4.6 24.4h7.6l-.7 4a2.4 2.4 0 0 1-2.4 2H7.2a2.4 2.4 0 0 1-2.4-2z M12.6 24.6h7.6l-.4 4a2.4 2.4 0 0 1-2.4 2.1h-1.9a2.4 2.4 0 0 1-2.4-2z' fill='%231a1a1a'/%3E%3Cpath d='M12.2 25h.4M20.2 25.1l5-1.9' fill='none' stroke-width='1.4' stroke-linecap='round'/%3E%3C/g%3E%3Cpath d='M6.4 26.2l1.6-.6M14.4 26.4l1.6-.6' stroke='%23fff' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E")
+}
+.bee-wear[data-item=bowtie] {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-32 -32 128 128'%3E%3Cg transform='rotate(-8 18 47)' stroke='%231a1a1a' stroke-width='1.3' stroke-linejoin='round'%3E%3Cpath d='M18 47.2 11.4 43.6v7.4zM18 47.2l6.6-3.6v7.4z' fill='%23e63946'/%3E%3Crect x='16.2' y='45.3' width='3.6' height='3.8' rx='1.2' fill='%23c1121f'/%3E%3C/g%3E%3C/svg%3E")
+}
+.bee-wear[data-item=scarf] {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-32 -32 128 128'%3E%3Cg stroke='%231a1a1a' stroke-width='1.3' stroke-linejoin='round'%3E%3Cpath d='M24 45.5C29 50 34 49.5 41 53.5l-2.4 4.2C32 54.6 27 55 21.6 50z' fill='%23c1121f'/%3E%3Cpath d='M7.6 41.6Q17 47.6 27.6 42.4l.8 5Q17 53.6 8.8 46.8z' fill='%23e63946'/%3E%3C/g%3E%3Cpath d='M12 46.6q6 2.6 13-.6M27 51q5 2 10.4 3.6' fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round' opacity='.7'/%3E%3C/svg%3E")
+}
+/* Trails (hive.js): sparkles that twinkle out, or honey drops that fall, left behind the bee's tail. */
+.bee-trail {
+  position:fixed;
+  top:-5px;
+  left:-5px;
+  z-index:2147483646;
+  width:10px;
+  height:10px;
+  background:0 0/100% 100% no-repeat;
+  pointer-events:none;
+  animation:bee-trail-sparkle .7s ease-out forwards
+}
+.bee-trail-sparkle {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z' fill='%23ffcf33' stroke='%231a1a1a' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E")
+}
+.bee-trail-honey {
+  width:8px;
+  height:10px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 20'%3E%3Cpath d='M8 1.5C6 6 2.5 9 2.5 12.8a5.5 5.5 0 0 0 11 0C13.5 9 10 6 8 1.5z' fill='%23f4a61d' stroke='%231a1a1a' stroke-width='1.6'/%3E%3Cpath d='M5.6 12.4a2.6 2.6 0 0 0 1.4 2.6' fill='none' stroke='%23fff' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");
+  animation:bee-trail-honey .9s cubic-bezier(.5,0,.8,.5) forwards
+}
+@keyframes bee-trail-sparkle {
+  0% { opacity:1; transform:scale(.4) rotate(0) }
+  30% { opacity:1; transform:scale(1.1) rotate(var(--spin)) }
+  100% { opacity:0; transform:scale(.2) rotate(calc(var(--spin) * 3)) }
+}
+@keyframes bee-trail-honey {
+  0% { opacity:0; transform:scale(.5) }
+  15% { opacity:1; transform:scale(1) }
+  70% { opacity:1 }
+  100% { opacity:0; transform:translateY(26px) scale(.8,1.1) }
+}
+/* The hive hides below the footer's bottom-right corner and peeks up when the mouse comes near (or it has
+   focus); a little bee buzzes round it. Mouse and trackpad only, like the bee cursor. */
+.site-footer {
+  position:relative;
+  overflow:hidden
+}
+.hive {
+  position:absolute;
+  right:clamp(16px,3vw,44px);
+  bottom:0;
+  width:104px;
+  padding:0;
+  border:0;
+  background:none;
+  translate:0 102%;
+  transition:translate .5s cubic-bezier(.34,1.4,.64,1)
+}
+.hive svg {
+  display:block;
+  width:100%;
+  height:auto;
+  transform-origin:50% 100%
+}
+.hive.is-peeking,.hive:focus-visible {
+  translate:0 44%
+}
+.hive:hover {
+  translate:0 20%
+}
+.hive:hover svg {
+  animation:hive-wiggle .5s ease-in-out
+}
+.hive:focus-visible {
+  outline:none
+}
+.hive:focus-visible svg {
+  outline:2px solid var(--ink);
+  outline-offset:4px;
+  border-radius:40px 40px 12px 12px
+}
+@keyframes hive-wiggle {
+  25% { rotate:-5deg }
+  60% { rotate:4deg }
+}
+.hive-bee {
+  position:absolute;
+  top:12px;
+  left:44px;
+  width:20px;
+  height:auto;
+  opacity:0;
+  offset-path:path('M0 0C26-30 58-14 42 6S-30 26-40 4 -22-24 0 0');
+  offset-rotate:0deg;
+  transition:opacity .3s
+}
+.hive:is(.is-peeking,:hover,:focus-visible) .hive-bee {
+  opacity:1;
+  animation:hive-buzz 2.6s linear infinite
+}
+@keyframes hive-buzz {
+  from { offset-distance:0% }
+  to { offset-distance:100% }
+}
+@media not ((hover:hover) and (pointer:fine)) {
+  .hive {
+    display:none
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .hive {
+    transition:none
+  }
+  .hive svg,.hive-bee {
+    animation:none!important
+  }
+}
+/* "Easter egg found" note, bottom right, for a few seconds. */
+.hive-toast {
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  z-index:2147483645;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  max-width:min(360px,calc(100% - 40px));
+  padding:12px 18px 12px 12px;
+  border-radius:16px;
+  background:var(--ink);
+  color:#fff;
+  font-size:15px;
+  line-height:1.35;
+  box-shadow:0 12px 32px #1a1a1a40;
+  opacity:0;
+  transform:translateY(calc(100% + 24px));
+  visibility:hidden;
+  transition:transform .45s cubic-bezier(.34,1.4,.64,1),opacity .3s,visibility 0s .45s
+}
+.hive-toast.is-shown {
+  opacity:1;
+  transform:none;
+  visibility:visible;
+  transition:transform .45s cubic-bezier(.34,1.4,.64,1),opacity .2s
+}
+.hive-toast strong {
+  display:block;
+  font:500 17px/1.2 var(--heading);
+  letter-spacing:-.01em
+}
+.hive-toast-icon {
+  flex:none;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:var(--yellow) url('../images/bee-32d3992.png') 50% 55%/28px auto no-repeat
+}
+@media(prefers-reduced-motion:reduce) {
+  .hive-toast,.hive-toast.is-shown {
+    transform:none;
+    transition:opacity .2s,visibility 0s
+  }
+}
+/* The hive's menu: every easter egg as a card with the bee wearing its reward, and Wear / Take off. */
+.hive-menu {
+  width:min(680px,calc(100% - 32px));
+  max-height:calc(100dvh - 32px);
+  padding:0;
+  border:0;
+  border-radius:var(--radius-lg,18px);
+  background:var(--yellow);
+  color:var(--ink);
+  box-shadow:0 24px 60px #1a1a1a59;
+  overscroll-behavior:contain
+}
+.hive-menu[open] {
+  animation:bee-game-in .4s cubic-bezier(.2,.7,.3,1)
+}
+.hive-menu::backdrop {
+  background:#1a1a1a99;
+  backdrop-filter:blur(3px)
+}
+.hive-menu[open]::backdrop {
+  animation:bee-game-fade .4s ease-out
+}
+@media(prefers-reduced-motion:reduce) {
+  .hive-menu[open] {
+    animation-name:bee-game-fade
+  }
+}
+.hive-menu-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  padding:24px 26px 0
+}
+.hive-menu-head p,.hive-menu-head h2 {
+  margin:0
+}
+.hive-menu-eyebrow {
+  color:var(--teal-text);
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:.12em;
+  text-transform:uppercase
+}
+.hive-menu h2 {
+  font-size:40px;
+  margin:2px 0 4px
+}
+.hive-menu-count {
+  font-size:16px
+}
+.hive-menu-close {
+  flex:none;
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:50%;
+  background:var(--ink);
+  color:#fff;
+  font-size:26px;
+  line-height:1;
+  transition:transform .2s
+}
+.hive-menu-close:hover {
+  transform:rotate(90deg)
+}
+.hive-menu :focus-visible {
+  outline:2px solid var(--ink);
+  outline-offset:2px
+}
+.hive-menu-bar {
+  height:12px;
+  margin:14px 26px 0;
+  border:2px solid var(--ink);
+  border-radius:999px;
+  background:#fff;
+  overflow:hidden
+}
+.hive-menu-bar span {
+  display:block;
+  height:100%;
+  background:#f4a61d;
+  transition:width .5s
+}
+.hive-menu-intro,.hive-menu-off {
+  margin:14px 26px 0;
+  font-size:16px
+}
+.hive-menu-off {
+  padding:10px 14px;
+  border-radius:10px;
+  background:#fff
+}
+.hive-menu-off[hidden] {
+  display:none
+}
+.hive-menu-list {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin:0;
+  padding:18px 26px 26px;
+  list-style:none
+}
+.hive-egg {
+  display:grid;
+  grid-template-columns:76px 1fr;
+  align-items:center;
+  gap:8px 14px;
+  padding:12px;
+  border:2px solid var(--ink);
+  border-radius:14px;
+  background:#fff;
+  transition:box-shadow .2s
+}
+.hive-egg.is-worn {
+  box-shadow:5px 5px 0 var(--teal)
+}
+.hive-egg.is-locked {
+  border-style:dashed;
+  background:#fffc
+}
+.hive-egg-figure {
+  grid-row:span 2;
+  display:grid;
+  place-items:center;
+  width:76px;
+  height:76px;
+  border-radius:10px;
+  background:var(--teal-soft);
+  overflow:hidden
+}
+.is-locked .hive-egg-figure {
+  background:var(--muted)
+}
+.bee-figure {
+  position:relative;
+  display:block;
+  width:32px;
+  height:32px;
+  margin:6px 0 0 -4px;
+  background:url('../images/bee-cursor-2x-d676e31.png') 0 0/32px 32px no-repeat;
+  scale:1.9
+}
+.is-locked .bee-figure {
+  filter:brightness(0);
+  opacity:.16
+}
+/* The trails' pictures: three of the trail's marks behind the bee. */
+.bee-figure[data-trail]:before {
+  content:'';
+  position:absolute;
+  top:10px;
+  left:30px;
+  width:16px;
+  height:14px;
+  background:var(--mark) 0 0/7px 7px no-repeat,var(--mark) 9px 5px/6px 6px no-repeat,var(--mark) 3px 9px/5px 5px no-repeat
+}
+.bee-figure[data-trail=sparkle] {
+  --mark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z' fill='%23ffcf33' stroke='%231a1a1a' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E")
+}
+.bee-figure[data-trail=honey] {
+  --mark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 20'%3E%3Cpath d='M8 1.5C6 6 2.5 9 2.5 12.8a5.5 5.5 0 0 0 11 0C13.5 9 10 6 8 1.5z' fill='%23f4a61d' stroke='%231a1a1a' stroke-width='1.6'/%3E%3C/svg%3E")
+}
+.hive-egg-text {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0
+}
+.hive-egg-name {
+  color:var(--teal-text);
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:.08em;
+  text-transform:uppercase
+}
+.is-locked .hive-egg-name {
+  color:#5c5c5c
+}
+.hive-egg-reward {
+  font:500 20px/1.15 var(--heading);
+  letter-spacing:-.02em
+}
+.hive-egg-note {
+  color:#4a4a4a;
+  font-size:14px;
+  line-height:1.35
+}
+.hive-egg-wear {
+  justify-self:start;
+  padding:7px 18px;
+  border:0;
+  border-radius:999px;
+  background:var(--orange);
+  color:#fff;
+  font:400 16px/1.2 var(--body);
+  transition:background .2s
+}
+.hive-egg-wear:hover {
+  background:var(--ink)
+}
+.hive-egg-wear[aria-pressed=true] {
+  background:var(--ink)
+}
+.hive-egg-wear[aria-pressed=true]:hover {
+  background:#4a4a4a
+}
+.hive-egg-wear:disabled {
+  background:var(--muted);
+  color:#5c5c5c;
+  opacity:1;
+  cursor:var(--cursor)
+}
+@media(max-width:800px) {
+  .hive {
+  width:84px
+}
+.site-footer:has(.hive) {
+  padding-bottom:72px
+}
+.hive-menu-head {
+  padding:20px 18px 0
+}
+.hive-menu h2 {
+  font-size:32px
+}
+.hive-menu-bar,.hive-menu-intro,.hive-menu-off {
+  margin-left:18px;
+  margin-right:18px
+}
+.hive-menu-list {
+  grid-template-columns:1fr;
+  padding:16px 18px 20px
+}
+
+}
 input:not([type=checkbox],[type=radio],[type=file],[type=submit],[type=button]),textarea {
   cursor:text
 }
