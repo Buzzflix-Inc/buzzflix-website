@@ -283,9 +283,16 @@ function initBeeCursor(){
  };
  // Left still for 20 seconds, the bee dozes off; any movement wakes it.
  // Waking plays a short jolt and blink (CSS .is-waking) instead of snapping straight back.
- let nap=0,stir=0;
+ // Before that, after 8 seconds it gets bored and gives one big yawn and stretch (CSS .is-yawning).
+ let nap=0,stir=0,bored=0,yawn=0;
  const wake=()=>{
-  clearTimeout(nap);
+  clearTimeout(nap);clearTimeout(bored);
+  if(bee.classList.contains('is-yawning')){clearTimeout(yawn);bee.classList.remove('is-yawning')}
+  bored=setTimeout(()=>{
+   if(bee.dataset.state==='hidden'||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+   bee.classList.add('is-yawning');
+   yawn=setTimeout(()=>bee.classList.remove('is-yawning'),1900);
+  },8000);
   if(bee.classList.contains('is-asleep')){
    bee.classList.replace('is-asleep','is-waking');
    clearTimeout(stir);stir=setTimeout(()=>bee.classList.remove('is-waking'),700);
