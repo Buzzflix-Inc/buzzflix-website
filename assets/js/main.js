@@ -341,12 +341,14 @@ function initBeeCursor(){
  document.addEventListener('pointerout',e=>{
   if(e.relatedTarget)return;
   const W=root.clientWidth,H=root.clientHeight;
-  const edge=x<24?'side':x>W-40?'side':y<24?'end':y>H-30?'end':'';
+  const edge=x<24?'left':x>W-40?'right':y<24?'top':y>H-30?'bottom':'';
   if(edge&&on&&bee.dataset.state!=='hidden'&&!reduced.matches){
-   bee.style.scale=edge==='side'?'.35 1.3':'1.3 .35';
+   bee.style.scale=edge==='left'||edge==='right'?'.35 1.3':'1.3 .35';
    clearTimeout(leaving);
    leaving=setTimeout(()=>{
-    poof(Math.min(Math.max(x,-5),W-25),Math.min(Math.max(y,-3),H-15)); // keep the cloud on screen
+    // A smaller cloud centred on the edge itself, puffing only inwards, so it sits flat against the side.
+    const cx={left:-15,right:W-15}[edge]??Math.min(Math.max(x,0),W-30),cy={top:-9,bottom:H-9}[edge]??Math.min(Math.max(y,0),H-18);
+    poof(cx,cy,{left:0,right:180,top:90,bottom:270}[edge]);
     target=null;update();
    },130);
    return;
@@ -376,14 +378,17 @@ function initBeeCursor(){
   update();
  };
  // Turning it off pops the bee into a little cloud where it was, rather than it simply vanishing.
- const poof=(cx=x,cy=y)=>{
+ const poof=(cx=x,cy=y,inward=null)=>{
   if(bee.dataset.state==='hidden'||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
   const cloud=document.createElement('div');
   cloud.className='bee-poof';
   cloud.setAttribute('aria-hidden','true');
   cloud.style.translate=`${cx}px ${cy}px`;
   cloud.innerHTML='<i></i>'.repeat(8);
-  cloud.querySelectorAll('i').forEach((p,i)=>{if(i)p.style.setProperty('--a',`${i*360/7+20}deg`)});
+  if(inward!==null)cloud.classList.add('is-edge');
+  cloud.querySelectorAll('i').forEach((p,i)=>{
+   if(i)p.style.setProperty('--a',`${inward===null?i*360/7+20:inward-80+(i-1)*160/6}deg`);
+  });
   bee.classList.add('is-popping');
   bee.parentNode.append(cloud);
   setTimeout(()=>cloud.remove(),700);

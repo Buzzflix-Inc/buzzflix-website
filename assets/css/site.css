@@ -398,6 +398,10 @@ html.bee-cursor-on {
   z-index:2147483647;
   pointer-events:none
 }
+/* Leaving the window across an edge: a smaller cloud, centred on the edge so it sits flat against it. */
+.bee-poof.is-edge {
+  scale:.7
+}
 .bee-poof i {
   position:absolute;
   top:-9px;
