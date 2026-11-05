@@ -98,6 +98,160 @@ function initYearbook() {
     if (b && !b.disabled && Number(b.dataset.page) !== current) show(Number(b.dataset.page), true);
   });
   show(1, false);
+  initViewer({cards, getMatches: () => matches, clearSearch: () => {
+    input.value = '';
+    matches = cards;
+  }, showCard: card => show(Math.floor(matches.indexOf(card) / PAGE_SIZE) + 1, false)});
+}
+
+// "Chloé St. Pierre" → "chloe-st-pierre", used as the card's link (yearbook#chloe-st-pierre).
+const slugify = name => fold(name).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/**
+ * Click a card for a bigger view: arrows (buttons, arrow keys or a swipe) step through the cards the
+ * search currently shows, and "Copy link" copies yearbook#name, which opens that card when visited.
+ */
+function initViewer({cards, getMatches, clearSearch, showCard}) {
+  const bySlug = new Map();
+  cards.forEach(card => {
+    const name = card.querySelector('h3').textContent.trim();
+    let slug = slugify(name);
+    while (bySlug.has(slug)) slug += '-2';
+    bySlug.set(slug, card);
+    card.dataset.slug = slug;
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'yearbook-open';
+    open.innerHTML = `<span class="visually-hidden">Open ${name}’s card</span>`;
+    card.append(open);
+  });
+
+  const dialog = document.createElement('dialog');
+  dialog.className = 'yearbook-viewer';
+  dialog.setAttribute('aria-labelledby', 'yearbook-viewer-name');
+  dialog.innerHTML = '<div class="yearbook-view">'
+    + '<button type="button" class="yearbook-close" aria-label="Close"><span aria-hidden="true">×</span></button>'
+    + '<div class="yearbook-view-card"></div>'
+    + '<div class="yearbook-view-bar">'
+    + '<button type="button" class="yearbook-page step" data-step="-1" aria-label="Previous person"><span aria-hidden="true">←</span></button>'
+    + '<p class="yearbook-view-count" aria-live="polite"></p>'
+    + '<button type="button" class="yearbook-page step" data-step="1" aria-label="Next person"><span aria-hidden="true">→</span></button>'
+    + '<button type="button" class="yearbook-copy">'
+    + '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>'
+    + '<span>Copy link</span></button>'
+    + '</div></div>';
+  document.body.append(dialog);
+  const body = dialog.querySelector('.yearbook-view-card');
+  const count = dialog.querySelector('.yearbook-view-count');
+  const copy = dialog.querySelector('.yearbook-copy');
+  const copyLabel = copy.querySelector('span');
+  const steps = dialog.querySelectorAll('[data-step]');
+
+  let list = cards;
+  let index = 0;
+  let copyTimer;
+  const link = card => `${location.origin}${location.pathname}#${card.dataset.slug}`;
+
+  const render = () => {
+    const card = list[index];
+    const photo = card.querySelector('.yearbook-photo').cloneNode(true);
+    const name = card.querySelector('h3').cloneNode(true);
+    name.id = 'yearbook-viewer-name';
+    const roles = card.querySelector('.yearbook-roles').cloneNode(true);
+    photo.querySelectorAll('img').forEach(img => img.loading = 'eager');
+    roles.querySelectorAll('img').forEach(img => img.loading = 'eager');
+    const info = document.createElement('div');
+    info.className = 'yearbook-view-info';
+    info.append(name, roles);
+    body.replaceChildren(photo, info);
+    count.textContent = list.length > 1 ? `${index + 1} of ${list.length}` : '';
+    steps.forEach(b => { b.hidden = list.length < 2; });
+    clearTimeout(copyTimer);
+    copyLabel.textContent = 'Copy link';
+    copy.classList.remove('copied');
+    history.replaceState(null, '', `#${card.dataset.slug}`);
+  };
+
+  const open = card => {
+    list = getMatches().includes(card) ? getMatches() : cards;
+    index = list.indexOf(card);
+    render();
+    if (!dialog.open) {
+      dialog.showModal();
+      document.documentElement.classList.add('yearbook-locked');
+    }
+  };
+  const step = by => {
+    if (list.length < 2) return;
+    index = (index + by + list.length) % list.length;
+    render();
+  };
+
+  dialog.addEventListener('close', () => {
+    document.documentElement.classList.remove('yearbook-locked');
+    history.replaceState(null, '', location.pathname + location.search);
+    // Leave the grid on the page that holds the last card viewed, with focus on it.
+    const card = list[index];
+    if (!getMatches().includes(card)) clearSearch();
+    showCard(card);
+    card.querySelector('.yearbook-open').focus({preventScroll: true});
+    card.scrollIntoView({block: 'nearest'});
+  });
+
+  document.querySelector('[data-yearbook]').addEventListener('click', e => {
+    const b = e.target.closest('.yearbook-open');
+    if (b) open(b.closest('.yearbook-card'));
+  });
+  dialog.addEventListener('click', e => {
+    // A click on the dimmed backdrop lands on the dialog itself.
+    if (e.target === dialog) return dialog.close();
+    if (e.target.closest('.yearbook-close')) return dialog.close();
+    const s = e.target.closest('[data-step]');
+    if (s) step(Number(s.dataset.step));
+  });
+  dialog.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+  });
+
+  // Swipe left or right on touch screens.
+  let touch = null;
+  dialog.addEventListener('touchstart', e => {
+    touch = e.touches.length === 1 ? {x: e.touches[0].clientX, y: e.touches[0].clientY} : null;
+  }, {passive: true});
+  dialog.addEventListener('touchend', e => {
+    if (!touch) return;
+    const dx = e.changedTouches[0].clientX - touch.x;
+    const dy = e.changedTouches[0].clientY - touch.y;
+    touch = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+  }, {passive: true});
+
+  copy.addEventListener('click', async () => {
+    const url = link(list[index]);
+    try {
+      await navigator.clipboard.writeText(url);
+      copyLabel.textContent = 'Link copied!';
+      copy.classList.add('copied');
+    } catch {
+      // No clipboard access (e.g. an http preview): show the link so it can be copied by hand.
+      window.prompt('Copy this link:', url);
+      return;
+    }
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
+      copyLabel.textContent = 'Copy link';
+      copy.classList.remove('copied');
+    }, 2500);
+  });
+
+  // A shared link (yearbook#name) opens that card.
+  const fromHash = () => {
+    const card = bySlug.get(decodeURIComponent(location.hash.slice(1)));
+    if (card) open(card);
+  };
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
 }
 
 initYearbook();
