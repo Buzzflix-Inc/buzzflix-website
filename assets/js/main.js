@@ -251,14 +251,19 @@ function initBeeCursor(){
   const host=target.closest('dialog[open]')||document.body; // a modal dialog sits above everything else
   if(bee.parentNode!==host)host.append(bee);
  };
+ // Left still for 20 seconds, the bee dozes off; any movement wakes it.
+ let nap=0;
+ const wake=()=>{clearTimeout(nap);bee.classList.remove('is-asleep');nap=setTimeout(()=>bee.classList.add('is-asleep'),20000)};
  document.addEventListener('pointermove',e=>{
+  wake();
   if(e.pointerType!=='mouse'){target=null;update();return}
   x=e.clientX;y=e.clientY;
   if(!frame)frame=requestAnimationFrame(place);
   if(e.target!==target||bee.dataset.state==='hidden'){target=e.target;update()}
  },{passive:true});
  document.addEventListener('pointerout',e=>{if(!e.relatedTarget){target=null;update()}});
- document.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')bee.classList.add('is-pressed')});
+ document.addEventListener('pointerdown',e=>{wake();if(e.pointerType==='mouse')bee.classList.add('is-pressed')});
+ addEventListener('keydown',wake);addEventListener('scroll',wake,{passive:true});
  addEventListener('pointerup',()=>bee.classList.remove('is-pressed'));
  setInterval(update,250); // states that change under a still mouse: video controls hiding, buttons disabling
  // A new page doesn't know where the mouse is until it moves, so each page hands its position to the next.
