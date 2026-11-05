@@ -286,17 +286,14 @@ html.bee-cursor-on {
     display:none
   }
 }
-/* Shaken (main.js): the bee spins round twice, then wobbles while three stars circle its head. */
+/* Shaken (main.js): the bee spins for as long as the mouse shakes (a script animation), and once it stops,
+   wobbles while three stars circle its head. */
 .bee-cursor.is-dizzy {
-  animation:bee-spin .6s cubic-bezier(.2,.6,.4,1),bee-wobble .4s ease-in-out .6s 4 alternate
-}
-@keyframes bee-spin {
-  from { rotate:0deg }
-  to { rotate:720deg }
+  animation:bee-wobble .5s ease-in-out 3
 }
 @keyframes bee-wobble {
-  from { rotate:-12deg }
-  to { rotate:12deg }
+  25% { rotate:-12deg }
+  75% { rotate:12deg }
 }
 .bee-stars {
   position:absolute;
@@ -317,13 +314,13 @@ html.bee-cursor-on {
   offset-path:path('M-9 0A9 3.2 0 1 0 9 0A9 3.2 0 1 0-9 0');
   offset-rotate:0deg;
   opacity:0;
-  animation:bee-orbit .8s linear .5s infinite,bee-star-in .2s .5s forwards
+  animation:bee-orbit .8s linear infinite,bee-star-in .2s forwards
 }
 .bee-stars b:nth-child(2) {
-  animation-delay:.233s,.5s
+  animation-delay:-.267s,0s
 }
 .bee-stars b:nth-child(3) {
-  animation-delay:-.033s,.5s
+  animation-delay:-.533s,0s
 }
 @keyframes bee-orbit {
   from { offset-distance:0% }

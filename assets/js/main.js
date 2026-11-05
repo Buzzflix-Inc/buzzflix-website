@@ -247,14 +247,12 @@ function initBeeCursor(){
  const bee=document.createElement('div');
  bee.className='bee-cursor';
  bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i><i class="bee-antenna"></i>';
- // A video starting with sound startles the bee: its antenna springs up (initVideos sends bee:startle).
+ // The first video to play with sound startles the bee: its antenna springs up (initVideos sends bee:startle).
  if(document.querySelector('[data-video]'))new Image().src=new URL('../images/bee-cursor-startled-2x-98c8b8a.png',import.meta.url).href;
- let startle=0;
- document.addEventListener('bee:startle',()=>{
-  bee.classList.remove('is-startled');void bee.offsetWidth; // restart the boing if it's still going
+ document.addEventListener('bee:startle',()=>{ // only the first sound on the page startles it
   bee.classList.add('is-startled');
-  clearTimeout(startle);startle=setTimeout(()=>bee.classList.remove('is-startled'),1600);
- });
+  setTimeout(()=>bee.classList.remove('is-startled'),1600);
+ },{once:true});
  // Highlighting text puts the bee's reading specs on; clearing the selection takes them off.
  document.addEventListener('selectionchange',()=>{
   const sel=getSelection();
@@ -283,9 +281,21 @@ function initBeeCursor(){
   }
   nap=setTimeout(()=>{clearTimeout(stir);bee.classList.remove('is-waking');bee.classList.add('is-asleep')},20000);
  };
- // Shaking the mouse (five quick changes of direction, each a real swing) leaves the bee spinning and dizzy.
- let lastX=null,dir=0,swing=0,turns=[],dizzy=0;
+ // Shaking the mouse (five quick changes of direction, each a real swing) sets the bee spinning, and it keeps
+ // spinning until the shaking stops: then it slows to a stop and wobbles, dizzy, with stars round its head.
+ let lastX=null,dir=0,swing=0,turns=[],spin=null,still=0,dizzy=0;
  const reduced=matchMedia('(prefers-reduced-motion:reduce)');
+ const TURN=450;
+ const settle=()=>{
+  const angle=(spin.currentTime%TURN)/TURN*360;
+  spin.cancel();spin=null;
+  // Slow from where it is to a stop, one more turn round, then go dizzy.
+  bee.animate([{rotate:`${angle}deg`},{rotate:'720deg'}],{duration:700,easing:'cubic-bezier(.2,.6,.35,1)'}).onfinish=()=>{
+   if(spin)return;
+   bee.classList.add('is-dizzy');
+   dizzy=setTimeout(()=>bee.classList.remove('is-dizzy'),1500);
+  };
+ };
  const shake=nx=>{
   if(lastX===null){lastX=nx;return}
   const dx=nx-lastX;lastX=nx;
@@ -293,13 +303,16 @@ function initBeeCursor(){
   const d=Math.sign(dx);
   if(d!==dir){
    const now=performance.now();
-   if(swing>40)turns=[...turns.filter(t=>now-t<900),now];
-   dir=d;swing=0;
-   if(turns.length>=5&&!dizzy&&!reduced.matches){
-    turns=[];
-    bee.classList.add('is-dizzy');
-    dizzy=setTimeout(()=>{bee.classList.remove('is-dizzy');dizzy=0},2200);
+   if(swing>(spin?20:40)){
+    turns=[...turns.filter(t=>now-t<900),now];
+    if(spin){clearTimeout(still);still=setTimeout(settle,350)}
+    else if(turns.length>=5&&!reduced.matches){
+     clearTimeout(dizzy);bee.classList.remove('is-dizzy');
+     spin=bee.animate([{rotate:'0deg'},{rotate:'360deg'}],{duration:TURN,iterations:Infinity});
+     still=setTimeout(settle,350);
+    }
    }
+   dir=d;swing=0;
   }
   swing+=Math.abs(dx);
  };
