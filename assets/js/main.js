@@ -240,7 +240,7 @@ function initBeeCursor(){
  try{on=localStorage.getItem(KEY)!=='regular'}catch{}
  const bee=document.createElement('div');
  bee.className='bee-cursor';
- bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i>';
+ bee.innerHTML='<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i>';
  // Highlighting text puts the bee's reading specs on; clearing the selection takes them off.
  document.addEventListener('selectionchange',()=>{
   const sel=getSelection();
@@ -269,10 +269,31 @@ function initBeeCursor(){
   }
   nap=setTimeout(()=>{clearTimeout(stir);bee.classList.remove('is-waking');bee.classList.add('is-asleep')},20000);
  };
+ // Shaking the mouse (five quick changes of direction, each a real swing) leaves the bee spinning and dizzy.
+ let lastX=null,dir=0,swing=0,turns=[],dizzy=0;
+ const reduced=matchMedia('(prefers-reduced-motion:reduce)');
+ const shake=nx=>{
+  if(lastX===null){lastX=nx;return}
+  const dx=nx-lastX;lastX=nx;
+  if(Math.abs(dx)<2)return;
+  const d=Math.sign(dx);
+  if(d!==dir){
+   const now=performance.now();
+   if(swing>40)turns=[...turns.filter(t=>now-t<900),now];
+   dir=d;swing=0;
+   if(turns.length>=5&&!dizzy&&!reduced.matches){
+    turns=[];
+    bee.classList.add('is-dizzy');
+    dizzy=setTimeout(()=>{bee.classList.remove('is-dizzy');dizzy=0},2200);
+   }
+  }
+  swing+=Math.abs(dx);
+ };
  document.addEventListener('pointermove',e=>{
   wake();
   if(e.pointerType!=='mouse'){target=null;update();return}
   x=e.clientX;y=e.clientY;
+  shake(x);
   if(!frame)frame=requestAnimationFrame(place);
   if(e.target!==target||bee.dataset.state==='hidden'){target=e.target;update()}
  },{passive:true});

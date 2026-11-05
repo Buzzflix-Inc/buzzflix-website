@@ -286,6 +286,52 @@ html.bee-cursor-on {
     display:none
   }
 }
+/* Shaken (main.js): the bee spins round twice, then wobbles while three stars circle its head. */
+.bee-cursor.is-dizzy {
+  animation:bee-spin .6s cubic-bezier(.2,.6,.4,1),bee-wobble .4s ease-in-out .6s 4 alternate
+}
+@keyframes bee-spin {
+  from { rotate:0deg }
+  to { rotate:720deg }
+}
+@keyframes bee-wobble {
+  from { rotate:-12deg }
+  to { rotate:12deg }
+}
+.bee-stars {
+  position:absolute;
+  left:8px;
+  top:6px;
+  display:none
+}
+.bee-cursor.is-dizzy .bee-stars {
+  display:block
+}
+.bee-stars b {
+  position:absolute;
+  top:0;
+  left:0;
+  width:7px;
+  height:7px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z' fill='%23ffcf33' stroke='%231a1a1a' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") 0 0/100% no-repeat;
+  offset-path:path('M-9 0A9 3.2 0 1 0 9 0A9 3.2 0 1 0-9 0');
+  offset-rotate:0deg;
+  opacity:0;
+  animation:bee-orbit .8s linear .5s infinite,bee-star-in .2s .5s forwards
+}
+.bee-stars b:nth-child(2) {
+  animation-delay:.233s,.5s
+}
+.bee-stars b:nth-child(3) {
+  animation-delay:-.033s,.5s
+}
+@keyframes bee-orbit {
+  from { offset-distance:0% }
+  to { offset-distance:100% }
+}
+@keyframes bee-star-in {
+  to { opacity:1 }
+}
 /* Switching the bee off: it shrinks away as a cloud puffs out where it was (main.js adds the cloud). */
 .bee-cursor.is-popping[data-state=hidden] {
   transform:scale(.2);
