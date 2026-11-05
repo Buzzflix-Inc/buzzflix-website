@@ -2471,8 +2471,10 @@ to {
 .yearbook-locked {
   overflow:hidden
 }
+/* A white panel with rounded corners over a blurred backdrop; it fades up on open and the card
+   slides in from the side it was stepped to. */
 .yearbook-viewer {
-  width:min(920px,calc(100% - 40px));
+  width:min(940px,calc(100% - 40px));
   max-width:none;
   max-height:calc(100dvh - 40px);
   padding:0;
@@ -2482,85 +2484,161 @@ to {
   overflow:visible
 }
 .yearbook-viewer::backdrop {
-  background:#1a1a1ad9
+  background:#1a1a1aa6;
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px)
+}
+.yearbook-viewer[open] {
+  animation:yearbook-pop .28s cubic-bezier(.2,.8,.2,1)
+}
+.yearbook-viewer[open]::backdrop {
+  animation:yearbook-fade .28s ease-out
+}
+@keyframes yearbook-pop {
+  from {
+    opacity:0;
+    transform:translateY(16px) scale(.97)
+  }
+}
+@keyframes yearbook-fade {
+  from {
+    opacity:0
+  }
 }
 .yearbook-view {
   position:relative;
   max-height:calc(100dvh - 40px);
   overflow:auto;
-  background:var(--muted);
-  padding:22px 22px 18px
+  overscroll-behavior:contain;
+  background:var(--paper);
+  border-radius:24px;
+  padding:24px;
+  box-shadow:0 30px 80px #0000004d,0 0 0 1px #1a1a1a0d
 }
 .yearbook-close {
   position:absolute;
-  top:10px;
-  right:10px;
+  top:16px;
+  right:16px;
   z-index:2;
   display:grid;
   place-items:center;
-  width:44px;
-  height:44px;
+  width:40px;
+  height:40px;
   padding:0;
   border:0;
   border-radius:50%;
-  background:var(--paper);
-  font-size:28px;
-  line-height:1;
+  background:var(--muted);
   color:var(--ink);
   cursor:var(--pointer);
-  transition:background .2s
+  transition:background .2s,transform .2s
+}
+.yearbook-close svg {
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.2;
+  stroke-linecap:round
 }
 .yearbook-close:hover {
-  background:var(--yellow)
+  background:var(--yellow);
+  transform:rotate(90deg)
+}
+.yearbook-close:focus-visible,.yearbook-copy:focus-visible,.yearbook-view-bar .yearbook-page:focus-visible {
+  outline:3px solid var(--orange);
+  outline-offset:2px
 }
 .yearbook-view-card {
   display:grid;
   grid-template-columns:1.25fr 1fr;
-  gap:32px;
+  gap:36px;
   align-items:start
+}
+.yearbook-view-card.from-next {
+  animation:yearbook-from-next .25s ease-out
+}
+.yearbook-view-card.from-prev {
+  animation:yearbook-from-prev .25s ease-out
+}
+@keyframes yearbook-from-next {
+  from {
+    opacity:0;
+    transform:translateX(24px)
+  }
+}
+@keyframes yearbook-from-prev {
+  from {
+    opacity:0;
+    transform:translateX(-24px)
+  }
+}
+.yearbook-view .yearbook-photo {
+  margin:0
+}
+.yearbook-view .yearbook-photo img,.yearbook-view .yearbook-placeholder {
+  border-radius:16px
 }
 .yearbook-view-card .yearbook-placeholder {
   font-size:96px
 }
+.yearbook-view .superlative {
+  left:14px;
+  bottom:14px;
+  max-width:calc(100% - 28px);
+  padding:7px 14px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:500;
+  box-shadow:0 4px 14px #0000002e
+}
 .yearbook-view-info {
-  padding-top:14px
+  padding-top:8px
 }
 .yearbook-view-info h3 {
   font-size:clamp(28px,3vw,40px);
-  margin:0 52px 18px 0
+  letter-spacing:-.03em;
+  margin:0 52px 20px 0
 }
 .yearbook-view .yearbook-roles {
   margin:0;
-  gap:14px
+  gap:8px
 }
 .yearbook-view .yearbook-roles li {
-  grid-template-columns:42px 1fr;
+  grid-template-columns:40px 1fr;
   column-gap:14px;
-  font-size:17px
+  padding:10px 14px 10px 10px;
+  border-radius:14px;
+  background:var(--muted);
+  font-size:16px
 }
 .yearbook-view .yearbook-roles img {
-  width:42px
+  width:40px;
+  border-radius:5px;
+  box-shadow:0 2px 6px #1a1a1a33
 }
 .yearbook-view .yearbook-roles .film {
-  font-size:13px
-}
-.yearbook-view .superlative {
-  font-size:15px
+  font-size:12px
 }
 .yearbook-view-bar {
   display:flex;
   align-items:center;
-  gap:14px;
-  margin-top:30px
+  gap:12px;
+  margin-top:24px;
+  padding-top:20px;
+  border-top:1px solid #1a1a1a14
 }
 .yearbook-view-bar .yearbook-page[hidden] {
   display:none
+}
+.yearbook-view-bar .yearbook-page.step {
+  width:48px;
+  height:48px;
+  font-size:20px
 }
 .yearbook-view-count {
   min-width:5.5em;
   margin:0;
   text-align:center;
   font-size:14px;
+  font-variant-numeric:tabular-nums;
   text-transform:uppercase;
   letter-spacing:.06em;
   color:#595959
@@ -2572,17 +2650,16 @@ to {
   height:48px;
   margin-left:auto;
   padding:0 22px;
-  border:2px solid var(--paper);
+  border:0;
   border-radius:999px;
-  background:var(--paper);
+  background:var(--muted);
   font:inherit;
   font-size:16px;
   color:var(--ink);
   cursor:var(--pointer);
-  transition:background .2s,border-color .2s
+  transition:background .2s
 }
 .yearbook-copy:hover,.yearbook-copy.copied {
-  border-color:var(--yellow);
   background:var(--yellow)
 }
 .yearbook-copy svg {
@@ -2590,6 +2667,12 @@ to {
   stroke:var(--ink);
   stroke-width:2;
   stroke-linecap:round
+}
+@media(prefers-reduced-motion:reduce) {
+  .yearbook-viewer[open],.yearbook-viewer[open]::backdrop,.yearbook-view-card.from-next,.yearbook-view-card.from-prev {
+  animation:none
+}
+
 }
 .yearbook-thanks h2 {
   font-size:clamp(42px,5.55vw,88px);
@@ -2663,42 +2746,57 @@ to {
 }
 .yearbook-view {
   max-height:calc(100dvh - 24px);
+  border-radius:20px;
   padding:12px 12px 14px
 }
+/* On phones the close button sits on the photo, so it gets a frosted background. */
 .yearbook-close {
-  top:18px;
-  right:18px
+  top:22px;
+  right:22px;
+  background:#ffffffcc;
+  -webkit-backdrop-filter:blur(6px);
+  backdrop-filter:blur(6px)
 }
 .yearbook-view-card {
   grid-template-columns:1fr;
-  gap:14px
+  gap:16px
+}
+.yearbook-view .yearbook-photo img,.yearbook-view .yearbook-placeholder {
+  border-radius:12px
 }
 .yearbook-view-card .yearbook-placeholder {
   font-size:64px
+}
+.yearbook-view-info {
+  padding-top:0
 }
 .yearbook-view-info h3 {
   font-size:26px;
   margin:0 4px 14px
 }
-.yearbook-view .yearbook-roles {
-  margin:0 4px
-}
 .yearbook-view .yearbook-roles li {
   grid-template-columns:32px 1fr;
-  column-gap:10px;
+  column-gap:12px;
+  padding:8px 12px 8px 8px;
+  border-radius:12px;
   font-size:15px
 }
 .yearbook-view .yearbook-roles img {
   width:32px
 }
 .yearbook-view .superlative {
-  font-size:13px
+  left:10px;
+  bottom:10px;
+  max-width:calc(100% - 20px);
+  padding:5px 11px;
+  font-size:12px
 }
 .yearbook-view-bar {
   flex-wrap:wrap;
   justify-content:center;
   gap:10px;
-  margin-top:20px
+  margin-top:16px;
+  padding-top:16px
 }
 .yearbook-copy {
   width:100%;

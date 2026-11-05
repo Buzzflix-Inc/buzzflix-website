@@ -130,7 +130,7 @@ function initViewer({cards, getMatches, clearSearch, showCard}) {
   dialog.className = 'yearbook-viewer';
   dialog.setAttribute('aria-labelledby', 'yearbook-viewer-name');
   dialog.innerHTML = '<div class="yearbook-view">'
-    + '<button type="button" class="yearbook-close" aria-label="Close"><span aria-hidden="true">×</span></button>'
+    + '<button type="button" class="yearbook-close" aria-label="Close"><svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6 6 18"/></svg></button>'
     + '<div class="yearbook-view-card"></div>'
     + '<div class="yearbook-view-bar">'
     + '<button type="button" class="yearbook-page step" data-step="-1" aria-label="Previous person"><span aria-hidden="true">←</span></button>'
@@ -152,8 +152,14 @@ function initViewer({cards, getMatches, clearSearch, showCard}) {
   let copyTimer;
   const link = card => `${location.origin}${location.pathname}#${card.dataset.slug}`;
 
-  const render = () => {
+  // direction: 1 after "next", -1 after "previous", 0 on open (the dialog itself animates then).
+  const render = (direction = 0) => {
     const card = list[index];
+    body.classList.remove('from-next', 'from-prev');
+    if (direction) {
+      void body.offsetWidth; // restart the slide-in animation
+      body.classList.add(direction > 0 ? 'from-next' : 'from-prev');
+    }
     const photo = card.querySelector('.yearbook-photo').cloneNode(true);
     const name = card.querySelector('h3').cloneNode(true);
     name.id = 'yearbook-viewer-name';
@@ -184,7 +190,7 @@ function initViewer({cards, getMatches, clearSearch, showCard}) {
   const step = by => {
     if (list.length < 2) return;
     index = (index + by + list.length) % list.length;
-    render();
+    render(by);
   };
 
   dialog.addEventListener('close', () => {
