@@ -10,7 +10,10 @@ if (form) {
   const note = document.querySelector('#application-preview-note');
   const confirmation = document.querySelector('[data-application-confirmation]');
   const roles = [form.elements.role_1, form.elements.role_2, form.elements.role_3];
-  const answerFields = ['name', 'email', 'school', 'experience', 'role_1', 'role_2', 'role_3', 'additional_roles'];
+  const answerFields = ['name', 'email', 'school', 'program_year', 'experience', 'why_join', 'role_1', 'role_2', 'role_3', 'additional_roles'];
+  // Optional PDF attachments. Code.gs saves them to Drive and checks the same limits.
+  const documentFields = ['resume', 'portfolio'].filter(name => form.elements[name]);
+  const maxDocumentBytes = 5 * 1024 * 1024;
   const draftSave = form.querySelector('[data-draft-save]');
   const draftButton = form.querySelector('[data-draft-send]');
   const draftStatus = form.querySelector('[data-draft-status]');
@@ -30,12 +33,28 @@ if (form) {
       input.setCustomValidity(!value ? 'Please enter a role.' : seen.has(value) ? 'Please list three different roles.' : '');
       if (value) seen.add(value);
     });
-    ['name', 'school', 'experience'].forEach(name => {
+    ['name', 'school', 'program_year', 'experience', 'why_join'].forEach(name => {
       const input = form.elements[name];
-      input.setCustomValidity(input.value.trim() ? '' : 'Please complete this field.');
+      if (input) input.setCustomValidity(input.value.trim() ? '' : 'Please complete this field.');
+    });
+    documentFields.forEach(name => {
+      const input = form.elements[name];
+      const file = input.files[0];
+      input.setCustomValidity(!file ? ''
+        : !/\.pdf$/i.test(file.name) || (file.type && file.type !== 'application/pdf') ? 'Please choose a PDF file.'
+        : file.size > maxDocumentBytes ? 'Please choose a PDF under 5 MB.'
+        : file.size === 0 ? 'This file is empty. Please choose another PDF.' : '');
     });
   };
   form.addEventListener('input', validate);
+  form.addEventListener('change', validate);
+  // Files travel inside the JSON body as base64, because Apps Script can't take multipart uploads.
+  const readDocument = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({name: file.name, data: reader.result.slice(reader.result.indexOf(',') + 1)});
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
   const showConfirmation = () => {
     form.hidden = true;
     confirmation.hidden = false;
@@ -130,20 +149,34 @@ if (form) {
     if (!form.reportValidity()) return;
     error.hidden = true;
     if (preview) { showConfirmation(); return; }
+    sending = true;
+    button.disabled = true;
     const data = answers();
     data.consent = form.elements.consent.checked ? 'agreed' : '';
     data.application_year = '2027';
     data.consent_version = '2027-text-v1';
-    const answers = JSON.stringify(data);
+    const files = documentFields.filter(name => form.elements[name].files[0]);
+    if (files.length) status.textContent = 'Preparing your files…';
+    try {
+      for (const name of files) data[name] = await readDocument(form.elements[name].files[0]);
+    } catch {
+      status.textContent = '';
+      error.textContent = 'We couldn’t read one of your files. Please choose it again and resubmit.';
+      error.hidden = false;
+      sending = false;
+      button.disabled = false;
+      return;
+    }
+    const snapshot = JSON.stringify(data);
     // Keep the same ID for an unchanged retry; edited answers get a new ID.
-    if (!submissionId || answers !== lastAnswers) submissionId = crypto.randomUUID();
-    lastAnswers = answers;
+    if (!submissionId || snapshot !== lastAnswers) submissionId = crypto.randomUUID();
+    lastAnswers = snapshot;
     data.submission_id = submissionId;
-    sending = true;
-    button.disabled = true;
-    status.textContent = 'Sending your application. Please keep this page open.';
+    status.textContent = files.length
+      ? 'Sending your application and files. This can take a minute, so please keep this page open.'
+      : 'Sending your application. Please keep this page open.';
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000);
+    const timeout = setTimeout(() => controller.abort(), files.length ? 180000 : 60000);
     try {
       const response = await fetch(endpoint, {
         method: 'POST', // text/plain avoids the cross-origin preflight that Apps Script cannot handle.

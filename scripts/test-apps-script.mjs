@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 const source = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
-const application = (changes = {}) => ({submission_id: '21c6c122-661e-4710-85db-5397543696c2', application_year: '2027', name: 'Test Applicant', email: 'test@example.com', school: 'Test School', experience: 'School films', role_1: 'Camera', role_2: 'Sound', role_3: 'Editing', additional_roles: '', consent: 'agreed', consent_version: '2027-text-v1', website: '', ...changes});
+const application = (changes = {}) => ({submission_id: '21c6c122-661e-4710-85db-5397543696c2', application_year: '2027', name: 'Test Applicant', email: 'test@example.com', school: 'Test School', program_year: 'Grade 11', experience: 'School films', why_join: 'I love movies', role_1: 'Camera', role_2: 'Sound', role_3: 'Editing', additional_roles: '', consent: 'agreed', consent_version: '2027-text-v1', website: '', ...changes});
 function harness() {
-  const tabs = {}, properties = {}, cache = {}, mail = [];
+  const tabs = {}, properties = {}, cache = {}, mail = [], folders = {};
   let releases = 0, locked = true, storageFails = false, uuids = 0;
   const makeSheet = rows => ({
     getLastRow: () => rows.length, setFrozenRows() {},
@@ -27,10 +27,22 @@ function harness() {
     CacheService: {getScriptCache: () => ({get: key => cache[key], put: (key, value) => cache[key] = value})},
     ContentService: {MimeType: {JSON: 'json'}, createTextOutput: text => ({setMimeType: () => JSON.parse(text)})},
     MailApp: {sendEmail: message => mail.push(message)},
-    Utilities: {getUuid: () => `0000000${++uuids}-aaaa-4bbb-8ccc-dddddddddddd`.slice(-36)}
+    DriveApp: {
+      createFolder: name => { const id = `folder-${Object.keys(folders).length + 1}`; folders[id] = {name, files: []}; return {getId: () => id}; },
+      getFolderById: id => {
+        if (!folders[id]) throw new Error('No folder');
+        return {createFile: blob => { folders[id].files.push(blob); return {getUrl: () => `https://drive.example/${encodeURIComponent(blob.name)}`}; }};
+      }
+    },
+    Utilities: {
+      getUuid: () => `0000000${++uuids}-aaaa-4bbb-8ccc-dddddddddddd`.slice(-36),
+      // Like Apps Script: signed bytes as a plain array, and an error for text that isn't base64.
+      base64Decode: text => { if (!/^[A-Za-z0-9+/]*={0,2}$/.test(text)) throw new Error('Invalid'); return Array.from(Buffer.from(text, 'base64'), b => b > 127 ? b - 256 : b); },
+      newBlob: (bytes, type, name) => ({bytes, type, name})
+    }
   });
   vm.runInContext(source, context);
-  return {rows, tabs, mail, properties, setup: () => context.setupApplications(), submit: value => context.doPost({postData: {contents: JSON.stringify(value), length: JSON.stringify(value).length}}), get: (parameter = {}) => context.doGet({parameter}), releases: () => releases, failStorage: () => storageFails = true, denyLock: () => locked = false};
+  return {rows, tabs, mail, properties, folders, setup: () => context.setupApplications(), submit: value => context.doPost({postData: {contents: JSON.stringify(value), length: JSON.stringify(value).length}}), get: (parameter = {}) => context.doGet({parameter}), releases: () => releases, failStorage: () => storageFails = true, denyLock: () => locked = false};
 }
 test('setup saves the bound sheet ID, initializes headings and accepts a row', () => {
   const h = harness(); h.setup();
@@ -39,7 +51,9 @@ test('setup saves the bound sheet ID, initializes headings and accepts a row', (
   const result = h.submit(application());
   assert.equal(result.accepted, true);
   assert.equal(h.rows[1][2], 'Test Applicant');
-  assert.equal(h.rows[1][11], 'Received');
+  assert.equal(h.rows[1][5], 'Grade 11');
+  assert.equal(h.rows[1][7], 'I love movies');
+  assert.equal(h.rows[1][15], 'Received');
   assert.equal(result.confirmationEmailQueued, false);
   assert.equal(h.releases(), 1);
 });
@@ -53,7 +67,7 @@ test('unchanged retries do not duplicate; changing answers with the same ID is r
 });
 test('validation rejects invalid email, duplicate roles, missing consent, spam and oversized answers', () => {
   const h = harness(); h.setup();
-  for (const changes of [{email: 'bad'}, {role_2: ' CAMERA '}, {consent: ''}, {website: 'spam'}, {experience: 'x'.repeat(10001)}]) {
+  for (const changes of [{email: 'bad'}, {program_year: ' '}, {why_join: ''}, {role_2: ' CAMERA '}, {consent: ''}, {website: 'spam'}, {experience: 'x'.repeat(10001)}]) {
     assert.equal(h.submit(application(changes)).accepted, false);
   }
   assert.equal(h.rows.length, 1);
@@ -68,11 +82,53 @@ test('at most two positions from one department are accepted', () => {
   assert.equal(h.submit(application({submission_id: '31c6c122-661e-4710-85db-5397543696c2', role_1: 'Lighting', role_2: 'Gaffer', role_3: 'Grip'})).accepted, true);
   assert.equal(h.rows.length, 3);
 });
+const pdf = (text = '%PDF-1.7 test') => ({name: 'resume.pdf', data: Buffer.from(text).toString('base64')});
+test('PDF resume and portfolio are saved to the Drive folder and linked in the sheet', () => {
+  const h = harness(); h.setup();
+  const folder = h.folders[h.properties.DOCUMENT_FOLDER_ID];
+  assert.equal(folder.name, 'Buzzflix 2027 Application Documents');
+  const data = application({resume: pdf(), portfolio: pdf('%PDF-1.4 portfolio')});
+  assert.equal(h.submit(data).accepted, true);
+  assert.equal(folder.files.length, 2);
+  assert.equal(folder.files[0].type, 'application/pdf');
+  assert.match(folder.files[0].name, /^Test Applicant - Resume - 21c6c122/);
+  assert.match(h.rows[1][12], /^https:\/\/drive\.example\/Test%20Applicant%20-%20Resume/);
+  assert.match(h.rows[1][13], /Portfolio/);
+  // A retry doesn't save the files twice.
+  assert.equal(h.submit(data).duplicate, true);
+  assert.equal(folder.files.length, 2);
+  // No attachments leaves the columns empty.
+  assert.equal(h.submit(application({submission_id: '31c6c122-661e-4710-85db-5397543696c2'})).accepted, true);
+  assert.equal(h.rows[2][12], '');
+});
+test('attachments must be real PDFs under 5 MB', () => {
+  const h = harness(); h.setup();
+  const cases = [
+    [{resume: pdf('GIF89a not a pdf')}, /^Your resume must be a PDF/],
+    [{portfolio: {name: 'x.pdf', data: 'not base64!'}}, /^Your portfolio could not be read/],
+    [{resume: pdf('%PDF-' + 'x'.repeat(5 * 1024 * 1024))}, /^Your resume is over 5 MB/],
+    [{resume: 'a string'}, /^Please check your application details/]
+  ];
+  for (const [changes, message] of cases) {
+    const result = h.submit(application(changes));
+    assert.equal(result.accepted, false);
+    assert.match(result.message, message);
+  }
+  assert.equal(h.rows.length, 1);
+  assert.equal(h.folders[h.properties.DOCUMENT_FOLDER_ID].files.length, 0);
+});
+test('setup brings an empty tab up to the new headings but leaves one with applications alone', () => {
+  const h = harness(); h.rows.push(['Submission ID', 'Submitted At', 'Name']);
+  h.setup();
+  assert.equal(h.rows[0][5], 'Program & Year');
+  const old = harness(); old.rows.push(['Submission ID', 'Submitted At', 'Name'], ['x']);
+  assert.throws(() => old.setup(), /headings need setup/);
+});
 test('formula-like answers are stored as text and remain safe on retry', () => {
   const h = harness(); h.setup();
   const data = application({experience: '=SUM(A1:A3)'});
   assert.equal(h.submit(data).accepted, true);
-  assert.equal(h.rows[1][5], "'=SUM(A1:A3)");
+  assert.equal(h.rows[1][6], "'=SUM(A1:A3)");
   assert.equal(h.submit(data).duplicate, true);
 });
 test('failed storage and unavailable lock do not return success', () => {
@@ -88,7 +144,7 @@ test('wrong headings block submissions without overwriting existing sheet data',
   assert.equal(h.submit(application()).accepted, false);
   assert.equal(h.rows.length, 1);
 });
-const draft = (changes = {}) => ({action: 'save_draft', name: 'Test Applicant', email: 'test@example.com', school: '', experience: 'School films', role_1: 'Camera', role_2: '', role_3: '', additional_roles: '', website: '', ...changes});
+const draft = (changes = {}) => ({action: 'save_draft', name: 'Test Applicant', email: 'test@example.com', school: '', program_year: 'Grade 12', why_join: 'Fun', experience: 'School films', role_1: 'Camera', role_2: '', role_3: '', additional_roles: '', website: '', ...changes});
 test('a saved draft is stored, emailed as a link and loads back from that link', () => {
   const h = harness(); h.setup();
   assert.deepEqual(h.tabs['Saved Drafts'][0], ['Draft ID', 'Saved At', 'Email', 'Answers']);
@@ -102,6 +158,8 @@ test('a saved draft is stored, emailed as a link and loads back from that link',
   assert.equal(loaded.found, true);
   assert.equal(loaded.draft.experience, 'School films');
   assert.equal(loaded.draft.role_1, 'Camera');
+  assert.equal(loaded.draft.program_year, 'Grade 12');
+  assert.equal(loaded.draft.why_join, 'Fun');
   assert.equal(h.get({draft: 'f'.repeat(32)}).found, false);
   assert.equal(h.get({draft: '../x'}).found, false);
   assert.equal(h.releases(), 1);

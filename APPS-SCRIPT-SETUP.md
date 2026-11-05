@@ -15,17 +15,17 @@ No separate backend package or Google Cloud console setup is needed for this rou
 
 1. In the function dropdown beside **Run**, select **setupApplications**.
 2. Click **Run**.
-3. If Google asks for authorization, click **Review permissions**, select your Workspace account, and allow this script to access spreadsheets. Only authorize the project you just created and populated with this code.
+3. If Google asks for authorization, click **Review permissions**, select your Workspace account, and allow this script to access spreadsheets and Google Drive (Drive holds applicants' resume and portfolio PDFs). Only authorize the project you just created and populated with this code.
 4. Wait for the execution to finish.
-5. Return to the sheet. A tab named **Submission Records** should now exist with the correct column headings.
+5. Return to the sheet. A tab named **Submission Records** should now exist with the correct column headings, and your Drive should have a private folder named **Buzzflix 2027 Application Documents**. Resume and portfolio PDFs are saved there and linked from the sheet. Don't share the folder publicly.
 
 The setup remembers the sheet's ID privately in the script's settings. You do not need to copy it into the website. Keep **Submission Records** as a submission log; use a separate tab for sorted review views.
 
-If you already created this tab, its first row must contain these exact headings in columns A through L:
+If you already created this tab, its first row must contain these exact headings in columns A through P:
 
-`Submission ID`, `Submitted At`, `Name`, `Email`, `School`, `Previous Experience`, `Role 1`, `Role 2`, `Role 3`, `Additional Roles`, `Consent Version`, `Status`.
+`Submission ID`, `Submitted At`, `Name`, `Email`, `School`, `Program & Year`, `Previous Experience`, `Why Buzzflix`, `Role 1`, `Role 2`, `Role 3`, `Additional Roles`, `Resume`, `Portfolio`, `Consent Version`, `Status`.
 
-Setup will stop rather than overwrite different headings.
+If the tab has only its heading row (no applications yet), running setup again replaces older headings with these. Once applications have arrived, setup will stop rather than overwrite different headings.
 
 ## 3. Deploy the script
 

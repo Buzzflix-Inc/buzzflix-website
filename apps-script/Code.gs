@@ -1,10 +1,17 @@
 // Paste this entire file into Code.gs using Extensions > Apps Script in your sheet.
 const APPLICATION_TAB = 'Submission Records';
-const APPLICATION_HEADERS = ['Submission ID', 'Submitted At', 'Name', 'Email', 'School', 'Previous Experience', 'Role 1', 'Role 2', 'Role 3', 'Additional Roles', 'Consent Version', 'Status'];
+const APPLICATION_HEADERS = ['Submission ID', 'Submitted At', 'Name', 'Email', 'School', 'Program & Year', 'Previous Experience', 'Why Buzzflix', 'Role 1', 'Role 2', 'Role 3', 'Additional Roles', 'Resume', 'Portfolio', 'Consent Version', 'Status'];
+// The applicant's answers, in sheet order from column C; Resume and Portfolio hold links to the files.
+const ANSWER_FIELDS = ['name', 'email', 'school', 'program_year', 'experience', 'why_join', 'role_1', 'role_2', 'role_3', 'additional_roles', 'resume', 'portfolio', 'consent_version'];
+// Optional PDF attachments, saved to a private Drive folder that setup creates.
+const DOCUMENT_FIELDS = ['resume', 'portfolio'];
+const DOCUMENT_LABELS = {resume: 'Resume', portfolio: 'Portfolio'};
+const DOCUMENT_MAX_BYTES = 5 * 1024 * 1024;
+const DOCUMENT_FOLDER = 'Buzzflix 2027 Application Documents';
 // Answers saved before applications open, so the applicant can reload them from an emailed link.
 const DRAFT_TAB = 'Saved Drafts';
 const DRAFT_HEADERS = ['Draft ID', 'Saved At', 'Email', 'Answers'];
-const DRAFT_FIELDS = ['name', 'email', 'school', 'experience', 'role_1', 'role_2', 'role_3', 'additional_roles'];
+const DRAFT_FIELDS = ['name', 'email', 'school', 'program_year', 'experience', 'why_join', 'role_1', 'role_2', 'role_3', 'additional_roles'];
 const DRAFT_LINK = 'https://www.buzzflix.ca/apply#draft=';
 // The positions in the apply.html picker, by department. Keep in step with apply.html.
 // An applicant may choose at most two from one department; free-text roles from the homepage form are not counted.
@@ -25,12 +32,18 @@ function setupApplications() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   if (!spreadsheet) throw new Error('Open Apps Script from Extensions in your application spreadsheet.');
   const sheet = spreadsheet.getSheetByName(APPLICATION_TAB) || spreadsheet.insertSheet(APPLICATION_TAB);
-  if (sheet.getLastRow() === 0) {
+  // A tab with only its heading row (no applications yet) is safe to bring up to the current headings.
+  if (sheet.getLastRow() <= 1) {
     sheet.getRange(1, 1, 1, APPLICATION_HEADERS.length).setValues([APPLICATION_HEADERS]);
     sheet.setFrozenRows(1);
   } else {
     checkApplicationHeaders_(sheet);
   }
+  const properties = PropertiesService.getScriptProperties();
+  const folderId = properties.getProperty('DOCUMENT_FOLDER_ID');
+  let folder = null;
+  try { folder = folderId && DriveApp.getFolderById(folderId); } catch (_) { folder = null; }
+  if (!folder) properties.setProperty('DOCUMENT_FOLDER_ID', DriveApp.createFolder(DOCUMENT_FOLDER).getId());
   const drafts = spreadsheet.getSheetByName(DRAFT_TAB) || spreadsheet.insertSheet(DRAFT_TAB);
   if (drafts.getLastRow() === 0) {
     drafts.getRange(1, 1, 1, DRAFT_HEADERS.length).setValues([DRAFT_HEADERS]);
@@ -50,7 +63,8 @@ function doPost(event) {
   let locked = false;
   const lock = LockService.getScriptLock();
   try {
-    if (!event || !event.postData || event.postData.length > 50000) throw new Error('Please shorten your answers and try again.');
+    // Room for two 5 MB PDFs, which grow by a third as base64, plus the written answers.
+    if (!event || !event.postData || event.postData.length > 15000000) throw new Error('Please shorten your answers and try again.');
     let input;
     try { input = JSON.parse(event.postData.contents); }
     catch (_) { throw new Error('Please refresh the application page and try again.'); }
@@ -74,16 +88,18 @@ function doPost(event) {
     const sheet = SpreadsheetApp.openById(id).getSheetByName(APPLICATION_TAB);
     if (!sheet) throw new Error('Application storage is not ready. Please try again later.');
     checkApplicationHeaders_(sheet);
-    const answers = [data.name, data.email, data.school, data.experience, data.role_1, data.role_2, data.role_3, data.additional_roles, data.consent_version];
     const lastRow = sheet.getLastRow();
     const rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, APPLICATION_HEADERS.length).getValues() : [];
     const existing = rows.find(row => String(row[0]) === data.submission_id);
     if (existing) {
-      if (!answers.every((answer, index) => String(existing[index + 2]) === answer || String(existing[index + 2]) === applicationText_(answer))) {
-        throw new Error('This application reference belongs to different answers. Please refresh the page and try again.');
-      }
+      // A retry of a saved application: the written answers must match. Its files were saved the first time.
+      const same = ANSWER_FIELDS.every((key, index) => DOCUMENT_FIELDS.indexOf(key) >= 0
+        || String(existing[index + 2]) === data[key] || String(existing[index + 2]) === applicationText_(data[key]));
+      if (!same) throw new Error('This application reference belongs to different answers. Please refresh the page and try again.');
       return applicationResponse_({accepted: true, submissionId: data.submission_id, duplicate: true, confirmationEmailQueued: false});
     }
+    const links = saveDocuments_(data);
+    const answers = ANSWER_FIELDS.map(key => DOCUMENT_FIELDS.indexOf(key) >= 0 ? links[key] : data[key]);
     const row = [data.submission_id, new Date().toISOString()].concat(answers, ['Received']).map(applicationText_);
     sheet.getRange(lastRow + 1, 1, 1, APPLICATION_HEADERS.length).setValues([row]);
     SpreadsheetApp.flush();
@@ -91,7 +107,7 @@ function doPost(event) {
   } catch (error) {
     // Only validation/configuration errors have applicant-facing messages.
     const known = error && error.message;
-    const allowed = /^(Please |Several applications |Several people |Applications are |Application storage |Saving |We are receiving |You've saved |This application reference )/;
+    const allowed = /^(Please |Your resume |Your portfolio |Several applications |Several people |Applications are |Application storage |Saving |We are receiving |You've saved |This application reference )/;
     return applicationResponse_({accepted: false, message: typeof known === 'string' && allowed.test(known)
       ? known : 'We could not confirm your application was saved. Please wait a moment and try again.'});
   } finally {
@@ -101,9 +117,10 @@ function doPost(event) {
 
 function validateApplication_(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Please check your application details.');
-  const limits = {submission_id: 36, application_year: 4, name: 150, email: 254, school: 250, experience: 10000,
+  const limits = {submission_id: 36, application_year: 4, name: 150, email: 254, school: 250, program_year: 150, experience: 10000, why_join: 5000,
     role_1: 150, role_2: 150, role_3: 150, additional_roles: 500, consent: 10, consent_version: 40, website: 500};
   const result = {};
+  DOCUMENT_FIELDS.forEach(key => { result[key] = validateDocument_(input[key], DOCUMENT_LABELS[key]); });
   Object.keys(limits).forEach(key => {
     const value = input[key] === undefined ? '' : input[key];
     if (typeof value !== 'string') throw new Error('Please check your application details.');
@@ -112,7 +129,7 @@ function validateApplication_(input) {
   });
   if (result.website) throw new Error('Please try submitting the form again.');
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result.submission_id)) throw new Error('Please refresh the page and try again.');
-  ['name', 'school', 'experience', 'role_1', 'role_2', 'role_3'].forEach(key => {
+  ['name', 'school', 'program_year', 'experience', 'why_join', 'role_1', 'role_2', 'role_3'].forEach(key => {
     if (!result[key]) throw new Error('Please complete all required fields.');
   });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.email)) throw new Error('Please enter a valid email address.');
@@ -126,8 +143,39 @@ function validateApplication_(input) {
   return result;
 }
 
+// An attachment is {name, data} with base64 PDF data, or absent. Returns null when absent.
+function validateDocument_(value, label) {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value !== 'object' || typeof value.name !== 'string' || typeof value.data !== 'string') throw new Error('Please check your application details.');
+  let bytes;
+  try { bytes = Utilities.base64Decode(value.data); }
+  catch (_) { throw new Error('Your ' + label.toLowerCase() + ' could not be read. Please choose the file again.'); }
+  if (bytes.length > DOCUMENT_MAX_BYTES) throw new Error('Your ' + label.toLowerCase() + ' is over 5 MB. Please choose a smaller PDF.');
+  // Every PDF starts with %PDF-, whatever its file name says.
+  if (bytes.length < 5 || String.fromCharCode.apply(null, bytes.slice(0, 5).map(b => b & 255)) !== '%PDF-') {
+    throw new Error('Your ' + label.toLowerCase() + ' must be a PDF file.');
+  }
+  return bytes;
+}
+
+function saveDocuments_(data) {
+  const links = {};
+  DOCUMENT_FIELDS.forEach(key => { links[key] = ''; });
+  if (!DOCUMENT_FIELDS.some(key => data[key])) return links;
+  const id = PropertiesService.getScriptProperties().getProperty('DOCUMENT_FOLDER_ID');
+  if (!id) throw new Error('Application storage is not ready. Please try again later.');
+  const folder = DriveApp.getFolderById(id);
+  DOCUMENT_FIELDS.forEach(key => {
+    if (!data[key]) return;
+    // Name files by applicant and reference so they sort together; the applicant's own file name isn't trusted.
+    const name = (data.name.replace(/[^\w .'-]/g, '').slice(0, 60) || 'Applicant') + ' - ' + DOCUMENT_LABELS[key] + ' - ' + data.submission_id + '.pdf';
+    links[key] = folder.createFile(Utilities.newBlob(data[key], 'application/pdf', name)).getUrl();
+  });
+  return links;
+}
+
 function validateDraft_(input) {
-  const limits = {name: 150, email: 254, school: 250, experience: 10000, role_1: 150, role_2: 150, role_3: 150, additional_roles: 500, website: 500};
+  const limits = {name: 150, email: 254, school: 250, program_year: 150, experience: 10000, why_join: 5000, role_1: 150, role_2: 150, role_3: 150, additional_roles: 500, website: 500};
   const result = {};
   Object.keys(limits).forEach(key => {
     const value = input[key] === undefined ? '' : input[key];

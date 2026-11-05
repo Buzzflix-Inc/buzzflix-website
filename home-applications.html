@@ -130,14 +130,22 @@
      <label for="applicant-email">Email <span>(required)</span></label>
      <input id="applicant-email" name="email" type="email" autocomplete="email" maxlength="254" required>
     </div>
-    <div class="application-field application-field-wide">
+    <div class="application-field">
      <label for="applicant-school">What school do you go to? <span>(required)</span></label>
      <input id="applicant-school" name="school" type="text" maxlength="250" required>
+    </div>
+    <div class="application-field">
+     <label for="applicant-program">Program and year <span>(required)</span></label>
+     <input id="applicant-program" name="program_year" type="text" maxlength="150" placeholder="e.g. Grade 11, or Film, 2nd year" required>
     </div>
     <div class="application-field application-field-wide">
      <label for="applicant-experience">What have you done before? <span>(required)</span></label>
      <p class="application-help" id="experience-help">Tell us about projects, schoolwork, jobs, or other experience you’d bring to the team. Everyone starts somewhere.</p>
      <textarea id="applicant-experience" name="experience" rows="5" maxlength="10000" aria-describedby="experience-help" required></textarea>
+    </div>
+    <div class="application-field application-field-wide">
+     <label for="applicant-why">Why are you interested in joining Buzzflix? <span>(required)</span></label>
+     <textarea id="applicant-why" name="why_join" rows="5" maxlength="5000" required></textarea>
     </div>
     <fieldset class="application-field-wide application-roles">
      <legend>What roles are you interested in?</legend>
@@ -148,6 +156,14 @@
       <div class="application-field"><label for="applicant-role-3">Role 3 <span>(required)</span></label><input id="applicant-role-3" name="role_3" type="text" maxlength="150" aria-describedby="roles-help" required></div>
      </div>
      <div class="application-field application-extra-roles"><label for="applicant-extra-roles">Any other roles? <span>(optional)</span></label><input id="applicant-extra-roles" name="additional_roles" type="text" maxlength="500"></div>
+    </fieldset>
+    <fieldset class="application-field-wide application-roles application-documents">
+     <legend>Resume and portfolio <span>(optional)</span></legend>
+     <p class="application-help" id="documents-help">PDF files only, up to 5 MB each. A portfolio can be anything you’ve made: photos, stills, designs or links to your videos. Files aren’t saved with “Email me my answers”, so attach them again when you submit.</p>
+     <div class="application-document-fields">
+      <div class="application-field"><label for="applicant-resume">Resume</label><input id="applicant-resume" name="resume" type="file" accept=".pdf,application/pdf" aria-describedby="documents-help"></div>
+      <div class="application-field"><label for="applicant-portfolio">Portfolio</label><input id="applicant-portfolio" name="portfolio" type="file" accept=".pdf,application/pdf" aria-describedby="documents-help"></div>
+     </div>
     </fieldset>
     <div class="application-field application-field-wide application-video">
      <label for="applicant-video">A one-minute video of you <span>(coming soon)</span></label>

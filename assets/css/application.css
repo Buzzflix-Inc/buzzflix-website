@@ -34,6 +34,8 @@
 .application-roles { border:0; padding:0; margin:0; min-width:0; }
 .application-role-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
 .application-extra-roles { margin-top:20px; }
+.application-roles legend span { font-family:var(--body); font-weight:400; font-size:14px; }
+.application-document-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
 .application-video { background:var(--muted); padding:25px; border-radius:var(--radius); }
 .application-form input[type=file] { background:var(--paper); font-size:14px; padding:10px; }
 .application-form input[type=file]::file-selector-button { font:inherit; border:0; border-radius:4px; padding:10px 14px; margin-right:10px; background:var(--yellow); color:var(--ink); cursor:var(--pointer); }
@@ -64,7 +66,7 @@
 .application-section [hidden] { display:none!important; }
 @media(max-width:1000px) {
   .application-section { grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr); gap:35px; }
-  .application-role-fields { grid-template-columns:1fr; }
+  .application-role-fields,.application-document-fields { grid-template-columns:1fr; }
 }
 @media(max-width:800px) {
   .application-section { grid-template-columns:1fr; gap:24px; padding:45px 20px; }
