@@ -1426,7 +1426,8 @@ li,summary {
   padding-top:40px;
   padding-bottom:30px
 }
-.testimonials .section-title {
+/* Contact Our Team's heading lines up the same way. */
+.testimonials .section-title,.team .section-title {
   text-align:left;
   margin-bottom:32px
 }
