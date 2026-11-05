@@ -365,18 +365,17 @@ function initBeeCursor(){
  document.addEventListener('pointerdown',e=>{wake();if(e.pointerType==='mouse')bee.classList.add('is-pressed')});
  addEventListener('keydown',wake);addEventListener('scroll',wake,{passive:true});
  addEventListener('pointerup',()=>bee.classList.remove('is-pressed'));
- // Double-click: a quick backflip, a hop with a full turn round its middle (added on top of whatever it's doing).
+ // Double-click: a quick backflip, one smooth turn round its middle while it hops (added on top of whatever it's doing).
  let flip=null;
  document.addEventListener('dblclick',()=>{
   if(!on||bee.dataset.state==='hidden'||reduced.matches||flip?.playState==='running')return;
-  const turn=(up,deg)=>`translate(14px,${2-up}px) rotate(${deg}deg) translate(-14px,-2px)`;
-  flip=bee.animate([
-   {transform:turn(0,0)},
-   {transform:turn(12,40),offset:.2,easing:'cubic-bezier(.3,0,.6,1)'},
-   {transform:turn(18,200),offset:.55,easing:'cubic-bezier(.3,0,.6,1)'},
-   {transform:turn(0,360),offset:.9},
-   {transform:turn(0,360)}
-  ],{duration:620,composite:'add'});
+  const D=420,pivot=deg=>`translate(14px,2px) rotate(${deg}deg) translate(-14px,-2px)`;
+  bee.animate([
+   {transform:'translateY(0)',easing:'cubic-bezier(.2,.8,.4,1)'},
+   {transform:'translateY(-14px)',offset:.45,easing:'cubic-bezier(.6,0,.8,.4)'},
+   {transform:'translateY(0)'}
+  ],{duration:D,composite:'add'});
+  flip=bee.animate([{transform:pivot(0)},{transform:pivot(360)}],{duration:D,easing:'cubic-bezier(.45,.05,.3,1)',composite:'add'});
  });
  setInterval(update,250); // states that change under a still mouse: video controls hiding, buttons disabling
  // A new page doesn't know where the mouse is until it moves, so each page hands its position to the next.
