@@ -896,6 +896,22 @@ li,summary {
   height:calc(84px*var(--logo-scale));
   align-items:center
 }
+/* Each logo links to the partner's site. The strip stops while the pointer is over it or a logo has
+   keyboard focus, so a logo holds still to be clicked. */
+.partner-reel .reel-track a {
+  display:flex;
+  align-items:center;
+  flex:none;
+  border-radius:6px
+}
+.partner-reel .reel-track a:focus-visible {
+  outline:3px solid var(--orange);
+  outline-offset:6px
+}
+/* .reel.partner-reel outranks the later .reel[data-running] animation shorthand. */
+.reel.partner-reel:hover .reel-track,.reel.partner-reel:focus-within .reel-track {
+  animation-play-state:paused
+}
 .partner-reel .reel-track img {
   height:calc(var(--logo-h,48)*var(--logo-scale)*1px);
   width:auto;

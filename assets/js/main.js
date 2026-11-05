@@ -506,12 +506,18 @@ function initReels() {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const track = reel.querySelector('.reel-track');
     const toggle = reel.querySelector('.reel-toggle');
-    [...track.children].forEach(img => {
-      const copy = img.cloneNode();
-      copy.alt = '';
-      copy.loading = 'lazy';
-      copy.removeAttribute('fetchpriority');
+    // Items are photos or (partner logos) links around a logo. The copies are
+    // decoration: hidden from screen readers and skipped by Tab.
+    [...track.children].forEach(item => {
+      const copy = item.cloneNode(true);
       copy.setAttribute('aria-hidden', 'true');
+      if (copy.matches('a')) copy.tabIndex = -1;
+      copy.querySelectorAll('.visually-hidden').forEach(text => text.remove());
+      (copy.matches('img') ? [copy] : copy.querySelectorAll('img')).forEach(img => {
+        img.alt = '';
+        img.loading = 'lazy';
+        img.removeAttribute('fetchpriority');
+      });
       track.append(copy);
     });
     const setSpeed = () => reel.style.setProperty('--reel-duration',
