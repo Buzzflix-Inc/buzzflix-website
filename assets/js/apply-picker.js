@@ -80,7 +80,7 @@ if (picker && form) {
       slot.append(role, dept, remove);
     });
     status.textContent = `${picks.length} of 3 picked${full ? '!' : ''}`;
-    hint.hidden = picks.length < 2;
+    hint.hidden = !full;
     next.hidden = !full;
     fields.forEach((field, i) => { field.value = picks[i]?.role || ''; });
     form.dispatchEvent(new Event('input'));
