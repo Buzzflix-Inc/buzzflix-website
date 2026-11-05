@@ -29,7 +29,10 @@
   min-height:52px;
 }
 .application-form textarea { resize:vertical; }
-.application-form input:focus-visible,.application-form textarea:focus-visible { outline-offset:3px; }
+/* Focus: a 2px yellow border like the yearbook search box, in place of the browser outline.
+   The box-shadow adds the second pixel so the field doesn't shift. */
+.application-form input:not([type=checkbox]),.application-form textarea { transition:border-color .2s,box-shadow .2s; }
+.application-form input:not([type=checkbox]):focus,.application-form textarea:focus { outline:0; border-color:var(--yellow); box-shadow:0 0 0 1px var(--yellow); }
 .application-help { font-size:16px; line-height:1.5; margin-bottom:14px; }
 .application-roles { border:0; padding:0; margin:0; min-width:0; }
 .application-role-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
