@@ -274,9 +274,9 @@ function initBeeCursor(){
   if(!on||!target?.isConnected||target.tagName==='IFRAME'){bee.dataset.state='hidden';return}
   const c=getComputedStyle(target).cursor;
   bee.dataset.state=/\) 1 1, none$/.test(c)?'hover':/\) 0 0, none$/.test(c)?'idle':'hidden';
-  // Over a YouTube or Instagram link the bee holds up that site's icon, so you can see where it goes.
+  // Over a YouTube, Instagram, Facebook or LinkedIn link the bee holds up that site's icon, so you can see where it goes.
   const site=target.closest('a[href]')?.hostname?.replace(/^www\./,'')||'';
-  const holding=/^(youtube\.com|youtu\.be)$/.test(site)?'youtube':site==='instagram.com'?'instagram':'';
+  const holding={'youtube.com':'youtube','youtu.be':'youtube','instagram.com':'instagram','facebook.com':'facebook','linkedin.com':'linkedin'}[site]||'';
   if(bee.dataset.holding!==holding)holding?bee.dataset.holding=holding:delete bee.dataset.holding;
   const host=target.closest('dialog[open]')||document.body; // a modal dialog sits above everything else
   if(bee.parentNode!==host)host.append(bee);
@@ -330,12 +330,29 @@ function initBeeCursor(){
  document.addEventListener('pointermove',e=>{
   wake();
   if(e.pointerType!=='mouse'){target=null;update();return}
+  if(leaving){clearTimeout(leaving);leaving=0;bee.classList.remove('is-popping')}
   x=e.clientX;y=e.clientY;
   shake(x);
   if(!frame)frame=requestAnimationFrame(place);
   if(e.target!==target||bee.dataset.state==='hidden'){target=e.target;update()}
  },{passive:true});
- document.addEventListener('pointerout',e=>{if(!e.relatedTarget){target=null;update()}});
+ // Leaving the window across an edge, the bee squishes flat against it and goes poof (as when switched off).
+ let leaving=0;
+ document.addEventListener('pointerout',e=>{
+  if(e.relatedTarget)return;
+  const W=root.clientWidth,H=root.clientHeight;
+  const edge=x<24?'side':x>W-40?'side':y<24?'end':y>H-30?'end':'';
+  if(edge&&on&&bee.dataset.state!=='hidden'&&!reduced.matches){
+   bee.style.scale=edge==='side'?'.35 1.3':'1.3 .35';
+   clearTimeout(leaving);
+   leaving=setTimeout(()=>{
+    poof(Math.min(Math.max(x,-5),W-25),Math.min(Math.max(y,-3),H-15)); // keep the cloud on screen
+    target=null;update();
+   },130);
+   return;
+  }
+  target=null;update();
+ });
  document.addEventListener('pointerdown',e=>{wake();if(e.pointerType==='mouse')bee.classList.add('is-pressed')});
  addEventListener('keydown',wake);addEventListener('scroll',wake,{passive:true});
  addEventListener('pointerup',()=>bee.classList.remove('is-pressed'));
@@ -359,12 +376,12 @@ function initBeeCursor(){
   update();
  };
  // Turning it off pops the bee into a little cloud where it was, rather than it simply vanishing.
- const poof=()=>{
+ const poof=(cx=x,cy=y)=>{
   if(bee.dataset.state==='hidden'||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
   const cloud=document.createElement('div');
   cloud.className='bee-poof';
   cloud.setAttribute('aria-hidden','true');
-  cloud.style.translate=`${x}px ${y}px`;
+  cloud.style.translate=`${cx}px ${cy}px`;
   cloud.innerHTML='<i></i>'.repeat(8);
   cloud.querySelectorAll('i').forEach((p,i)=>{if(i)p.style.setProperty('--a',`${i*360/7+20}deg`)});
   bee.classList.add('is-popping');
