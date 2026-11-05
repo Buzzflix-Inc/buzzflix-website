@@ -279,8 +279,22 @@ function initBeeCursor(){
   toggle.setAttribute('aria-checked',String(on));
   update();
  };
+ // Turning it off pops the bee into a little cloud where it was, rather than it simply vanishing.
+ const poof=()=>{
+  if(bee.dataset.state==='hidden'||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const cloud=document.createElement('div');
+  cloud.className='bee-poof';
+  cloud.setAttribute('aria-hidden','true');
+  cloud.style.translate=`${x}px ${y}px`;
+  cloud.innerHTML='<i></i>'.repeat(8);
+  cloud.querySelectorAll('i').forEach((p,i)=>{if(i)p.style.setProperty('--a',`${i*360/7+20}deg`)});
+  bee.classList.add('is-popping');
+  bee.parentNode.append(cloud);
+  setTimeout(()=>cloud.remove(),700);
+ };
  toggle.addEventListener('click',()=>{
   on=!on;
+  if(on)bee.classList.remove('is-popping');else poof();
   try{on?localStorage.removeItem(KEY):localStorage.setItem(KEY,'regular')}catch{}
   apply();
  });
