@@ -778,8 +778,8 @@ li,summary {
   font-weight:500;
   font-size:20px;
   letter-spacing:1px;
-  text-anchor:middle;
-  dominant-baseline:central
+  /* Centred on the curve with dy="7" in the markup: Safari ignores dominant-baseline on textPath. */
+  text-anchor:middle
 }
 .brand img {
   width:100%;
