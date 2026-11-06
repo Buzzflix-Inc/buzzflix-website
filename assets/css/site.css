@@ -372,6 +372,15 @@ html.bee-cursor-on {
   display:block;
   animation:bee-boing .7s cubic-bezier(.3,.7,.4,1)
 }
+/* Anything on the bee's head (crown, beret, propeller cap, nightcap) hides the antenna: the bee switches to
+   the antenna-less copy of its image, and the startled antenna stays under the hat. The menu's pictures
+   (.bee-figure) do the same further down. */
+.bee-cursor:has(.bee-wear[data-slot=hat][data-item]) {
+  --bee-face:url('../images/bee-cursor-startled-ab9bbb6.svg')
+}
+.bee-cursor:has(.bee-wear[data-slot=hat][data-item]) .bee-antenna {
+  display:none
+}
 @keyframes bee-boing {
   0% { scale:1 .2 }
   25% { scale:1 1.3 }
@@ -852,6 +861,9 @@ html.bee-cursor-on {
   margin:6px 0 0 -4px;
   background:url('../images/bee-cursor-fa90ddb.svg') 0 0/32px 32px no-repeat;
   scale:1.9
+}
+.bee-figure:has(.bee-wear[data-slot=hat][data-item]) {
+  background-image:url('../images/bee-cursor-startled-ab9bbb6.svg')
 }
 .is-locked .bee-figure {
   filter:brightness(0);
