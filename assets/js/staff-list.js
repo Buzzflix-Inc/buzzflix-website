@@ -7,9 +7,9 @@ import {api, h, formatDate, timeElement, statusPill, loadMe, departmentOf, watch
 
 const $ = selector => document.querySelector(selector);
 const yearSelect = $('[data-year]'), search = $('[data-search]'), departmentSelect = $('[data-department]'), assignedSelect = $('[data-assigned]');
-const tabs = $('[data-status-tabs]'), rows = $('[data-rows]'), count = $('[data-count]'), errorBox = $('[data-error]');
+const views = $('[data-views]'), steps = $('[data-steps]'), rows = $('[data-rows]'), count = $('[data-count]'), errorBox = $('[data-error]');
 const params = new URLSearchParams(location.search);
-// status: 'mine', 'decision' (admins), 'all' or one of the statuses.
+// status: a view ('mine', 'decision' for admins, 'all'), or a step ('awaiting' for members, or one of the statuses).
 const filters = {status: params.get('status') || 'mine', q: params.get('q') || '', dept: params.get('dept') || '', assigned: params.get('assigned') || ''};
 let data, info, applications = [];
 let seen = new Map(); // id → updated_at, to highlight rows someone else changed
@@ -31,7 +31,7 @@ const saveFilters = () => {
 
 const roles = row => [row.role_1, row.role_2, row.role_3, ...String(row.additional_roles || '').split(',')].map(role => role.trim()).filter(Boolean);
 const inTab = (row, tab) => tab === 'all' || (tab === 'mine' ? row.assigned_to === info.me.email
-  : tab === 'decision' ? ['approve', 'decline'].includes(row.status) : row.status === tab);
+  : ['decision', 'awaiting'].includes(tab) ? ['approve', 'decline'].includes(row.status) : row.status === tab);
 const matches = (row, {skipStatus = false} = {}) => {
   if (!skipStatus && !inTab(row, filters.status)) return false;
   if (filters.assigned === 'me' && row.assigned_to !== info.me.email) return false;
@@ -91,14 +91,17 @@ function render() {
   // Tabs count what the other filters leave, so the numbers match what a click shows.
   const visible = applications.filter(row => matches(row, {skipStatus: true}));
   const isAdmin = info.me.role === 'admin';
-  // Admins' decision queue: everything an interviewer has recommended, waiting for Hired or Not hired.
-  const tabList = [['mine', 'Assigned to me'], ...(isAdmin ? [['decision', 'Needs your decision']] : []), ['all', 'All'],
-    ...info.statuses.map(status => [status, info.statusLabels[status]])];
-  tabs.replaceChildren(...tabList.map(([tab, label]) => {
+  const button = ([tab, label, extra = null]) => {
     const n = visible.filter(row => inTab(row, tab)).length;
-    return h('button', {type: 'button', 'aria-pressed': String(filters.status === tab), onclick: () => { filters.status = tab; render(); }},
-      label, h('span', {class: tab === 'decision' && n ? 'is-alert' : null}, String(n)));
-  }));
+    return h('button', {type: 'button', class: extra, 'aria-pressed': String(filters.status === tab), onclick: () => { filters.status = tab; render(); }},
+      h('span', {class: 'staff-tab-label'}, label), h('span', {class: `staff-tab-count${tab === 'decision' && n ? ' is-alert' : ''}`}, String(n)));
+  };
+  // Main views. Admins' decision queue holds everything an interviewer has recommended, waiting for Hired or Not hired.
+  views.replaceChildren(...[['mine', 'Assigned to me'], ...(isAdmin ? [['decision', 'Needs your decision', 'is-decision']] : []),
+    ['all', 'All applications']].map(button));
+  // Steps. Approve and Decline (pending) share one "Awaiting decision" step for members; admins have the view above.
+  steps.replaceChildren(...['new', 'reviewing', 'interview', ...(isAdmin ? [] : ['awaiting']), 'hired', 'not_hired']
+    .map(step => button([step, step === 'awaiting' ? 'Awaiting decision' : info.statusLabels[step]])));
   progress(visible);
 
   const shown = visible.filter(row => inTab(row, filters.status));

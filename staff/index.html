@@ -20,7 +20,9 @@
   </div>
  </div>
  <p class="staff-error" role="alert" data-error hidden></p>
- <div class="staff-tabs" role="group" aria-label="Show applications" data-status-tabs></div>
+ <!-- Two rows: the main views (big), then a lighter row to narrow to one step. -->
+ <div class="staff-views" role="group" aria-label="Show applications" data-views></div>
+ <div class="staff-steps" role="group" aria-labelledby="staff-steps-label"><span class="staff-steps-label" id="staff-steps-label">By step</span><div data-steps></div></div>
  <div class="staff-progress" data-progress hidden>
   <div class="staff-progress-bar" role="img" data-progress-bar></div>
   <ul class="staff-progress-legend" data-progress-legend></ul>
