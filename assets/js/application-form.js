@@ -21,6 +21,29 @@ if (form) {
   let sending = false;
   let submissionId;
   let lastAnswers;
+  // Answers with data-word-limit get a live "12 / 100 words" counter in the box's bottom-right corner.
+  // Code.gs checks the same limit (WORD_LIMITS).
+  const countWords = text => text.trim().split(/\s+/).filter(Boolean).length;
+  const wordLimited = [...form.querySelectorAll('textarea[data-word-limit]')].map(input => {
+    const limit = Number(input.dataset.wordLimit);
+    const box = document.createElement('div');
+    box.className = 'application-word-box';
+    input.before(box);
+    box.append(input);
+    const counter = document.createElement('span');
+    counter.className = 'application-word-count';
+    counter.id = `${input.id}-words`;
+    box.append(counter);
+    input.setAttribute('aria-describedby', [input.getAttribute('aria-describedby'), counter.id].filter(Boolean).join(' '));
+    return {input, limit, counter};
+  });
+  const updateWordCounts = () => wordLimited.forEach(({input, limit, counter}) => {
+    const words = countWords(input.value);
+    const over = words > limit;
+    counter.textContent = `${words} / ${limit} words`;
+    counter.classList.toggle('is-over', over);
+    if (over) input.setCustomValidity(`Please keep this answer to ${limit} words or fewer (it’s ${words} now).`);
+  });
   button.disabled = false;
   button.textContent = preview ? 'Preview submission' : 'Submit application';
   note.hidden = !preview;
@@ -37,6 +60,7 @@ if (form) {
       const input = form.elements[name];
       if (input) input.setCustomValidity(input.value.trim() ? '' : 'Please complete this field.');
     });
+    updateWordCounts();
     documentFields.forEach(name => {
       const input = form.elements[name];
       const file = input.files[0];
@@ -48,6 +72,9 @@ if (form) {
   };
   form.addEventListener('input', validate);
   form.addEventListener('change', validate);
+  // reset fires before the fields clear, so recount on the next tick.
+  form.addEventListener('reset', () => setTimeout(updateWordCounts));
+  updateWordCounts();
   // Files travel inside the JSON body as base64, because Apps Script can't take multipart uploads.
   const readDocument = file => new Promise((resolve, reject) => {
     const reader = new FileReader();

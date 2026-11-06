@@ -29,6 +29,13 @@
   min-height:52px;
 }
 .application-form textarea { resize:vertical; }
+/* Word counter (added by application-form.js) sits inside the box's bottom-right corner. */
+.application-word-box { position:relative; }
+.application-form .application-word-box textarea { padding-bottom:44px; }
+/* A solid strip along the bottom edge, so long answers scroll behind it instead of under the numbers.
+   It stops short of the right edge to leave the resize handle uncovered. */
+.application-word-count { position:absolute; left:2px; right:18px; bottom:2px; padding:10px 0 12px; border-radius:0 0 0 var(--radius); background:var(--paper); text-align:right; font-size:14px; line-height:1; color:#595959; pointer-events:none; font-variant-numeric:tabular-nums; }
+.application-word-count.is-over { color:#a52d16; }
 /* Focus: a 2px yellow border like the yearbook search box, in place of the browser outline.
    The box-shadow adds the second pixel so the field doesn't shift. */
 .application-form input:not([type=checkbox]),.application-form textarea { transition:border-color .2s,box-shadow .2s; }

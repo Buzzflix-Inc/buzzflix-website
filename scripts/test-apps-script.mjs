@@ -72,6 +72,14 @@ test('validation rejects invalid email, duplicate roles, missing consent, spam a
   }
   assert.equal(h.rows.length, 1);
 });
+test('written answers are limited to 100 words', () => {
+  const h = harness(); h.setup();
+  const words = n => Array(n).fill('word').join(' \n ');
+  assert.equal(h.submit(application({experience: words(101)})).accepted, false);
+  assert.match(h.submit(application({why_join: words(101)})).message, /100 words/);
+  assert.equal(h.submit(application({experience: words(100), why_join: words(100)})).accepted, true);
+  assert.equal(h.rows.length, 2);
+});
 test('at most two positions from one department are accepted', () => {
   const h = harness(); h.setup();
   const crowded = h.submit(application({role_1: 'Gaffer', role_2: 'Key Grip', role_3: 'grip'}));

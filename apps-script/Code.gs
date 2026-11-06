@@ -11,7 +11,8 @@ const DOCUMENT_FOLDER = 'Buzzflix 2027 Application Documents';
 // Answers saved before applications open, so the applicant can reload them from an emailed link.
 const DRAFT_TAB = 'Saved Drafts';
 const DRAFT_HEADERS = ['Draft ID', 'Saved At', 'Email', 'Answers'];
-const DRAFT_FIELDS = ['name', 'email', 'school', 'program_year', 'experience', 'why_join', 'role_1', 'role_2', 'role_3', 'additional_roles'];
+const WORD_LIMITS = {experience: 100, why_join: 100};
+const DRAFT_FIELDS =['name', 'email', 'school', 'program_year', 'experience', 'why_join', 'role_1', 'role_2', 'role_3', 'additional_roles'];
 const DRAFT_LINK = 'https://www.buzzflix.ca/apply#draft=';
 // The positions in the apply.html picker, by department. Keep in step with apply.html.
 // An applicant may choose at most two from one department; free-text roles from the homepage form are not counted.
@@ -131,6 +132,10 @@ function validateApplication_(input) {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result.submission_id)) throw new Error('Please refresh the page and try again.');
   ['name', 'school', 'program_year', 'experience', 'why_join', 'role_1', 'role_2', 'role_3'].forEach(key => {
     if (!result[key]) throw new Error('Please complete all required fields.');
+  });
+  // Same limits and counting as data-word-limit in application-form.js.
+  Object.keys(WORD_LIMITS).forEach(key => {
+    if (result[key].split(/\s+/).filter(Boolean).length > WORD_LIMITS[key]) throw new Error('Please keep each written answer to ' + WORD_LIMITS[key] + ' words or fewer.');
   });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.email)) throw new Error('Please enter a valid email address.');
   if (new Set([result.role_1, result.role_2, result.role_3].map(role => role.toLowerCase())).size !== 3) throw new Error('Please list three different roles.');
