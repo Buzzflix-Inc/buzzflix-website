@@ -5,12 +5,13 @@
 	"$schema": "https://unpkg.com/wrangler@4/config-schema.json",
 	"name": "buzzflix-website",
 	"compatibility_date": "2026-10-26",
-	// The Worker answers /api/* (the Buzz Run leaderboard); everything else is the static files below.
+	// The Worker answers /api/* (the Buzz Run leaderboard, the application form, the staff area) and guards
+	// the /staff pages (signed-in staff only); everything else is the static files below.
 	"main": "worker/index.js",
 	"assets": {
 		"directory": ".",
 		"binding": "ASSETS",
-		"run_worker_first": ["/api/*"],
+		"run_worker_first": ["/api/*", "/staff", "/staff/*"],
 		// Serve 404.html (with a 404 status) for any address that doesn't match a page.
 		"not_found_handling": "404-page",
 		// /movies serves movies.html, and /movies.html redirects to /movies.
@@ -22,8 +23,33 @@
 			"binding": "DB",
 			"database_name": "buzzflix-buzz-run",
 			"database_id": "b71cd36d-8508-40d3-9a29-7fc0b160aa73"
+		},
+		// Applications, saved drafts and the staff area (schema in worker/applications-schema.sql).
+		{
+			"binding": "APPS",
+			"database_name": "buzzflix-applications",
+			"database_id": "b440a7f0-90bf-4471-b3cd-185765e3feba"
 		}
 	],
+	// Resume and portfolio PDFs sent with applications. Private: only /api/staff/* reads them.
+	"r2_buckets": [
+		{
+			"binding": "DOCUMENTS",
+			"bucket_name": "buzzflix-application-documents"
+		}
+	],
+	// RESEND_API_KEY is a secret (npx wrangler secret put RESEND_API_KEY), not set here.
+	"vars": {
+		// "true" once applications open; until then the API refuses submissions (drafts still work).
+		"APPLICATIONS_OPEN": "false",
+		// Made admins the first time they sign in. Comma-separated.
+		"ADMIN_EMAILS": "jack@buzzflix.ca",
+		// TEMPORARY while email can't send: this address signs in at /login without a code, except on
+		// buzzflix.ca and once APPLICATIONS_OPEN is "true". Delete this line before merging into main.
+		"DEV_LOGIN_EMAIL": "jack@buzzflix.ca",
+		// Resend's test sender until buzzflix.ca is verified in Resend. It only delivers to the Resend account's own email.
+		"MAIL_FROM": "Buzzflix <onboarding@resend.dev>"
+	},
 	// Keep the .workers.dev test address, and give each GitHub branch its own preview address.
 	"workers_dev": true,
 	"preview_urls": true,

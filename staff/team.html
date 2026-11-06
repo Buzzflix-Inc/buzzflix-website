@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en-CA"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Team | Buzzflix staff</title><link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32-d042b60.png"><link rel="preload" href="/assets/fonts/latin-2735d88.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/latin-bf832b5.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/css/site.css"><link rel="stylesheet" href="/assets/css/staff.css"><script type="module" src="/assets/js/staff-team.js"></script></head>
+<!-- Staff area: worker/staff.js sends signed-out visitors to /login. The header is repeated in each staff/*.html page. -->
+<body class="staff"><a class="skip-link" href="#main">Skip to main content</a>
+<header class="staff-header">
+ <a class="staff-brand" href="/staff/"><img src="/assets/images/buzzflix-b-1--605ed9e.webp" alt="Buzzflix" width="500" height="114"><span>Staff</span></a>
+ <nav aria-label="Staff">
+  <a href="/staff/">Applications</a>
+  <a href="/staff/team" aria-current="page">Team</a>
+ </nav>
+ <div class="staff-account"><span data-me></span><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
+</header>
+<main id="main">
+ <div class="staff-title-row"><h1>Team</h1></div>
+ <p class="staff-error" role="alert" data-error hidden></p>
+ <div class="staff-team-grid">
+  <section class="staff-card" aria-labelledby="people-title">
+   <h2 id="people-title">People</h2>
+   <p class="staff-muted staff-hint">Anyone with a @buzzflix.ca email can sign in. They appear here after their first sign-in, or when an admin adds them. Admins can manage the team and delete applications.</p>
+   <ul class="staff-team" data-team><li>Loading…</li></ul>
+  </section>
+  <div>
+   <section class="staff-card" aria-labelledby="name-title">
+    <h2 id="name-title">Your name</h2>
+    <form class="staff-inline-form" data-name-form>
+     <label class="visually-hidden" for="staff-own-name">Your name</label>
+     <input id="staff-own-name" name="name" maxlength="80" required autocomplete="name">
+     <button class="staff-button-quiet" type="submit">Save</button>
+    </form>
+    <p class="staff-message" role="status" data-name-status></p>
+   </section>
+   <section class="staff-card" aria-labelledby="add-title" data-admin-only hidden>
+    <h2 id="add-title">Add someone</h2>
+    <p class="staff-muted staff-hint">Add a teammate so applications can be assigned to them before they first sign in.</p>
+    <form data-add-form>
+     <div class="staff-field"><label for="staff-add-email">Buzzflix email</label><input id="staff-add-email" name="email" type="email" placeholder="name@buzzflix.ca" required></div>
+     <div class="staff-field"><label for="staff-add-name">Name</label><input id="staff-add-name" name="name" maxlength="80"></div>
+     <button class="button staff-add-button" type="submit">Add to team</button>
+     <p class="staff-message" role="status" data-add-status></p>
+    </form>
+   </section>
+  </div>
+ </div>
+</main>
+</body></html>

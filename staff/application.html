@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en-CA"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Application | Buzzflix staff</title><link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32-d042b60.png"><link rel="preload" href="/assets/fonts/latin-2735d88.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/latin-bf832b5.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/css/site.css"><link rel="stylesheet" href="/assets/css/staff.css"><script type="module" src="/assets/js/staff-application.js"></script></head>
+<!-- Staff area: worker/staff.js sends signed-out visitors to /login. The header is repeated in each staff/*.html page. -->
+<body class="staff"><a class="skip-link" href="#main">Skip to main content</a>
+<header class="staff-header">
+ <a class="staff-brand" href="/staff/"><img src="/assets/images/buzzflix-b-1--605ed9e.webp" alt="Buzzflix" width="500" height="114"><span>Staff</span></a>
+ <nav aria-label="Staff">
+  <a href="/staff/" aria-current="page">Applications</a>
+  <a href="/staff/team">Team</a>
+ </nav>
+ <div class="staff-account"><span data-me></span><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
+</header>
+<main id="main">
+ <a class="staff-back" href="/staff/" data-back>← All applications</a>
+ <p class="staff-error" role="alert" data-error hidden></p>
+ <p data-loading>Loading the application…</p>
+ <article data-application hidden>
+  <header class="staff-detail-head">
+   <p class="staff-eyebrow" data-submitted></p>
+   <h1 data-name></h1>
+   <p data-contact></p>
+  </header>
+  <div class="staff-detail-grid">
+   <div class="staff-detail-main">
+    <section class="staff-card" aria-labelledby="positions-title">
+     <h2 id="positions-title">Positions</h2>
+     <ol class="staff-positions" data-positions></ol>
+     <p class="staff-answer" data-additional hidden></p>
+    </section>
+    <section class="staff-card" aria-labelledby="answers-title">
+     <h2 id="answers-title">Previous experience</h2>
+     <p class="staff-answer" data-experience></p>
+     <h2>Why Buzzflix</h2>
+     <p class="staff-answer" data-why></p>
+    </section>
+    <section class="staff-card" aria-labelledby="files-title">
+     <h2 id="files-title">Resume and portfolio</h2>
+     <ul class="staff-files" data-files></ul>
+    </section>
+    <section class="staff-card" aria-labelledby="notes-title">
+     <h2 id="notes-title">Team notes</h2>
+     <ol class="staff-notes" data-notes></ol>
+     <form class="staff-note-form" data-note-form>
+      <label for="staff-note">Add a note</label>
+      <textarea id="staff-note" name="body" maxlength="5000" required placeholder="Only the Buzzflix team sees notes."></textarea>
+      <button class="button" type="submit">Add note</button>
+      <p class="staff-message" role="status" data-note-status></p>
+     </form>
+    </section>
+   </div>
+   <aside class="staff-detail-side">
+    <section class="staff-card" aria-label="Decision">
+     <div class="staff-field"><label for="staff-status">Status</label><select id="staff-status" data-status></select></div>
+     <div class="staff-field"><label for="staff-assignee">Assigned to</label><select id="staff-assignee" data-assignee></select></div>
+     <p class="staff-message" role="status" data-save-status></p>
+    </section>
+    <section class="staff-card" aria-labelledby="history-title">
+     <h2 id="history-title">History</h2>
+     <ol class="staff-activity" data-activity></ol>
+    </section>
+    <section class="staff-card" aria-labelledby="delete-title" data-admin-only hidden>
+     <h2 id="delete-title">Delete</h2>
+     <p class="staff-muted staff-hint">Permanently removes this application, its files and notes, for example when an applicant asks us to delete their information.</p>
+     <button class="staff-button-quiet staff-button-danger" type="button" data-delete>Delete application</button>
+    </section>
+   </aside>
+  </div>
+ </article>
+</main>
+</body></html>

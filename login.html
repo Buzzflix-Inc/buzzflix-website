@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en-CA"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Staff sign-in | Buzzflix</title><link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32-d042b60.png"><link rel="preload" href="/assets/fonts/latin-2735d88.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/latin-bf832b5.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/css/site.css"><link rel="stylesheet" href="/assets/css/staff.css"><script type="module" src="/assets/js/staff-login.js"></script></head>
+<!-- Staff sign-in. Not linked from the site; staff go to buzzflix.ca/login. -->
+<body class="staff staff-login">
+<main class="staff-login-card" id="main">
+ <img src="/assets/images/buzzflix-b-1--605ed9e.webp" alt="Buzzflix" width="500" height="114" fetchpriority="high">
+ <h1>Staff sign-in</h1>
+ <p class="staff-error" role="alert" data-error hidden></p>
+
+ <form data-email-step novalidate>
+  <p>Enter your Buzzflix email and we’ll send you a code to sign in.</p>
+  <label for="staff-email">Buzzflix email</label>
+  <input id="staff-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@buzzflix.ca" required>
+  <button class="button" type="submit">Email me a code</button>
+ </form>
+
+ <form data-code-step hidden novalidate>
+  <p data-code-sent></p>
+  <label for="staff-code">6-digit code</label>
+  <input id="staff-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+  <button class="button" type="submit">Sign in</button>
+  <div class="staff-login-links">
+   <button class="staff-link-button" type="button" data-resend>Send a new code</button>
+   <button class="staff-link-button" type="button" data-change-email>Use a different email</button>
+  </div>
+  <p class="staff-message" role="status" data-code-status></p>
+ </form>
+</main>
+</body></html>

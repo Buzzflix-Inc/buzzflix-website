@@ -11,7 +11,7 @@ if (form) {
   const confirmation = document.querySelector('[data-application-confirmation]');
   const roles = [form.elements.role_1, form.elements.role_2, form.elements.role_3];
   const answerFields = ['name', 'email', 'school', 'program_year', 'experience', 'why_join', 'role_1', 'role_2', 'role_3', 'additional_roles'];
-  // Optional PDF attachments. Code.gs saves them to Drive and checks the same limits.
+  // Optional PDF attachments. worker/apply.js stores them and checks the same limits.
   const documentFields = ['resume', 'portfolio'].filter(name => form.elements[name]);
   const maxDocumentBytes = 5 * 1024 * 1024;
   const draftSave = form.querySelector('[data-draft-save]');
@@ -22,7 +22,7 @@ if (form) {
   let submissionId;
   let lastAnswers;
   // Answers with data-word-limit get a live "12 / 100 words" counter in the box's bottom-right corner.
-  // Code.gs checks the same limit (WORD_LIMITS).
+  // worker/apply.js checks the same limit (WORD_LIMITS).
   const countWords = text => text.trim().split(/\s+/).filter(Boolean).length;
   const wordLimited = [...form.querySelectorAll('textarea[data-word-limit]')].map(input => {
     const limit = Number(input.dataset.wordLimit);
@@ -75,7 +75,7 @@ if (form) {
   // reset fires before the fields clear, so recount on the next tick.
   form.addEventListener('reset', () => setTimeout(updateWordCounts));
   updateWordCounts();
-  // Files travel inside the JSON body as base64, because Apps Script can't take multipart uploads.
+  // Files travel inside the JSON body as base64, so the whole application is one request.
   const readDocument = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve({name: file.name, data: reader.result.slice(reader.result.indexOf(',') + 1)});
@@ -132,7 +132,6 @@ if (form) {
       draftButton.disabled = true;
       draftStatus.textContent = 'Saving your answers…';
       try {
-        // text/plain avoids the cross-origin preflight that Apps Script cannot handle.
         const result = await getJSON(endpoint, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
           body: JSON.stringify({action: 'save_draft', ...answers()})});
         if (result.saved !== true) throw Object.assign(new Error('draft-failed'), {userMessage: result.message});
@@ -207,8 +206,7 @@ if (form) {
     const timeout = setTimeout(() => controller.abort(), files.length ? 180000 : 60000);
     try {
       const response = await fetch(endpoint, {
-        method: 'POST', // text/plain avoids the cross-origin preflight that Apps Script cannot handle.
-        // Keep normal CORS so we can read Google's saved/not-saved response.
+        method: 'POST', // JSON sent as text/plain; worker/apply.js answers with saved/not-saved.
         headers: {'Content-Type': 'text/plain;charset=utf-8'}, credentials: 'omit', redirect: 'follow',
         body: JSON.stringify(data), signal: controller.signal
       });

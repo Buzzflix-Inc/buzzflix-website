@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en-CA"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Applications | Buzzflix staff</title><link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32-d042b60.png"><link rel="preload" href="/assets/fonts/latin-2735d88.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/latin-bf832b5.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/css/site.css"><link rel="stylesheet" href="/assets/css/staff.css"><script type="module" src="/assets/js/staff-list.js"></script></head>
+<!-- Staff area: worker/staff.js sends signed-out visitors to /login. The header is repeated in each staff/*.html page. -->
+<body class="staff"><a class="skip-link" href="#main">Skip to main content</a>
+<header class="staff-header">
+ <a class="staff-brand" href="/staff/"><img src="/assets/images/buzzflix-b-1--605ed9e.webp" alt="Buzzflix" width="500" height="114"><span>Staff</span></a>
+ <nav aria-label="Staff">
+  <a href="/staff/" aria-current="page">Applications</a>
+  <a href="/staff/team">Team</a>
+ </nav>
+ <div class="staff-account"><span data-me></span><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
+</header>
+<main id="main">
+ <div class="staff-title-row">
+  <h1>Applications</h1>
+  <div class="staff-title-actions">
+   <div><label for="staff-year">Year</label><select id="staff-year" data-year></select></div>
+   <a class="staff-button-quiet" href="/api/staff/export.csv" data-export download>Export CSV</a>
+  </div>
+ </div>
+ <p class="staff-error" role="alert" data-error hidden></p>
+ <div class="staff-tabs" role="group" aria-label="Show applications by status" data-status-tabs></div>
+ <div class="staff-filters">
+  <div><label for="staff-search">Search</label><input id="staff-search" type="search" placeholder="Name, email, school or role" data-search></div>
+  <div><label for="staff-department">Department</label><select id="staff-department" data-department><option value="">All departments</option></select></div>
+  <div><label for="staff-assigned">Assigned to</label><select id="staff-assigned" data-assigned><option value="">Anyone</option><option value="me">Me</option><option value="none">No one</option></select></div>
+ </div>
+ <p class="staff-count" role="status" data-count>Loading applications…</p>
+ <div class="staff-table-wrap" data-table-wrap hidden>
+  <table class="staff-table">
+   <thead><tr><th scope="col">Name</th><th scope="col">Positions</th><th scope="col">School</th><th scope="col">Submitted</th><th scope="col">Status</th><th scope="col">Assigned to</th></tr></thead>
+   <tbody data-rows></tbody>
+  </table>
+ </div>
+ <p class="staff-empty" data-empty hidden>No applications match these filters.</p>
+</main>
+</body></html>

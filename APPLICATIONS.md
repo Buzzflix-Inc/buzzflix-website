@@ -2,6 +2,8 @@
 
 `home-applications.html` is the application-season clone. `home-current.html` is the other homepage snapshot. The active `index.html` remains unchanged until you switch them.
 
+> **Since November 2026** the form posts to the site's own Worker (`/api/apply`), and staff review applications at buzzflix.ca/login. See **STAFF-AREA.md**. The Apps Script notes below describe the old setup.
+
 The form sends written applications to **2027 Applications** through Google Apps Script. Video uploads and confirmation emails are not enabled. The consent wording covers the written application.
 
 ## Setup
