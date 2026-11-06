@@ -363,6 +363,38 @@ test('admins manage the team and delete applications; members cannot', async () 
   assert.deepEqual(ctx.files.keys(), []);
 });
 
+test('first sign-in: the welcome tour shows until finished, and each person sets up their own profile', async () => {
+  const {staff, signIn} = setup();
+  const owen = await signIn('owen@buzzflix.ca');
+  const jack = await signIn('jack@buzzflix.ca');
+  let me = (await staff('GET', '/me', undefined, owen)).body;
+  assert.equal(me.me.onboarded, false);
+  assert.ok(me.staffDepartments.includes('Camera'));
+  const saved = await staff('PATCH', '/team/owen%40buzzflix.ca', {name: 'Owen Laurent', title: 'Camera lead', department: 'Camera', onboarded: true}, owen);
+  assert.equal(saved.status, 200, JSON.stringify(saved.body));
+  assert.deepEqual([saved.body.person.title, saved.body.person.department, saved.body.person.onboarded], ['Camera lead', 'Camera', true]);
+  assert.equal((await staff('GET', '/me', undefined, owen)).body.me.onboarded, true);
+  assert.equal((await staff('PATCH', '/team/owen%40buzzflix.ca', {department: 'Catering'}, owen)).status, 400);
+  assert.equal((await staff('PATCH', '/team/owen%40buzzflix.ca', {title: 'Boss'}, jack)).status, 403, 'not even an admin');
+  assert.equal((await staff('PATCH', '/team/owen%40buzzflix.ca', {title: '', department: ''}, owen)).body.person.title, '');
+  const prefs = await staff('PATCH', '/team/owen%40buzzflix.ca', {colour: '#1f5f99', default_view: 'all'}, owen);
+  assert.deepEqual([prefs.body.person.colour, prefs.body.person.default_view], ['#1f5f99', 'all']);
+  assert.equal((await staff('PATCH', '/team/owen%40buzzflix.ca', {colour: 'red'}, owen)).status, 400);
+  assert.equal((await staff('PATCH', '/team/owen%40buzzflix.ca', {default_view: 'decision'}, owen)).status, 400, 'members have no decision view');
+  // Sign out everywhere ends every session, and only that person's.
+  const owenAgain = await signIn('owen@buzzflix.ca');
+  assert.equal((await staff('POST', '/logout-everywhere', {}, owen)).status, 200);
+  assert.equal((await staff('GET', '/me', undefined, owenAgain)).status, 401);
+  assert.equal((await staff('GET', '/me', undefined, jack)).status, 200);
+});
+
+test('admins add people as Staff or Admin', async () => {
+  const {staff, signIn} = setup();
+  const jack = await signIn('jack@buzzflix.ca');
+  assert.equal((await staff('POST', '/team', {email: 'sam@buzzflix.ca', name: 'Sam', role: 'admin'}, jack)).body.person.role, 'admin');
+  assert.equal((await staff('POST', '/team', {email: 'kim@buzzflix.ca', name: 'Kim'}, jack)).body.person.role, 'member');
+});
+
 test('/staff pages send signed-out visitors to /login', async () => {
   const {ctx, signIn} = setup();
   const serve = () => new Response('page');

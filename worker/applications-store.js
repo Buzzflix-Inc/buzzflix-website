@@ -8,7 +8,7 @@
 const SUMMARY = ['id', 'year', 'submitted_at', 'updated_at', 'name', 'email', 'school', 'program_year',
   'role_1', 'role_2', 'role_3', 'additional_roles', 'status', 'assigned_to'];
 const EDITABLE = ['status', 'assigned_to'];
-const STAFF_EDITABLE = ['name', 'role', 'blocked'];
+const STAFF_EDITABLE = ['name', 'role', 'blocked', 'title', 'department', 'onboarded_at', 'colour', 'default_view'];
 
 export const d1Store = db => {
   const one = (sql, ...args) => db.prepare(sql).bind(...args).first();
@@ -77,6 +77,12 @@ export const d1Store = db => {
         .concat(db.prepare('DELETE FROM applications WHERE id = ?').bind(id)));
     },
     // When someone is blocked: their applications lose their assignee, and any In review go back to New.
+    // {email: number of their applications without a final decision}
+    async workload() {
+      const rows = await all(`SELECT assigned_to, COUNT(*) AS n FROM applications
+        WHERE assigned_to IS NOT NULL AND status NOT IN ('hired', 'not_hired') GROUP BY assigned_to`);
+      return Object.fromEntries(rows.map(row => [row.assigned_to, row.n]));
+    },
     clearAssignee: (email, now) => run(`UPDATE applications SET assigned_to = NULL, updated_at = ?,
       status = CASE WHEN status = 'reviewing' THEN 'new' ELSE status END WHERE assigned_to = ?`, now, email),
 
@@ -128,7 +134,7 @@ export function memoryStore() {
 
     getStaff: async email => copy(staff.get(email)),
     async addStaff({email, name, role = 'member'}, now) {
-      if (!staff.has(email)) staff.set(email, {email, name, role, blocked: 0, created_at: now, last_seen_at: null});
+      if (!staff.has(email)) staff.set(email, {email, name, role, blocked: 0, created_at: now, last_seen_at: null, title: null, department: null, onboarded_at: null, colour: null, default_view: null});
       return copy(staff.get(email));
     },
     listStaff: async () => [...staff.values()].map(copy).sort(byName),
@@ -165,6 +171,13 @@ export function memoryStore() {
     async deleteApplication(id) {
       applications.delete(id);
       for (const list of [notes, activity, scorecards, emails]) for (let i = list.length - 1; i >= 0; i--) if (list[i].application_id === id) list.splice(i, 1);
+    },
+    async workload() {
+      const counts = {};
+      for (const row of applications.values()) {
+        if (row.assigned_to && !['hired', 'not_hired'].includes(row.status)) counts[row.assigned_to] = (counts[row.assigned_to] || 0) + 1;
+      }
+      return counts;
     },
     async clearAssignee(email, now) {
       for (const row of applications.values()) {

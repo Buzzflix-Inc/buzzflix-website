@@ -8,7 +8,7 @@
   <a href="/staff/">Applications</a>
   <a href="/staff/team" aria-current="page">Team</a>
  </nav>
- <div class="staff-account"><span data-me></span><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
+ <div class="staff-account"><a class="staff-me" href="/staff/profile" data-me>Your profile</a><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
 </header>
 <main id="main">
  <div class="staff-title-row"><h1>Team</h1></div>
@@ -16,25 +16,20 @@
  <div class="staff-team-grid">
   <section class="staff-card" aria-labelledby="people-title">
    <h2 id="people-title">People</h2>
-   <p class="staff-muted staff-hint">Anyone with a @buzzflix.ca email can sign in. They appear here after their first sign-in, or when an admin adds them. Admins can manage the team and delete applications.</p>
+   <p class="staff-muted staff-hint">Anyone with a @buzzflix.ca email can sign in. They appear here after their first sign-in, or when an admin adds them. Staff review, interview and recommend; admins also make the final hiring call, manage the team and can delete applications.</p>
    <ul class="staff-team" data-team><li>Loading…</li></ul>
   </section>
   <div>
-   <section class="staff-card" aria-labelledby="name-title">
-    <h2 id="name-title">Your name</h2>
-    <form class="staff-inline-form" data-name-form>
-     <label class="visually-hidden" for="staff-own-name">Your name</label>
-     <input id="staff-own-name" name="name" maxlength="80" required autocomplete="name">
-     <button class="staff-button-quiet" type="submit">Save</button>
-    </form>
-    <p class="staff-message" role="status" data-name-status></p>
-   </section>
    <section class="staff-card" aria-labelledby="add-title" data-admin-only hidden>
     <h2 id="add-title">Add someone</h2>
     <p class="staff-muted staff-hint">Add a teammate so applications can be assigned to them before they first sign in.</p>
     <form data-add-form>
      <div class="staff-field"><label for="staff-add-email">Buzzflix email</label><input id="staff-add-email" name="email" type="email" placeholder="name@buzzflix.ca" required></div>
      <div class="staff-field"><label for="staff-add-name">Name</label><input id="staff-add-name" name="name" maxlength="80"></div>
+     <fieldset class="staff-field staff-permissions"><legend class="staff-label">Permissions</legend>
+      <label><input type="radio" name="role" value="member" checked> <span><strong>Staff</strong><small>Reviews, interviews and recommends applications assigned to them.</small></span></label>
+      <label><input type="radio" name="role" value="admin"> <span><strong>Admin</strong><small>Also makes the final hiring call, manages the team and can delete applications.</small></span></label>
+     </fieldset>
      <button class="button staff-add-button" type="submit">Add to team</button>
      <p class="staff-message" role="status" data-add-status></p>
     </form>

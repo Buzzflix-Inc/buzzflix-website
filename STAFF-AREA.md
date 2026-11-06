@@ -2,10 +2,13 @@
 
 Staff sign in at **buzzflix.ca/login** (nothing on the site links to it) with a 6-digit code emailed to their @buzzflix.ca address. Once signed in, they can:
 
+- get a short welcome tour the first time they open a staff page (`assets/js/staff-welcome.js`), which also sets up their profile: name, role and department. It shows until they finish or skip it (`onboarded_at` in the staff table)
+- open their profile by clicking their name in the header (`/staff/profile`): name, role, department and the colour of their initials circle, which view Applications opens on, their account details, the welcome tour again, and **Sign out everywhere** (ends their sessions on every device)
 - see the applications assigned to them (the first tab), all of a year's applications (with a thin bar showing how many are at each step), or one step at a time, filtered by department, assignee or a search
+- on the Hired step, see **Crew by department**: each hire counts toward their first choice's department (the apply page's departments), with a bar filling toward that department's target. Targets are `CREW_TARGETS` in `worker/hiring.js`, starting at one per position
 - add an application by hand (Add application, /staff/new) for one that came in by email or on paper
 - open an application to read the answers and the resume and portfolio PDFs
-- assign it to a teammate from a dropdown, in the list or on the application, or tick several rows to assign or move them at once
+- assign it to a teammate, in the list or on the application, or tick several rows to assign or move them at once. The picker (`assets/js/staff-assign.js`) searches the team, puts Assign to me first and shows how many open applications (not yet Hired or Not hired) each person has, marking the least busy; the counts come from `store.workload()`. The change shows at once and saves in the background, with Undo for a few seconds
 - see who else has an application open (initial dots, in the list and on the application)
 - after an interview, fill in the scorecard (Interview complete): five 1–5 ratings, notes, and Recommend or Reject
 - email the applicant from a template (Invite to interview, Offer, Not this time), edited first and kept in the application's history
@@ -17,7 +20,7 @@ Several people can work at once: every open staff page checks every 10 seconds (
 
 **Hiring steps** (`allowedStatuses` and `change` in `worker/staff.js`): New → In review → Interview → **Approve (pending)** or **Decline (pending)**, the interviewer's recommendation, made only through the scorecard (by the person assigned, or an admin) → admins see these under **Needs your decision** → **Hired** or **Not hired**, the admin's final decision, made from the Final decision box on the application. An application is New exactly while no one is assigned: assigning it moves it to In review, and unassigning it while In review sends it back to New. From Interview on it can be reassigned but not unassigned. Members can't choose Approve or Decline before Interview, can't make the final decision, and can't change it afterwards. Admins can choose any step for an assigned application.
 
-Admins can also add teammates before their first sign-in, make someone an admin, block someone (this signs them out and unassigns their applications), and delete an application with its files (for privacy requests).
+Admins can also add teammates before their first sign-in, as Staff or Admin, make someone an admin, block someone (this signs them out and unassigns their applications), and delete an application with its files (for privacy requests).
 
 ## How it fits together
 

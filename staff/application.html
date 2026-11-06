@@ -8,7 +8,7 @@
   <a href="/staff/" aria-current="page">Applications</a>
   <a href="/staff/team">Team</a>
  </nav>
- <div class="staff-account"><span data-me></span><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
+ <div class="staff-account"><a class="staff-me" href="/staff/profile" data-me>Your profile</a><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
 </header>
 <main id="main">
  <a class="staff-back" href="/staff/" data-back>← All applications</a>
@@ -79,7 +79,7 @@
      <div class="staff-field"><label for="staff-status">Status</label><select id="staff-status" data-status aria-describedby="staff-status-hint"></select>
       <p class="staff-status-hint" id="staff-status-hint" data-status-hint></p>
       <button class="button staff-complete-button" type="button" data-complete hidden>Interview complete</button></div>
-     <div class="staff-field"><label for="staff-assignee">Assigned to</label><select id="staff-assignee" data-assignee></select></div>
+     <div class="staff-field"><span class="staff-label" aria-hidden="true">Assigned to</span><div data-assignee></div></div>
      <p class="staff-message" role="status" data-save-status></p>
     </section>
     <section class="staff-card" aria-labelledby="history-title">

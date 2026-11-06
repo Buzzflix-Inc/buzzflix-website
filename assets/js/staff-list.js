@@ -1,20 +1,28 @@
 // /staff/: the year's applications. Tabs: Assigned to me (the default), Needs your decision (admins), All (with a
 // bar showing how many are at each step), and one per status; plus search, department and assignee filters.
-// Each row's "Assigned to" is a dropdown that saves straight away (assigning a New one moves it to In review).
+// Each row's "Assigned to" opens a searchable team list with workloads; the change shows at once, with Undo.
 // Tick rows to assign or move several at once. Other people's changes appear without a reload, and initial
 // dots show who has an application open. The filters live in the address (?status=all&q=…).
-import {api, h, formatDate, timeElement, statusPill, loadMe, departmentOf, watchChanges, viewerDots} from './staff-common.js';
+import {api, h, formatDate, timeElement, statusPill, loadMe, departmentOf, watchChanges, viewerDots, showToast} from './staff-common.js';
+import {assignPicker, pickerOpen} from './staff-assign.js';
 
 const $ = selector => document.querySelector(selector);
 const yearSelect = $('[data-year]'), search = $('[data-search]'), departmentSelect = $('[data-department]'), assignedSelect = $('[data-assigned]');
 const views = $('[data-views]'), steps = $('[data-steps]'), rows = $('[data-rows]'), count = $('[data-count]'), errorBox = $('[data-error]');
 const params = new URLSearchParams(location.search);
 // status: a view ('mine', 'decision' for admins, 'all'), or a step ('awaiting' for members, or one of the statuses).
+// Without ?status, the profile's default view is used once it has loaded.
 const filters = {status: params.get('status') || 'mine', q: params.get('q') || '', dept: params.get('dept') || '', assigned: params.get('assigned') || ''};
 let data, info, applications = [];
 let seen = new Map(); // id → updated_at, to highlight rows someone else changed
-let changed = new Set(), waiting = false, viewers = {};
+let changed = new Set(), justAssigned = new Set(), waiting = false, viewers = {};
 const selected = new Set(); // ticked application ids
+
+// The view chosen on the profile page (Needs your decision only for admins), else Assigned to me.
+const defaultView = () => {
+  const view = info?.me.default_view;
+  return view === 'all' || (view === 'decision' && info.me.role === 'admin') ? view : 'mine';
+};
 
 const showError = message => {
   errorBox.textContent = message;
@@ -24,7 +32,7 @@ const showError = message => {
 const saveFilters = () => {
   const next = new URLSearchParams();
   if (data.years.length && data.year !== data.years[0]) next.set('year', data.year);
-  for (const [key, value] of Object.entries(filters)) if (value && !(key === 'status' && value === 'mine')) next.set(key, value);
+  for (const [key, value] of Object.entries(filters)) if (value && !(key === 'status' && value === defaultView())) next.set(key, value);
   const query = next.toString();
   history.replaceState(null, '', location.pathname + (query ? `?${query}` : ''));
 };
@@ -46,43 +54,62 @@ const matches = (row, {skipStatus = false} = {}) => {
 // Clicking anywhere on a row (or a card on a phone) opens the application, except on its own controls.
 // Keyboard users have the name link; Ctrl/Cmd-click opens it in a new tab like a link would.
 function openRow(event) {
-  if (event.target.closest('a, button, input, select, label, summary') || getSelection().toString()) return;
+  if (event.target.closest('a, button, input, select, label, summary, .staff-picker') || getSelection().toString()) return;
   const link = event.currentTarget.querySelector('td:nth-child(2) a');
   if (event.metaKey || event.ctrlKey) open(link.href, '_blank');
   else location.href = link.href;
 }
 
-// Assigning from the list: saves at once, and puts the old choice back if it fails.
-async function assign(row, select) {
+// Assigning from the list happens on screen at once (a New application moves to In review straight away, and
+// the workload counts follow), then saves. Undo puts the old assignee back; if the save fails, so does the page.
+const isOpenWork = status => !['hired', 'not_hired'].includes(status);
+function shiftLoad(email, by) {
+  const person = data.team.find(teammate => teammate.email === email);
+  if (person) person.active = Math.max(0, (person.active || 0) + by);
+}
+function applyAssignee(row, email) {
+  if (isOpenWork(row.status)) { shiftLoad(row.assigned_to, -1); shiftLoad(email, 1); }
+  row.assigned_to = email;
+  if (email && row.status === 'new') row.status = 'reviewing';
+  if (!email && row.status === 'reviewing') row.status = 'new';
+}
+async function assign(row, email, {undoable = true} = {}) {
   showError('');
-  select.disabled = true;
+  const before = {assigned_to: row.assigned_to, status: row.status, updated_at: row.updated_at};
+  applyAssignee(row, email);
+  justAssigned.add(row.id);
+  render();
   try {
-    const result = await api(`/applications/${row.id}`, {method: 'PATCH', body: {assigned_to: select.value || null}});
+    const result = await api(`/applications/${row.id}`, {method: 'PATCH', body: {assigned_to: email}});
     const {assigned_to, status, updated_at} = result.application;
     Object.assign(row, {assigned_to, status, updated_at});
     seen.set(row.id, row.updated_at);
     render();
+    justAssigned.delete(row.id);
+    const who = email === info.me.email ? 'you' : email ? nameOf(email) : null;
+    const moved = before.status === 'new' && status === 'reviewing' ? ' It’s now In review.' : before.status === 'reviewing' && status === 'new' ? ' It’s back to New.' : '';
+    showToast(`${who ? `Assigned ${row.name} to ${who}.` : `Unassigned ${row.name}.`}${moved}`,
+      {undo: undoable ? () => assign(row, before.assigned_to, {undoable: false}) : null});
   } catch (failure) {
-    select.value = row.assigned_to || '';
-    showError(failure.message);
-  } finally {
-    select.disabled = false;
+    applyAssignee(row, before.assigned_to);
+    Object.assign(row, before);
+    justAssigned.delete(row.id);
+    render();
+    showToast(`Couldn’t assign ${row.name}: ${failure.message}`, {error: true});
   }
 }
+const nameOf = email => data.team.find(person => person.email === email)?.name || email;
 
-function assigneeSelect(row) {
-  const people = data.team.filter(person => !person.blocked || person.email === row.assigned_to);
-  const select = h('select', {'aria-label': `Assign ${row.name}’s application`, onchange: () => assign(row, select)},
-    // Past review, an application always needs someone.
-    h('option', {value: '', disabled: !['new', 'reviewing'].includes(row.status)}, 'No one'),
-    ...people.map(person => h('option', {value: person.email}, person.email === info.me.email ? `${person.name} (me)` : person.name)));
-  select.value = row.assigned_to || '';
-  return select;
+function rowPicker(row) {
+  // Past review, an application always needs someone, so it can be reassigned but not unassigned.
+  return assignPicker({team: data.team, me: info.me, value: row.assigned_to, label: `Assign ${row.name}’s application`,
+    none: ['new', 'reviewing'].includes(row.status) || 'Past review it needs someone',
+    onChoose: email => assign(row, email)}).element;
 }
 
 function render() {
-  // Don't rebuild the rows under someone who is choosing from a row's dropdown; catch up when they leave it.
-  if (rows.contains(document.activeElement) && document.activeElement.tagName === 'SELECT') {
+  // Don't rebuild the rows under someone who is choosing from a row's picker; catch up when they close it.
+  if (pickerOpen() && rows.contains(document.activeElement)) {
     waiting = true;
     return;
   }
@@ -103,8 +130,12 @@ function render() {
   steps.replaceChildren(...['new', 'reviewing', 'interview', ...(isAdmin ? [] : ['awaiting']), 'hired', 'not_hired']
     .map(step => button([step, step === 'awaiting' ? 'Awaiting decision' : info.statusLabels[step]])));
   progress(visible);
+  crew();
 
   const shown = visible.filter(row => inTab(row, filters.status));
+  // Redrawing replaces each row's picker; keep keyboard focus on the one that had it.
+  const focused = document.activeElement?.classList.contains('staff-picker-button') && rows.contains(document.activeElement)
+    ? document.activeElement.closest('tr').dataset.id : null;
   rows.replaceChildren(...shown.map(row => h('tr', {class: changed.has(row.id) ? 'is-updated' : null, 'data-id': row.id, onclick: openRow},
     h('td', {class: 'staff-check'}, h('input', {type: 'checkbox', 'aria-label': `Select ${row.name}`, checked: selected.has(row.id),
       onchange: event => { event.target.checked ? selected.add(row.id) : selected.delete(row.id); updateBulk(shown); }})),
@@ -115,8 +146,9 @@ function render() {
     h('td', {}, row.school, h('small', {}, row.program_year)),
     h('td', {'data-label': 'Submitted'}, timeElement(row.submitted_at, formatDate)),
     h('td', {}, statusPill(row.status, info.statusLabels)),
-    h('td', {'data-label': 'Assigned to'}, assigneeSelect(row))
+    h('td', {'data-label': 'Assigned to', class: justAssigned.has(row.id) ? 'is-just-assigned' : null}, rowPicker(row))
   )));
+  if (focused) rows.querySelector(`tr[data-id="${focused}"] .staff-picker-button`)?.focus();
   changed = new Set();
   const total = applications.length;
   count.textContent = total === 0 ? `No applications for ${data.year} yet.`
@@ -151,10 +183,14 @@ $('[data-bulk-clear]').addEventListener('click', () => {
   $('[data-bulk-result]').textContent = '';
   render();
 });
+let bulkPicker;
 function fillBulk() {
   const isAdmin = info.me.role === 'admin';
-  $('[data-bulk-assign]').replaceChildren(h('option', {value: ''}, 'Choose…'), h('option', {value: 'none'}, 'No one'),
-    ...data.team.filter(person => !person.blocked).map(person => h('option', {value: person.email}, person.email === info.me.email ? `${person.name} (me)` : person.name)));
+  if (!bulkPicker) {
+    bulkPicker = assignPicker({team: data.team, me: info.me, label: 'Assign the selected applications to', placeholder: 'Choose…', alwaysNone: true,
+      onChoose: email => bulk({assigned_to: email}, email ? `Assign to ${email === info.me.email ? 'me' : nameOf(email)}` : 'Unassign')});
+    $('[data-bulk-assign]').replaceWith(bulkPicker.element);
+  } else bulkPicker.setTeam(data.team);
   $('[data-bulk-status]').replaceChildren(h('option', {value: ''}, 'Choose…'),
     ...['reviewing', 'interview', ...(isAdmin ? ['hired', 'not_hired'] : [])].map(status => h('option', {value: status}, info.statusLabels[status])));
 }
@@ -175,11 +211,6 @@ async function bulk(fields, label) {
     result.textContent = failure.message;
   }
 }
-$('[data-bulk-assign]').addEventListener('change', event => {
-  const value = event.target.value;
-  event.target.value = '';
-  if (value) bulk({assigned_to: value === 'none' ? null : value}, value === 'none' ? 'Unassign' : `Assign to ${event.target.querySelector(`option[value="${value}"]`).textContent}`);
-});
 $('[data-bulk-status]').addEventListener('change', event => {
   const value = event.target.value;
   event.target.value = '';
@@ -190,6 +221,41 @@ $('[data-bulk-status]').addEventListener('change', event => {
 function showViewers(next) {
   viewers = next;
   for (const slot of rows.querySelectorAll('[data-dots]')) slot.replaceChildren(viewerDots(viewers[slot.closest('tr').dataset.id], data.team) || '');
+}
+
+// Hired step: how full each department is, counting every hire this year under their first choice's
+// department (the apply page's departments; a first choice typed in by staff that isn't on the list is "Other").
+function crew() {
+  const box = $('[data-crew]');
+  box.hidden = filters.status !== 'hired';
+  if (box.hidden) return;
+  const hires = applications.filter(row => row.status === 'hired');
+  const groups = new Map(Object.keys(info.departments).map(name => [name, []]));
+  for (const row of hires) {
+    const name = departmentOf(row.role_1, info.departments) || 'Other';
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(row);
+  }
+  const targets = info.crewTargets || {};
+  const goal = Object.values(targets).reduce((sum, n) => sum + n, 0);
+  $('[data-crew-total]').textContent = goal ? `${hires.length} of ${goal} hired` : `${hires.length} hired`;
+  $('[data-crew-list]').replaceChildren(...[...groups].map(([name, people]) => {
+    const target = targets[name] || 0;
+    const n = people.length;
+    const state = !target ? '' : n > target ? 'is-over' : n === target ? 'is-full' : n === 0 ? 'is-empty' : '';
+    const note = !target ? '' : n > target ? `Over by ${n - target}` : n === target ? 'Full' : `${target - n} to go`;
+    const fill = h('span', {class: 'staff-crew-fill'});
+    fill.style.width = `${target ? Math.min(100, Math.round(n / target * 100)) : n ? 100 : 0}%`;
+    return h('li', {class: `staff-crew-dept ${state}`.trim()},
+      h('div', {class: 'staff-crew-row'},
+        h('strong', {}, name),
+        h('span', {class: 'staff-crew-count'}, target ? `${n} of ${target}` : String(n)),
+        note && h('span', {class: 'staff-crew-note'}, note)),
+      h('div', {class: 'staff-crew-bar', role: 'img', 'aria-label': `${name}: ${n} hired${target ? ` of ${target}` : ''}`}, fill),
+      people.length ? h('ul', {class: 'staff-crew-people'}, people.map(row =>
+        h('li', {}, h('a', {href: `/staff/application?id=${row.id}`}, row.name), h('span', {}, row.role_1))))
+        : h('p', {class: 'staff-crew-none'}, 'No one yet'));
+  }));
 }
 
 // All tab: a thin bar split by how many applications are at each step, with a key underneath.
@@ -208,7 +274,7 @@ function progress(visible) {
   $('[data-progress-legend]').replaceChildren(...counts.map(([status, n]) =>
     h('li', {}, h('span', {class: `staff-progress-dot staff-progress-${status}`}), `${info.statusLabels[status]} `, h('strong', {}, String(n)))));
 }
-rows.addEventListener('focusout', () => setTimeout(() => { if (waiting) render(); }));
+rows.addEventListener('picker:close', () => setTimeout(() => { if (waiting) render(); }));
 
 // New data for the list. Rows that are new or changed since last time get highlighted (not on first load).
 function take(next) {
@@ -223,7 +289,9 @@ function take(next) {
 async function load(year) {
   try {
     const [me, next] = await Promise.all([loadMe(), api(`/applications${year ? `?year=${encodeURIComponent(year)}` : ''}`)]);
+    const first = !info;
     info = me;
+    if (first && !params.has('status')) filters.status = defaultView();
     data = null;
     take(next);
   } catch (failure) {

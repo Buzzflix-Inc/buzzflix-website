@@ -8,7 +8,7 @@
   <a href="/staff/" aria-current="page">Applications</a>
   <a href="/staff/team">Team</a>
  </nav>
- <div class="staff-account"><span data-me></span><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
+ <div class="staff-account"><a class="staff-me" href="/staff/profile" data-me>Your profile</a><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
 </header>
 <main id="main">
  <div class="staff-title-row">
@@ -27,6 +27,11 @@
   <div class="staff-progress-bar" role="img" data-progress-bar></div>
   <ul class="staff-progress-legend" data-progress-legend></ul>
  </div>
+ <section class="staff-crew" aria-labelledby="staff-crew-title" data-crew hidden>
+  <div class="staff-crew-head"><h2 id="staff-crew-title">Crew by department</h2><p class="staff-muted" data-crew-total></p></div>
+  <p class="staff-muted staff-hint">Each hire counts toward the department of their first choice.</p>
+  <ul class="staff-crew-list" data-crew-list></ul>
+ </section>
  <div class="staff-filters">
   <div><label for="staff-search">Search</label><input id="staff-search" type="search" placeholder="Name, email, school or role" data-search></div>
   <div><label for="staff-department">Department</label><select id="staff-department" data-department><option value="">All departments</option></select></div>
@@ -44,7 +49,7 @@
  <!-- Bulk actions: appears once rows are ticked. -->
  <div class="staff-bulk" role="region" aria-label="Change the selected applications" data-bulk hidden>
   <p class="staff-bulk-count" data-bulk-count></p>
-  <div><label for="bulk-assign">Assign to</label><select id="bulk-assign" data-bulk-assign></select></div>
+  <div><span class="staff-label" aria-hidden="true">Assign to</span><span data-bulk-assign></span></div>
   <div><label for="bulk-status">Move to</label><select id="bulk-status" data-bulk-status></select></div>
   <button class="staff-link-button" type="button" data-bulk-clear>Clear selection</button>
  </div>

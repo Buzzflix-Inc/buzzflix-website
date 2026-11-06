@@ -8,7 +8,7 @@
   <a href="/staff/" aria-current="page">Applications</a>
   <a href="/staff/team">Team</a>
  </nav>
- <div class="staff-account"><span data-me></span><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
+ <div class="staff-account"><a class="staff-me" href="/staff/profile" data-me>Your profile</a><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
 </header>
 <main id="main">
  <a class="staff-back" href="/staff/">← All applications</a>
@@ -49,7 +49,7 @@
   </section>
   <section class="staff-card" aria-labelledby="new-assign-title">
    <h2 id="new-assign-title">Assign</h2>
-   <div class="staff-field"><label for="new-assignee">Assigned to</label><select id="new-assignee" name="assigned_to" data-assignee aria-describedby="new-assignee-hint"><option value="">No one yet</option></select>
+   <div class="staff-field"><span class="staff-label" aria-hidden="true">Assigned to</span><input type="hidden" name="assigned_to" value=""><div data-assignee></div>
     <p class="staff-status-hint" id="new-assignee-hint">Assigning it now moves it straight to In review.</p></div>
   </section>
   <div class="staff-new-actions">

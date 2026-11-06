@@ -2,11 +2,13 @@
 // the interview scorecard (a pop-up when the interview is complete), emails to the applicant, team and
 // interview notes, history, the admin's final decision, and (for admins) delete.
 // Other people's changes appear without a reload, and dots show who else has it open.
-import {api, h, formatDate, formatTime, timeElement, loadMe, departmentOf, watchChanges, viewerDots} from './staff-common.js';
+import {api, h, formatDate, formatTime, timeElement, loadMe, departmentOf, watchChanges, viewerDots, showToast} from './staff-common.js';
+import {assignPicker} from './staff-assign.js';
 
 const $ = selector => document.querySelector(selector);
 const id = new URLSearchParams(location.search).get('id') || '';
-const statusSelect = $('[data-status]'), assigneeSelect = $('[data-assignee]'), saveStatus = $('[data-save-status]');
+const statusSelect = $('[data-status]'), saveStatus = $('[data-save-status]');
+let picker; // the Assigned to picker (staff-assign.js)
 const noteForm = $('[data-note-form]'), noteStatus = $('[data-note-status]');
 const scorecardDialog = $('[data-scorecard-dialog]'), scorecardForm = $('[data-scorecard-form]');
 const emailDialog = $('[data-email-dialog]'), emailForm = $('[data-email-form]');
@@ -75,10 +77,10 @@ function render(details) {
   $('[data-status-hint]').textContent = statusHint(app.status);
   $('[data-complete]').hidden = !(app.status === 'interview' && (app.assigned_to === info.me.email || isAdmin()));
   // Past review, an application always needs someone, so it can be reassigned but not unassigned.
-  assigneeSelect.replaceChildren(h('option', {value: '', disabled: !['new', 'reviewing'].includes(app.status)}, 'No one'),
-    ...team.filter(person => !person.blocked || person.email === app.assigned_to)
-      .map(person => h('option', {value: person.email}, person.email === info.me.email ? `${person.name} (me)` : person.name)));
-  assigneeSelect.value = app.assigned_to || '';
+  picker?.close();
+  picker = assignPicker({team, me: info.me, value: app.assigned_to, label: 'Assigned to',
+    none: ['new', 'reviewing'].includes(app.status) || 'Past review it needs someone', onChoose: reassign});
+  $('[data-assignee]').replaceChildren(picker.element);
 
   // The admin's final decision, once an interviewer has chosen Approve or Decline.
   const pending = ['approve', 'decline'].includes(app.status);
@@ -148,25 +150,36 @@ async function save(fields) {
   saveStatus.classList.remove('is-error');
   saveStatus.textContent = 'Saving…';
   saving = true;
-  statusSelect.disabled = assigneeSelect.disabled = true;
+  statusSelect.disabled = true;
+  picker.setBusy(true);
   document.querySelectorAll('[data-decide]').forEach(button => { button.disabled = true; });
   try {
     render(await api(`/applications/${id}`, {method: 'PATCH', body: fields}));
     saveStatus.textContent = 'Saved.';
   } catch (failure) {
     statusSelect.value = current.status;
-    assigneeSelect.value = current.assigned_to || '';
+    picker.setValue(current.assigned_to);
     saveStatus.classList.add('is-error');
     saveStatus.textContent = failure.message;
     statusSelect.disabled = statusSelect.options.length === 1;
   } finally {
     saving = false;
-    assigneeSelect.disabled = false;
+    picker.setBusy(false);
     document.querySelectorAll('[data-decide]').forEach(button => { button.disabled = false; });
   }
 }
 statusSelect.addEventListener('change', () => save({status: statusSelect.value}));
-assigneeSelect.addEventListener('change', () => save({assigned_to: assigneeSelect.value || null}));
+// Choosing someone shows them at once, then saves; Undo puts the previous person back.
+async function reassign(email, undoable = true) {
+  const before = current.assigned_to;
+  const name = who => who === info.me.email ? 'you' : team.find(person => person.email === who)?.name || who;
+  picker.setValue(email);
+  await save({assigned_to: email});
+  if (current.assigned_to !== email) return; // save() showed the error and put the old name back
+  saveStatus.textContent = '';
+  showToast(email ? `Assigned to ${name(email)}.` : 'Unassigned.', {undo: undoable ? () => reassign(before, false) : null});
+  $('[data-assignee] .staff-picker-button')?.focus();
+}
 document.querySelectorAll('[data-decide]').forEach(button => button.addEventListener('click', () => {
   const hire = button.dataset.decide === 'hired';
   if (confirm(hire ? `Hire ${current.name}?` : `Mark ${current.name} as not hired?`)) save({status: button.dataset.decide});
@@ -273,7 +286,7 @@ $('[data-delete]').addEventListener('click', async () => {
 
 // Someone saved a change: load this application again (and the team, for new names).
 async function refresh() {
-  if (saving || scorecardDialog.open || emailDialog.open || document.activeElement === statusSelect || document.activeElement === assigneeSelect) return;
+  if (saving || scorecardDialog.open || emailDialog.open || document.activeElement === statusSelect || picker?.isOpen()) return;
   try {
     const [{team: people}, details] = await Promise.all([api('/team'), api(`/applications/${id}`)]);
     team = people;

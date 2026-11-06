@@ -1,6 +1,7 @@
 // /staff/new: type in an application that came in another way (email, paper). Saves through
 // POST /api/staff/applications (worker/apply.js addApplicationByStaff), then opens the new application.
 import {api, h, loadMe} from './staff-common.js';
+import {assignPicker} from './staff-assign.js';
 
 const form = document.querySelector('[data-new-form]');
 const status = form.querySelector('[data-status]');
@@ -22,8 +23,13 @@ const readPdf = file => new Promise((resolve, reject) => {
 (async () => {
   const [info, {team}] = await Promise.all([loadMe(), api('/team')]);
   form.querySelector('[data-positions]').replaceChildren(...Object.values(info.departments).flat().map(position => h('option', {value: position})));
-  form.querySelector('[data-assignee]').append(...team.filter(person => !person.blocked)
-    .map(person => h('option', {value: person.email}, person.email === info.me.email ? `${person.name} (me)` : person.name)));
+  // The picker fills the hidden assigned_to field; the hint under it says what assigning does.
+  const picker = assignPicker({team, me: info.me, label: 'Assigned to', placeholder: 'No one yet', onChoose: email => {
+    form.elements.assigned_to.value = email || '';
+    picker.setValue(email);
+  }});
+  form.querySelector('[data-assignee]').replaceChildren(picker.element);
+  picker.element.querySelector('button').setAttribute('aria-describedby', 'new-assignee-hint');
 })().catch(failure => say(failure.message, true));
 
 form.addEventListener('submit', async event => {

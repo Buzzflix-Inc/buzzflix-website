@@ -6,6 +6,7 @@
  *   POST  /api/staff/code {email}           emails a 6-digit code (always answers the same way)
  *   POST  /api/staff/verify {email, code}   sets the session cookie
  *   POST  /api/staff/logout
+ *   POST  /api/staff/logout-everywhere      ends all of this person's sessions
  *   GET   /api/staff/me
  *   GET   /api/staff/changes?viewing=<id>    {version, viewers}: version goes up on every change, so open pages know
  *                                             to reload; viewers is who else has which application open (and marks
@@ -23,14 +24,15 @@
  *   GET   /api/staff/applications/:id/resume|portfolio   the PDF
  *   GET   /api/staff/export.csv?year=
  *   GET   /api/staff/team
- *   POST  /api/staff/team {email, name}      admins only; adds someone before they first sign in
- *   PATCH /api/staff/team/:email {name?, role?, blocked?}   own name, or anything for admins
+ *   POST  /api/staff/team {email, name, role}   admins only; adds someone (Staff or Admin) before they first sign in
+ *   PATCH /api/staff/team/:email {name?, role?, blocked?, title?, department?, colour?, default_view?, onboarded?}
+ *                                            your own profile; admins can also rename people and change roles
  *
  * ctx: {store, files, mailer, now, adminEmails: string[], secure: boolean, applicantEmails: boolean}
  */
 import {DEPARTMENTS, addApplicationByStaff} from './apply.js';
 import {emailHtml, REPLY_TO} from './mail.js';
-import {SCORECARD, EMAIL_TEMPLATES, allowedTemplates} from './hiring.js';
+import {SCORECARD, EMAIL_TEMPLATES, CREW_TARGETS, allowedTemplates} from './hiring.js';
 
 export const COOKIE = 'bz_staff';
 // The hiring workflow: New → In review → Interview → Approve or Decline (pending: the interviewer's
@@ -73,7 +75,20 @@ export const normalEmail = value => typeof value === 'string' ? value.trim().toL
 const isStaffEmail = email => /^[a-z0-9._%+-]+@buzzflix\.ca$/.test(email);
 // "jack.smith@buzzflix.ca" → "Jack Smith", until they set their own name.
 const nameFrom = email => email.split('@')[0].split(/[._-]+/).filter(Boolean).map(part => part[0].toUpperCase() + part.slice(1)).join(' ');
-const publicStaff = ({email, name, role, blocked, last_seen_at}) => ({email, name, role, blocked: Boolean(blocked), last_seen_at});
+const publicStaff = ({email, name, role, blocked, created_at, last_seen_at, title, department, onboarded_at, colour, default_view}) =>
+  ({email, name, role, blocked: Boolean(blocked), created_at, last_seen_at, title: title || '', department: department || '',
+    colour: colour || '', default_view: default_view || '', onboarded: Boolean(onboarded_at)});
+// Colours a teammate can choose for their initials circle; each carries white text at 4.5:1 or better.
+// Keep in step with AVATAR_COLOURS in assets/js/staff-common.js.
+const AVATAR_COLOURS = ['#8a4b00', '#1f5f99', '#2e6b30', '#7a3e9d', '#a1314a', '#00676b', '#5c5470', '#9a3412'];
+const DEFAULT_VIEWS = ['mine', 'all', 'decision'];
+// The departments a teammate can pick for their profile: the apply page's, plus the people who run things.
+const STAFF_DEPARTMENTS = ['Leadership', ...Object.keys(DEPARTMENTS), 'Other'];
+// The team with how many open applications (assigned, no final decision yet) each person has, for the assign picker.
+const teamWithWorkload = async store => {
+  const counts = await store.workload();
+  return (await store.listStaff()).map(person => ({...publicStaff(person), active: counts[person.email] || 0}));
+};
 
 const cookieValue = (request, name) => {
   for (const part of (request.headers.get('Cookie') || '').split(';')) {
@@ -147,7 +162,13 @@ async function signedIn(request, ctx, me, url, path, method, body) {
   const {store, now} = ctx;
 
   if (method === 'GET' && path === '/me') return json({me: publicStaff(me), statuses: STATUSES, statusLabels: STATUS_LABELS, departments: DEPARTMENTS,
-    scorecard: SCORECARD, emailTemplates: EMAIL_TEMPLATES, applicantEmails: Boolean(ctx.applicantEmails)});
+    scorecard: SCORECARD, emailTemplates: EMAIL_TEMPLATES, crewTargets: CREW_TARGETS, staffDepartments: STAFF_DEPARTMENTS, avatarColours: AVATAR_COLOURS,
+    applicantEmails: Boolean(ctx.applicantEmails)});
+  // Ends every session this person has, on every device, this one included.
+  if (method === 'POST' && path === '/logout-everywhere') {
+    await store.deleteSessionsFor(me.email);
+    return json({ok: true}, 200, {'Set-Cookie': sessionCookie('', 0, ctx.secure)});
+  }
   if (method === 'GET' && path === '/changes') {
     const viewing = url.searchParams.get('viewing');
     await store.setPresence(me.email, /^[0-9a-f-]{36}$/.test(viewing || '') ? viewing : null, now);
@@ -165,7 +186,7 @@ async function signedIn(request, ctx, me, url, path, method, body) {
   if (method === 'GET' && path === '/applications') {
     const years = await store.years();
     const year = url.searchParams.get('year') || years[0] || String(new Date(now).getFullYear() + 1);
-    return json({year, years, applications: await store.listApplications(year), team: (await store.listStaff()).map(publicStaff)});
+    return json({year, years, applications: await store.listApplications(year), team: await teamWithWorkload(store)});
   }
 
   if (method === 'GET' && path === '/export.csv') {
@@ -174,7 +195,7 @@ async function signedIn(request, ctx, me, url, path, method, body) {
   }
 
   if (path === '/team') {
-    if (method === 'GET') return json({team: (await store.listStaff()).map(publicStaff)});
+    if (method === 'GET') return json({team: await teamWithWorkload(store)});
     if (method === 'POST') {
       if (!isAdmin) return error('Only admins can add people.', 403);
       const input = await body();
@@ -182,7 +203,8 @@ async function signedIn(request, ctx, me, url, path, method, body) {
       if (!isStaffEmail(email)) return error(`Use a ${DOMAIN} address.`);
       const name = typeof input.name === 'string' && input.name.trim() ? input.name.trim().slice(0, 80) : nameFrom(email);
       if (await store.getStaff(email)) return error('That person is already on the team.');
-      return json({person: publicStaff(await store.addStaff({email, name}, now))});
+      const role = input.role === 'admin' ? 'admin' : 'member';
+      return json({person: publicStaff(await store.addStaff({email, name, role}, now))});
     }
   }
 
@@ -199,6 +221,29 @@ async function signedIn(request, ctx, me, url, path, method, body) {
       if (!name || name.length > 80) return error('Enter a name of up to 80 characters.');
       fields.name = name;
     }
+    // The rest of the profile, and the welcome tour, are each person's own.
+    if (['title', 'department', 'colour', 'default_view', 'onboarded'].some(key => key in input) && email !== me.email) {
+      return error('You can only change your own profile.', 403);
+    }
+    if ('colour' in input) {
+      if (input.colour && !AVATAR_COLOURS.includes(input.colour)) return error('Choose one of the colours.');
+      fields.colour = input.colour || null;
+    }
+    if ('default_view' in input) {
+      if (input.default_view && !DEFAULT_VIEWS.includes(input.default_view)) return error('Choose a view from the list.');
+      if (input.default_view === 'decision' && !isAdmin) return error('Only admins have Needs your decision.');
+      fields.default_view = input.default_view || null;
+    }
+    if ('title' in input) {
+      const title = typeof input.title === 'string' ? input.title.trim() : '';
+      if (title.length > 80) return error('Keep your role to 80 characters.');
+      fields.title = title || null;
+    }
+    if ('department' in input) {
+      if (input.department && !STAFF_DEPARTMENTS.includes(input.department)) return error('Choose a department from the list.');
+      fields.department = input.department || null;
+    }
+    if ('onboarded' in input) fields.onboarded_at = input.onboarded ? now : null;
     if ('role' in input || 'blocked' in input) {
       if (!isAdmin) return error('Only admins can change roles.', 403);
       if (email === me.email) return error('Ask another admin to change your own access.', 403);

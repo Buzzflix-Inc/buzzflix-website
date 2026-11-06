@@ -66,8 +66,16 @@ CREATE TABLE IF NOT EXISTS staff (
   role TEXT NOT NULL DEFAULT 'member',
   blocked INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL,
-  last_seen_at INTEGER
+  last_seen_at INTEGER,
+  title TEXT,           -- profile: what they do, e.g. "Camera lead" (optional)
+  department TEXT,      -- profile: STAFF_DEPARTMENTS in worker/staff.js (optional)
+  onboarded_at INTEGER, -- when they finished or skipped the welcome tour; NULL shows it at their next visit
+  colour TEXT,           -- profile: their initials circle's colour, one of AVATAR_COLOURS in worker/staff.js (NULL: picked from their email)
+  default_view TEXT      -- profile: the list view /staff/ opens on: mine, all or decision (NULL: mine)
 );
+-- Added 2026-11-06 to a database made before then:
+--   ALTER TABLE staff ADD COLUMN title TEXT; ALTER TABLE staff ADD COLUMN department TEXT; ALTER TABLE staff ADD COLUMN onboarded_at INTEGER;
+--   ALTER TABLE staff ADD COLUMN colour TEXT; ALTER TABLE staff ADD COLUMN default_view TEXT;
 
 -- Sign-in codes (only a hash is kept) and sessions (the cookie holds the token; only its hash is kept).
 CREATE TABLE IF NOT EXISTS login_codes (

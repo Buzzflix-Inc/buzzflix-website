@@ -42,8 +42,9 @@ export const statusPill = (status, labels) => h('span', {class: `status status-$
 let mePromise;
 export function loadMe() {
   mePromise ||= api('/me').then(result => {
-    const slot = document.querySelector('[data-me]');
-    if (slot) slot.textContent = result.me.name;
+    showMe(result.me);
+    // First visit: the welcome tour and profile set-up (staff-welcome.js).
+    if (!result.me.onboarded) import('./staff-welcome.js').then(({startTour}) => startTour(result, {firstTime: true}));
     return result;
   });
   return mePromise;
@@ -98,4 +99,50 @@ export function viewerDots(emails, team, {long = false} = {}) {
   return h('span', {class: 'staff-viewers', title: text},
     ...names.map(name => h('span', {class: 'staff-viewer', 'aria-hidden': 'true'}, initials(name) || '?')),
     h('span', {class: long ? 'staff-viewers-text' : 'visually-hidden'}, text));
+}
+
+// A teammate's initials in a circle, in the colour they chose on their profile, or else one picked from their
+// email, so each person keeps the same colour everywhere. Every colour carries white text at 4.5:1 or better.
+// Keep in step with AVATAR_COLOURS in worker/staff.js.
+export const AVATAR_COLOURS = ['#8a4b00', '#1f5f99', '#2e6b30', '#7a3e9d', '#a1314a', '#00676b', '#5c5470', '#9a3412'];
+export function avatarColour(email, colour = '') {
+  if (AVATAR_COLOURS.includes(colour)) return colour;
+  let hash = 0;
+  for (const character of email) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  return AVATAR_COLOURS[hash % AVATAR_COLOURS.length];
+}
+export function avatar(name, email, colour = '') {
+  const circle = h('span', {class: 'staff-avatar', 'aria-hidden': 'true'}, initials(name) || '?');
+  circle.style.backgroundColor = avatarColour(email, colour);
+  return circle;
+}
+
+// The header's link to the profile page: your initials circle and name.
+export function showMe(me) {
+  const slot = document.querySelector('[data-me]');
+  if (!slot) return;
+  slot.replaceChildren(avatar(me.name, me.email, me.colour), h('span', {class: 'staff-me-name'}, me.name));
+  slot.setAttribute('aria-label', `Your profile: ${me.name}`);
+}
+
+// A short message at the bottom of the screen, read out by screen readers, with an optional Undo.
+// It stays for 6 seconds (longer while the pointer or focus is on it). A new one replaces the old.
+let toastBox, toastTimer;
+export function showToast(message, {undo, error = false} = {}) {
+  if (!toastBox) {
+    toastBox = h('div', {class: 'staff-toast-region', role: 'status', 'aria-live': 'polite'});
+    document.body.append(toastBox);
+  }
+  clearTimeout(toastTimer);
+  const dismiss = () => toastBox.replaceChildren();
+  const undoButton = undo && h('button', {type: 'button', class: 'staff-toast-undo', onclick: () => { dismiss(); undo(); }}, 'Undo');
+  const toast = h('div', {class: error ? 'staff-toast is-error' : 'staff-toast'}, h('span', {}, message), undoButton,
+    h('button', {type: 'button', class: 'staff-toast-close', 'aria-label': 'Dismiss', onclick: dismiss}, '×'));
+  toastBox.replaceChildren(toast);
+  const start = () => { clearTimeout(toastTimer); toastTimer = setTimeout(dismiss, error ? 9000 : 6000); };
+  toast.addEventListener('mouseenter', () => clearTimeout(toastTimer));
+  toast.addEventListener('mouseleave', start);
+  toast.addEventListener('focusin', () => clearTimeout(toastTimer));
+  toast.addEventListener('focusout', start);
+  start();
 }

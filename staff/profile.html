@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en-CA"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Your profile | Buzzflix staff</title><link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32-d042b60.png"><link rel="preload" href="/assets/fonts/latin-2735d88.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/latin-bf832b5.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/css/site.css"><link rel="stylesheet" href="/assets/css/staff.css"><script type="module" src="/assets/js/staff-profile.js"></script></head>
+<!-- Staff area: worker/staff.js sends signed-out visitors to /login. The header is repeated in each staff/*.html page. -->
+<body class="staff"><a class="skip-link" href="#main">Skip to main content</a>
+<header class="staff-header">
+ <a class="staff-brand" href="/staff/"><img src="/assets/images/buzzflix-b-1--605ed9e.webp" alt="Buzzflix" width="500" height="114"><span>Staff</span></a>
+ <nav aria-label="Staff">
+  <a href="/staff/">Applications</a>
+  <a href="/staff/team">Team</a>
+ </nav>
+ <div class="staff-account"><a class="staff-me" href="/staff/profile" aria-current="page" data-me>Your profile</a><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
+</header>
+<main id="main">
+ <div class="staff-title-row"><h1>Your profile</h1></div>
+ <p class="staff-error" role="alert" data-error hidden></p>
+ <div class="staff-profile-grid">
+  <section class="staff-card" aria-labelledby="profile-title">
+   <h2 id="profile-title">Profile</h2>
+   <p class="staff-muted staff-hint">How teammates see you when they assign work, read the history or see who has an application open.</p>
+   <div class="staff-profile-preview" data-preview aria-live="polite"></div>
+   <form data-profile-form novalidate>
+    <div class="staff-field"><label for="profile-name">Name</label><input id="profile-name" name="name" maxlength="80" required autocomplete="name"></div>
+    <div class="staff-form-grid">
+     <div class="staff-field"><label for="profile-title-input">Role (optional)</label><input id="profile-title-input" name="title" maxlength="80" autocomplete="organization-title" placeholder="For example: Camera lead"></div>
+     <div class="staff-field"><label for="profile-department">Department (optional)</label><select id="profile-department" name="department"><option value="">Choose…</option></select></div>
+    </div>
+    <fieldset class="staff-field staff-colours"><legend class="staff-label">Colour</legend><div data-colours></div></fieldset>
+    <div class="staff-profile-actions"><button class="button" type="submit">Save profile</button><p class="staff-message" role="status" data-profile-status></p></div>
+   </form>
+  </section>
+  <div>
+   <section class="staff-card" aria-labelledby="prefs-title">
+    <h2 id="prefs-title">Settings</h2>
+    <div class="staff-field"><label for="profile-view">Open Applications on</label><select id="profile-view" data-view aria-describedby="profile-view-hint"></select>
+     <p class="staff-status-hint" id="profile-view-hint">The view you see first when you sign in. Saved as soon as you change it.</p></div>
+   </section>
+   <section class="staff-card" aria-labelledby="account-title">
+    <h2 id="account-title">Account</h2>
+    <dl class="staff-account-facts" data-account></dl>
+    <div class="staff-account-actions">
+     <button class="staff-button-quiet" type="button" data-tour>Show the welcome tour</button>
+     <button class="staff-button-quiet staff-button-danger" type="button" data-everywhere>Sign out everywhere</button>
+    </div>
+    <p class="staff-status-hint">Sign out everywhere ends your sessions on every device, this one included. Use it if you signed in on a shared computer.</p>
+   </section>
+  </div>
+ </div>
+</main>
+</body></html>
