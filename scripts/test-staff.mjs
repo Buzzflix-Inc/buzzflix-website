@@ -225,9 +225,10 @@ test('hiring workflow: assigning starts the review, members interview and recomm
   await assign('megan@buzzflix.ca', megan);
   assert.equal((await move('new', megan)).status, 403, 'New only by unassigning');
   assert.equal((await move('approve', megan)).status, 403, 'approve comes after the interview');
-  assert.equal((await move('interview', megan)).body.allowedStatuses.includes('approve'), true);
+  assert.deepEqual((await move('interview', megan)).body.allowedStatuses, ['reviewing', 'interview'], 'Approve/Decline only from the scorecard');
   assert.equal((await assign(null, megan)).status, 400, 'past review it needs someone');
   assert.equal((await assign('jack@buzzflix.ca', megan)).body.application.status, 'interview', 'but can be reassigned');
+  await assign('megan@buzzflix.ca', jack);
   assert.equal((await move('hired', megan)).status, 403, 'members can’t make the final decision');
 
   const noted = await staff('POST', `/applications/${id}/notes`, {body: 'Interviewed. Great fit.', kind: 'interview'}, megan);
@@ -235,15 +236,81 @@ test('hiring workflow: assigning starts the review, members interview and recomm
   assert.equal(noted.body.activity[0].detail, 'interview');
   assert.equal((await staff('POST', `/applications/${id}/notes`, {body: 'Odd kind', kind: 'secret'}, megan)).body.notes[1].kind, 'note');
 
-  const recommended = await move('approve', megan);
+  const scores = {skills: 4, communication: 5, attitude: 5, teamwork: 4, reliability: 3};
+  const scorecard = body => staff('POST', `/applications/${id}/scorecard`, body, megan);
+  assert.equal((await scorecard({scores: {...scores, teamwork: 6}, notes: 'x', recommendation: 'approve'})).status, 400, 'ratings are 1 to 5');
+  assert.equal((await scorecard({scores, notes: ' ', recommendation: 'approve'})).status, 400, 'notes are required');
+  assert.equal((await scorecard({scores, notes: 'Great.', recommendation: 'maybe'})).status, 400);
+  const owen = await signIn('owen@buzzflix.ca');
+  assert.equal((await staff('POST', `/applications/${id}/scorecard`, {scores, notes: 'Hi', recommendation: 'approve'}, owen)).status, 403, 'only the assignee');
+  const recommended = await scorecard({scores, notes: 'Organised and keen.', recommendation: 'approve'});
   assert.equal(recommended.body.application.status, 'approve');
   assert.equal(recommended.body.recommendedBy, 'megan@buzzflix.ca');
+  assert.deepEqual(recommended.body.scorecards[0].scores, scores);
+  assert.equal((await scorecard({scores, notes: 'Again', recommendation: 'approve'})).status, 409, 'once the interview has moved on');
+  const admins = await staff('GET', '/applications', undefined, jack);
+  assert.equal(admins.body.applications[0].status, 'approve', 'shows in the decision queue');
   assert.equal((await staff('GET', `/applications/${id}`, undefined, jack)).body.recommendedBy, 'megan@buzzflix.ca');
 
   assert.equal((await move('hired', jack)).body.application.status, 'hired');
   assert.deepEqual((await staff('GET', `/applications/${id}`, undefined, megan)).body.allowedStatuses, ['hired']);
   assert.equal((await move('interview', megan)).status, 403, 'members can’t undo a final decision');
   assert.equal((await move('not_hired', jack)).status, 200, 'admins can change it');
+});
+
+test('emails to applicants: templates by step and role, saved to the history while sending is off', async () => {
+  const {ctx, apply, staff, signIn} = setup();
+  await apply(application());
+  const jack = await signIn('jack@buzzflix.ca');
+  const megan = await signIn('megan@buzzflix.ca');
+  const send = (template, who, subject = 'Hello') => staff('POST', `/applications/${id}/emails`, {template, subject, body: 'Hi there'}, who);
+  assert.deepEqual((await staff('GET', `/applications/${id}`, undefined, megan)).body.allowedTemplates, [], 'nothing while New');
+  await staff('PATCH', `/applications/${id}`, {assigned_to: 'megan@buzzflix.ca'}, megan);
+  assert.equal((await send('offer', jack)).status, 403, 'offer only once hired');
+  const before = ctx.mailer.sent.length;
+  const saved = await send('invite', megan);
+  assert.equal(saved.body.emails[0].sent, 0);
+  assert.equal(saved.body.emails[0].template, 'invite');
+  assert.equal(saved.body.activity[0].detail, 'invite:saved');
+  assert.equal(ctx.mailer.sent.length, before, 'not sent while APPLICANT_EMAILS is off');
+  assert.equal((await send('invite', megan, '')).status, 400, 'needs a subject');
+  await staff('PATCH', `/applications/${id}`, {status: 'hired'}, jack);
+  assert.equal((await send('offer', megan)).status, 403, 'offers are for admins');
+  ctx.applicantEmails = true;
+  assert.equal((await send('offer', jack)).body.emails[0].sent, 1);
+  assert.equal(ctx.mailer.sent.at(-1).to, 'test@example.com');
+});
+
+test('bulk assign and move, with refusals listed', async () => {
+  const {ctx, apply, staff, signIn} = setup();
+  await apply(application());
+  const second = '22222222-2222-4222-8222-222222222222';
+  await apply(application({submission_id: second, email: 'two@example.com'}));
+  const megan = await signIn('megan@buzzflix.ca');
+  const bulk = body => staff('POST', '/applications/bulk', body, megan);
+  assert.equal((await bulk({ids: [], status: 'interview'})).status, 400);
+  const moved = await bulk({ids: [id, second], status: 'interview'});
+  assert.equal(moved.body.updated, 0, 'unassigned ones can’t move');
+  assert.equal(moved.body.skipped.length, 2);
+  assert.equal((await bulk({ids: [id, second], assigned_to: 'megan@buzzflix.ca'})).body.updated, 2);
+  assert.equal((await ctx.store.getApplication(second)).status, 'reviewing');
+  assert.equal((await bulk({ids: [id, second], status: 'interview'})).body.updated, 2);
+  assert.equal((await bulk({ids: [id], status: 'hired'})).body.skipped[0].reason, 'Only an admin can make the final decision.');
+});
+
+test('who’s viewing: each person’s open application, for 25 seconds after they last checked in', async () => {
+  const {ctx, apply, staff, signIn} = setup();
+  await apply(application());
+  const jack = await signIn('jack@buzzflix.ca');
+  const megan = await signIn('megan@buzzflix.ca');
+  await staff('GET', `/changes?viewing=${id}`, undefined, megan);
+  assert.deepEqual((await staff('GET', '/changes', undefined, jack)).body.viewers, {[id]: ['megan@buzzflix.ca']});
+  assert.deepEqual((await staff('GET', `/changes?viewing=${id}`, undefined, megan)).body.viewers, {}, 'not yourself');
+  ctx.now += 30_000;
+  assert.deepEqual((await staff('GET', '/changes', undefined, jack)).body.viewers, {}, 'gone after 25 seconds');
+  await staff('GET', `/changes?viewing=${id}`, undefined, megan);
+  await staff('POST', '/presence', {viewing: null}, megan);
+  assert.deepEqual((await staff('GET', '/changes', undefined, jack)).body.viewers, {}, 'gone when they leave');
 });
 
 test('staff can add an application by hand, with a PDF and an assignee', async () => {

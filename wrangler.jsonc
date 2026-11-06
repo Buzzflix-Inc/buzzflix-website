@@ -50,6 +50,9 @@
 		// TEMPORARY for testing the staff area: the apply page really submits, except on buzzflix.ca (also
 		// testSubmissions in assets/js/application-config.js). Delete both before merging into main.
 		"TEST_SUBMISSIONS": "true",
+		// "on" sends staff emails to applicants (invite, offer, not this time). While "off" they're only saved to
+		// each application's history. Turn on once buzzflix.ca is verified in Resend.
+		"APPLICANT_EMAILS": "off",
 		// Resend's test sender until buzzflix.ca is verified in Resend. It only delivers to the Resend account's own email.
 		"MAIL_FROM": "Buzzflix <onboarding@resend.dev>"
 	},

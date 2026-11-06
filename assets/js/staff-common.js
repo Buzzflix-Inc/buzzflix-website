@@ -59,16 +59,18 @@ export const departmentOf = (role, departments) =>
   Object.keys(departments).find(name => departments[name].some(position => position.toLowerCase() === String(role).toLowerCase())) || '';
 
 // Live updates: every 10 seconds while the page is in view (and straight away when it comes back into view),
-// asks whether anything changed (GET /api/staff/changes, one tiny read) and calls `reload` if it did.
-export function watchChanges(reload, every = 10_000) {
+// asks whether anything changed (GET /api/staff/changes) and calls `reload` if it did. The same check says which
+// application this page has open (`viewing`), and hands `onViewers` who else has which application open.
+export function watchChanges(reload, {viewing = null, onViewers} = {}) {
   let version = null, checking = false;
   const check = async () => {
     if (document.hidden || checking) return;
     checking = true;
     try {
-      const latest = (await api('/changes')).version;
-      if (version !== null && latest !== version) await reload();
-      version = latest;
+      const result = await api(`/changes${viewing ? `?viewing=${viewing}` : ''}`);
+      if (version !== null && result.version !== version) await reload();
+      version = result.version;
+      onViewers?.(result.viewers || {});
     } catch {
       // Offline or a hiccup: try again next time.
     } finally {
@@ -76,6 +78,24 @@ export function watchChanges(reload, every = 10_000) {
     }
   };
   check();
-  setInterval(check, every);
+  setInterval(check, 10_000);
   document.addEventListener('visibilitychange', check);
+  // Leaving the page (or hiding it) takes this person off the application's viewers straight away.
+  if (viewing) {
+    const leave = () => fetch('/api/staff/presence', {method: 'POST', credentials: 'same-origin', keepalive: true,
+      headers: {'Content-Type': 'application/json'}, body: JSON.stringify({viewing: null})}).catch(() => {});
+    addEventListener('pagehide', leave);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) leave(); });
+  }
+}
+
+// Small initial circles for teammates who have an application open, e.g. "MT" for Megan Tran.
+const initials = name => name.replace(/\(.*?\)/g, '').trim().split(/\s+/).map(part => part[0]).slice(0, 2).join('').toUpperCase();
+export function viewerDots(emails, team, {long = false} = {}) {
+  if (!emails?.length) return null;
+  const names = emails.map(email => team.find(person => person.email === email)?.name || email.split('@')[0]);
+  const text = long ? `${names.join(', ')} ${names.length === 1 ? 'is' : 'are'} also viewing this` : `Open now: ${names.join(', ')}`;
+  return h('span', {class: 'staff-viewers', title: text},
+    ...names.map(name => h('span', {class: 'staff-viewer', 'aria-hidden': 'true'}, initials(name) || '?')),
+    h('span', {class: long ? 'staff-viewers-text' : 'visually-hidden'}, text));
 }

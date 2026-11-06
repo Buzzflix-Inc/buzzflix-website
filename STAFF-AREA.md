@@ -5,14 +5,17 @@ Staff sign in at **buzzflix.ca/login** (nothing on the site links to it) with a 
 - see the applications assigned to them (the first tab), all of a year's applications (with a thin bar showing how many are at each step), or one step at a time, filtered by department, assignee or a search
 - add an application by hand (Add application, /staff/new) for one that came in by email or on paper
 - open an application to read the answers and the resume and portfolio PDFs
-- assign it to a teammate from a dropdown, in the list or on the application
+- assign it to a teammate from a dropdown, in the list or on the application, or tick several rows to assign or move them at once
+- see who else has an application open (initial dots, in the list and on the application)
+- after an interview, fill in the scorecard (Interview complete): five 1–5 ratings, notes, and Recommend or Reject
+- email the applicant from a template (Invite to interview, Offer, Not this time), edited first and kept in the application's history
 - move it through the hiring steps and add notes (general or interview notes)
 - see each application's history (who changed what, and when)
 - export a year to CSV
 
 Several people can work at once: every open staff page checks every 10 seconds (while it's on screen) whether anything changed, and reloads its data if so. Changed rows and new notes flash yellow. A check is one tiny database read, well inside Cloudflare's free limits (one person with a page open for an 8-hour day makes about 2,900 checks; the free plan allows 100,000 Worker requests a day).
 
-**Hiring steps** (`allowedStatuses` and `change` in `worker/staff.js`): New → In review → Interview → **Approve (pending)** or **Decline (pending)**, the interviewer's recommendation → **Hired** or **Not hired**, the admin's final decision, made from the Final decision box on the application. An application is New exactly while no one is assigned: assigning it moves it to In review, and unassigning it while In review sends it back to New. From Interview on it can be reassigned but not unassigned. Members can't choose Approve or Decline before Interview, can't make the final decision, and can't change it afterwards. Admins can choose any step for an assigned application.
+**Hiring steps** (`allowedStatuses` and `change` in `worker/staff.js`): New → In review → Interview → **Approve (pending)** or **Decline (pending)**, the interviewer's recommendation, made only through the scorecard (by the person assigned, or an admin) → admins see these under **Needs your decision** → **Hired** or **Not hired**, the admin's final decision, made from the Final decision box on the application. An application is New exactly while no one is assigned: assigning it moves it to In review, and unassigning it while In review sends it back to New. From Interview on it can be reassigned but not unassigned. Members can't choose Approve or Decline before Interview, can't make the final decision, and can't change it afterwards. Admins can choose any step for an assigned application.
 
 Admins can also add teammates before their first sign-in, make someone an admin, block someone (this signs them out and unassigns their applications), and delete an application with its files (for privacy requests).
 
@@ -29,6 +32,8 @@ Admins can also add teammates before their first sign-in, make someone an admin,
 | Settings (`APPLICATIONS_OPEN`, `ADMIN_EMAILS`, `MAIL_FROM`) | `wrangler.jsonc` → `vars` |
 
 The Worker stops signed-out visitors at `/staff` and sends them to `/login`. Sign-in codes last 10 minutes and allow 5 wrong tries, and sessions last 14 days. Only hashes of codes and session tokens are stored. Anyone with an @buzzflix.ca address can sign in unless an admin blocks them. The addresses in `ADMIN_EMAILS` become admins on their first sign-in.
+
+**Scorecard and email wording** live in `worker/hiring.js`. Invite to interview can be sent In review or at Interview by anyone; Offer (once Hired) and Not this time (once Not hired) by admins only. While `APPLICANT_EMAILS` in `wrangler.jsonc` is `"off"`, emails are saved to the application's history marked "Saved, not sent". Set it to `"on"` once buzzflix.ca is verified in Resend and `RESEND_API_KEY` is set.
 
 ## Example team members
 

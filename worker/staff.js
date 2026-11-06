@@ -7,27 +7,34 @@
  *   POST  /api/staff/verify {email, code}   sets the session cookie
  *   POST  /api/staff/logout
  *   GET   /api/staff/me
- *   GET   /api/staff/changes                 {version}: goes up on every change, so open pages know to reload
+ *   GET   /api/staff/changes?viewing=<id>    {version, viewers}: version goes up on every change, so open pages know
+ *                                             to reload; viewers is who else has which application open (and marks
+ *                                             you as viewing <id>, or nothing)
+ *   POST  /api/staff/presence {viewing: null}  leaving a page
  *   GET   /api/staff/applications?year=     summaries for the list, plus the team and years
  *   GET   /api/staff/applications/:id       everything, with notes and activity
  *   POST  /api/staff/applications {...answers, resume?, portfolio?, assigned_to?}   adds one by hand → {id}
  *   PATCH /api/staff/applications/:id {status?, assigned_to?}   see allowedStatuses and the assignment rules
  *   DELETE /api/staff/applications/:id      admins only; removes the files too
+ *   POST  /api/staff/applications/bulk {ids, assigned_to? | status?}   → {updated, skipped: [{id, name, reason}]}
  *   POST  /api/staff/applications/:id/notes {body, kind: note|interview}
+ *   POST  /api/staff/applications/:id/scorecard {scores, notes, recommendation: approve|decline}   ends the interview
+ *   POST  /api/staff/applications/:id/emails {template, subject, body}   an email to the applicant (worker/hiring.js)
  *   GET   /api/staff/applications/:id/resume|portfolio   the PDF
  *   GET   /api/staff/export.csv?year=
  *   GET   /api/staff/team
  *   POST  /api/staff/team {email, name}      admins only; adds someone before they first sign in
  *   PATCH /api/staff/team/:email {name?, role?, blocked?}   own name, or anything for admins
  *
- * ctx: {store, files, mailer, now, adminEmails: string[], secure: boolean}
+ * ctx: {store, files, mailer, now, adminEmails: string[], secure: boolean, applicantEmails: boolean}
  */
 import {DEPARTMENTS, addApplicationByStaff} from './apply.js';
-import {emailHtml} from './mail.js';
+import {emailHtml, REPLY_TO} from './mail.js';
+import {SCORECARD, EMAIL_TEMPLATES, allowedTemplates} from './hiring.js';
 
 export const COOKIE = 'bz_staff';
-// The hiring workflow: New → In review → Interview → Approve or Decline (pending, the interviewer's call)
-// → Hired or Not hired (an admin's final decision).
+// The hiring workflow: New → In review → Interview → Approve or Decline (pending: the interviewer's
+// recommendation, made by filling in the scorecard) → Hired or Not hired (an admin's final decision).
 // Assignment drives the start: an application is New exactly while no one is assigned. Assigning a New one
 // moves it to In review; unassigning one In review moves it back to New; past review it can only be reassigned.
 export const STATUSES = ['new', 'reviewing', 'interview', 'approve', 'decline', 'hired', 'not_hired'];
@@ -36,22 +43,20 @@ export const STATUS_LABELS = {new: 'New', reviewing: 'In review', interview: 'In
 const RECOMMENDATIONS = ['approve', 'decline'], FINAL = ['hired', 'not_hired'];
 export const NOTE_KINDS = ['note', 'interview'];
 
-// The statuses someone can choose for an application at `from` (including staying put). Unassigned ones stay
-// New until someone is assigned. Admins can choose anything else; members can't make or change the final
-// decision, and choose Approve or Decline only after an interview.
+// The statuses someone can choose from the status dropdown for an application at `from` (including staying
+// put). Unassigned ones stay New until someone is assigned. Approve and Decline only come from the scorecard.
+// Members choose In review or Interview; admins can also make (or change) the final decision.
 export function allowedStatuses(from, isAdmin, assigned) {
   if (!assigned) return [from];
-  const choices = isAdmin ? STATUSES
-    : FINAL.includes(from) ? [from]
-    : STATUSES.filter(status => ['reviewing', 'interview'].includes(status)
-      || (['interview', ...RECOMMENDATIONS].includes(from) && RECOMMENDATIONS.includes(status)));
-  return STATUSES.filter(status => status === from || (choices.includes(status) && status !== 'new'));
+  const choices = isAdmin ? ['reviewing', 'interview', ...FINAL] : FINAL.includes(from) ? [] : ['reviewing', 'interview'];
+  return STATUSES.filter(status => status === from || choices.includes(status));
 }
 const refusal = (from, to, assigned) => !assigned ? 'Assign it to someone first. It moves to In review when you do.'
   : to === 'new' ? 'An assigned application is In review or further along. To start over, unassign it.'
+  : RECOMMENDATIONS.includes(to) ? 'Approve or Decline comes from the interview scorecard. Use Interview complete.'
   : FINAL.includes(from) ? 'Only an admin can change a final decision.'
-  : FINAL.includes(to) ? 'Only an admin can make the final decision. Choose Approve or Decline instead.'
-  : 'Approve or Decline comes after the interview. Move it to Interview first.';
+  : 'Only an admin can make the final decision.';
+const VIEWING_FOR = 25_000; // someone counts as viewing for this long after their page last checked in
 const DOMAIN = '@buzzflix.ca';
 const CODE_LIFETIME = 10 * 60_000, CODE_ATTEMPTS = 5, SESSION_LIFETIME = 14 * 24 * 60 * 60_000;
 
@@ -141,8 +146,21 @@ async function signedIn(request, ctx, me, url, path, method, body) {
   const isAdmin = me.role === 'admin';
   const {store, now} = ctx;
 
-  if (method === 'GET' && path === '/me') return json({me: publicStaff(me), statuses: STATUSES, statusLabels: STATUS_LABELS, departments: DEPARTMENTS});
-  if (method === 'GET' && path === '/changes') return json({version: await store.version()});
+  if (method === 'GET' && path === '/me') return json({me: publicStaff(me), statuses: STATUSES, statusLabels: STATUS_LABELS, departments: DEPARTMENTS,
+    scorecard: SCORECARD, emailTemplates: EMAIL_TEMPLATES, applicantEmails: Boolean(ctx.applicantEmails)});
+  if (method === 'GET' && path === '/changes') {
+    const viewing = url.searchParams.get('viewing');
+    await store.setPresence(me.email, /^[0-9a-f-]{36}$/.test(viewing || '') ? viewing : null, now);
+    const viewers = {};
+    for (const row of await store.listPresence(now - VIEWING_FOR)) {
+      if (row.email !== me.email && row.application_id) (viewers[row.application_id] ||= []).push(row.email);
+    }
+    return json({version: await store.version(), viewers});
+  }
+  if (method === 'POST' && path === '/presence') {
+    await store.setPresence(me.email, null, now);
+    return json({ok: true});
+  }
 
   if (method === 'GET' && path === '/applications') {
     const years = await store.years();
@@ -198,6 +216,24 @@ async function signedIn(request, ctx, me, url, path, method, body) {
     return json({person: publicStaff(updated)});
   }
 
+  if (method === 'POST' && path === '/applications/bulk') {
+    const input = await body();
+    const ids = Array.isArray(input.ids) ? [...new Set(input.ids.filter(id => typeof id === 'string'))] : [];
+    if (!ids.length || ids.length > 500) return error('Choose between 1 and 500 applications.');
+    const fields = 'assigned_to' in input ? {assigned_to: input.assigned_to} : 'status' in input ? {status: input.status} : null;
+    if (!fields) return error('Choose someone to assign them to, or a status.');
+    let updated = 0;
+    const skipped = [];
+    for (const id of ids) {
+      const application = await store.getApplication(id);
+      if (!application) continue;
+      const refused = await change(ctx, me, application, fields);
+      if (refused) skipped.push({id, name: application.name, reason: (await refused.json()).error});
+      else updated++;
+    }
+    return json({updated, skipped});
+  }
+
   if (method === 'POST' && path === '/applications') {
     const input = await body();
     if (input.assigned_to) {
@@ -210,7 +246,7 @@ async function signedIn(request, ctx, me, url, path, method, body) {
     return json({id: added.id});
   }
 
-  const appMatch = path.match(/^\/applications\/([0-9a-f-]{36})(?:\/(notes|resume|portfolio))?$/);
+  const appMatch = path.match(/^\/applications\/([0-9a-f-]{36})(?:\/(notes|scorecard|emails|resume|portfolio))?$/);
   if (appMatch) {
     const [, id, part] = appMatch;
     const application = await store.getApplication(id);
@@ -238,6 +274,54 @@ async function signedIn(request, ctx, me, url, path, method, body) {
       const kind = NOTE_KINDS.includes(input.kind) ? input.kind : 'note';
       await store.addNote(id, me.email, text, now, kind);
       await store.addActivity(id, me.email, 'note', kind, now);
+      return json(await details(store, application, isAdmin));
+    }
+
+    // Interview complete: the assignee (or an admin) rates the applicant, writes notes and recommends.
+    if (part === 'scorecard' && method === 'POST') {
+      if (application.status !== 'interview') return error('The scorecard is for applications at Interview.', 409);
+      if (application.assigned_to !== me.email && !isAdmin) return error('Only the person assigned to this interview (or an admin) can complete it.', 403);
+      const input = await body();
+      const scores = {};
+      for (const {key, label} of SCORECARD) {
+        const score = Number(input.scores?.[key]);
+        if (!Number.isInteger(score) || score < 1 || score > 5) return error(`Rate “${label}” from 1 to 5.`);
+        scores[key] = score;
+      }
+      const notes = typeof input.notes === 'string' ? input.notes.trim() : '';
+      if (!notes || notes.length > 5000) return error('Write your interview notes (up to 5,000 characters).');
+      if (!RECOMMENDATIONS.includes(input.recommendation)) return error('Choose Recommend or Reject.');
+      await store.addScorecard(id, me.email, JSON.stringify(scores), notes, input.recommendation, now);
+      await store.addActivity(id, me.email, 'scorecard', input.recommendation, now);
+      await store.updateApplication(id, {status: input.recommendation}, now);
+      await store.addActivity(id, me.email, 'status', `${STATUS_LABELS.interview} → ${STATUS_LABELS[input.recommendation]}`, now);
+      return json(await details(store, await store.getApplication(id), isAdmin));
+    }
+
+    // An email to the applicant from a template. Saved to the history; sent only when APPLICANT_EMAILS is on.
+    if (part === 'emails' && method === 'POST') {
+      const input = await body();
+      const template = EMAIL_TEMPLATES[input.template];
+      if (!template) return error('Choose an email.');
+      if (!allowedTemplates(application.status, isAdmin).includes(input.template)) {
+        return error(template.admin && !isAdmin ? `Only admins can send “${template.label}”.` : `“${template.label}” can’t be sent at this step.`, 403);
+      }
+      const subject = typeof input.subject === 'string' ? input.subject.trim() : '';
+      const text = typeof input.body === 'string' ? input.body.trim() : '';
+      if (!subject || subject.length > 200) return error('Write a subject of up to 200 characters.');
+      if (!text || text.length > 10000) return error('Write the email (up to 10,000 characters).');
+      let sent = false;
+      if (ctx.applicantEmails) {
+        try {
+          await ctx.mailer.send({to: application.email, replyTo: REPLY_TO, subject, text, html: emailHtml(text.split(/\n{2,}/))});
+          sent = true;
+        } catch (failure) {
+          console.error('applicant email failed', failure);
+          return error('The email couldn’t be sent. Please try again in a moment.', 502);
+        }
+      }
+      await store.addEmail(id, me.email, input.template, subject, text, sent ? 1 : 0, now);
+      await store.addActivity(id, me.email, 'email', `${input.template}:${sent ? 'sent' : 'saved'}`, now);
       return json(await details(store, application, isAdmin));
     }
 
@@ -362,11 +446,15 @@ async function startSession({store, now, adminEmails, secure}, email, existing) 
 async function details(store, application, isAdmin) {
   const {resume_key, portfolio_key, ...rest} = application;
   const activity = await store.listActivity(application.id);
+  const scorecards = (await store.listScorecards(application.id)).map(row => ({...row, scores: JSON.parse(row.scores)}));
   return {
     application: {...rest, has_resume: Boolean(resume_key), has_portfolio: Boolean(portfolio_key)},
     allowedStatuses: allowedStatuses(application.status, isAdmin, Boolean(application.assigned_to)),
-    // Whoever moved it to Approve or Decline, for the admin's decision box.
-    recommendedBy: RECOMMENDATIONS.includes(application.status) ? activity.find(row => row.action === 'status')?.actor || null : null,
+    allowedTemplates: allowedTemplates(application.status, isAdmin),
+    // Whoever filled in the latest scorecard, for the admin's decision box.
+    recommendedBy: RECOMMENDATIONS.includes(application.status) ? scorecards.at(-1)?.author || null : null,
+    scorecards,
+    emails: await store.listEmails(application.id),
     notes: await store.listNotes(application.id),
     activity
   };

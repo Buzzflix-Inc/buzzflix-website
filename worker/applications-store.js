@@ -73,7 +73,7 @@ export const d1Store = db => {
       return one('SELECT * FROM applications WHERE id = ?', id);
     },
     async deleteApplication(id) {
-      await db.batch(['notes', 'activity'].map(table => db.prepare(`DELETE FROM ${table} WHERE application_id = ?`).bind(id))
+      await db.batch(['notes', 'activity', 'scorecards', 'applicant_emails'].map(table => db.prepare(`DELETE FROM ${table} WHERE application_id = ?`).bind(id))
         .concat(db.prepare('DELETE FROM applications WHERE id = ?').bind(id)));
     },
     // When someone is blocked: their applications lose their assignee, and any In review go back to New.
@@ -90,6 +90,20 @@ export const d1Store = db => {
     putDraft: (id, email, answers, now) => run('INSERT INTO drafts (id, email, answers, saved_at) VALUES (?, ?, ?, ?)', id, email, answers, now),
     getDraft: id => one('SELECT * FROM drafts WHERE id = ?', id),
 
+    addScorecard: (applicationId, author, scores, notes, recommendation, now) =>
+      run('INSERT INTO scorecards (application_id, author, scores, notes, recommendation, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+        applicationId, author, scores, notes, recommendation, now),
+    listScorecards: applicationId => all('SELECT * FROM scorecards WHERE application_id = ? ORDER BY created_at, id', applicationId),
+    addEmail: (applicationId, sender, template, subject, body, sent, now) =>
+      run('INSERT INTO applicant_emails (application_id, sender, template, subject, body, sent, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        applicationId, sender, template, subject, body, sent, now),
+    listEmails: applicationId => all('SELECT * FROM applicant_emails WHERE application_id = ? ORDER BY created_at DESC, id DESC', applicationId),
+
+    // Who has which application open: one row per person, updated each time their page checks for changes.
+    setPresence: (email, applicationId, now) => run(`INSERT INTO presence (email, application_id, seen_at) VALUES (?, ?, ?)
+      ON CONFLICT (email) DO UPDATE SET application_id = excluded.application_id, seen_at = excluded.seen_at`, email, applicationId, now),
+    listPresence: since => all('SELECT * FROM presence WHERE seen_at > ?', since),
+
     // A counter that goes up on every change, which open staff pages check to know when to reload.
     bump: () => run("INSERT INTO meta (key, value) VALUES ('version', 1) ON CONFLICT (key) DO UPDATE SET value = value + 1"),
     async version() {
@@ -100,6 +114,7 @@ export const d1Store = db => {
 
 export function memoryStore() {
   const rate = [], staff = new Map(), codes = [], sessions = new Map(), applications = new Map(), notes = [], activity = [], drafts = new Map();
+  const scorecards = [], emails = [], presence = new Map();
   let nextId = 1, version = 0;
   const copy = row => row ? {...row} : null; // D1 gives null for a missing row
   const pick = (fields, allowed) => Object.fromEntries(Object.entries(fields).filter(([key]) => allowed.includes(key)));
@@ -149,7 +164,7 @@ export function memoryStore() {
     },
     async deleteApplication(id) {
       applications.delete(id);
-      for (const list of [notes, activity]) for (let i = list.length - 1; i >= 0; i--) if (list[i].application_id === id) list.splice(i, 1);
+      for (const list of [notes, activity, scorecards, emails]) for (let i = list.length - 1; i >= 0; i--) if (list[i].application_id === id) list.splice(i, 1);
     },
     async clearAssignee(email, now) {
       for (const row of applications.values()) {
@@ -168,6 +183,17 @@ export function memoryStore() {
 
     putDraft: async (id, email, answers, saved_at) => { drafts.set(id, {id, email, answers, saved_at}); },
     getDraft: async id => copy(drafts.get(id)),
+
+    addScorecard: async (application_id, author, scores, notes, recommendation, created_at) => {
+      scorecards.push({id: nextId++, application_id, author, scores, notes, recommendation, created_at});
+    },
+    listScorecards: async id => scorecards.filter(row => row.application_id === id).map(copy),
+    addEmail: async (application_id, sender, template, subject, body, sent, created_at) => {
+      emails.push({id: nextId++, application_id, sender, template, subject, body, sent, created_at});
+    },
+    listEmails: async id => emails.filter(row => row.application_id === id).reverse().map(copy),
+    setPresence: async (email, application_id, seen_at) => { presence.set(email, {email, application_id, seen_at}); },
+    listPresence: async since => [...presence.values()].filter(row => row.seen_at > since).map(copy),
 
     bump: async () => { version++; },
     version: async () => version

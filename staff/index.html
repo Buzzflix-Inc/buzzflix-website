@@ -30,13 +30,21 @@
   <div><label for="staff-department">Department</label><select id="staff-department" data-department><option value="">All departments</option></select></div>
   <div><label for="staff-assigned">Assigned to</label><select id="staff-assigned" data-assigned><option value="">Anyone</option><option value="me">Me</option><option value="none">No one</option></select></div>
  </div>
+ <p class="staff-bulk-result" role="status" data-bulk-result></p>
  <p class="staff-count" role="status" data-count>Loading applications…</p>
  <div class="staff-table-wrap" data-table-wrap hidden>
   <table class="staff-table">
-   <thead><tr><th scope="col">Name</th><th scope="col">Positions</th><th scope="col">School</th><th scope="col">Submitted</th><th scope="col">Status</th><th scope="col">Assigned to</th></tr></thead>
+   <thead><tr><th scope="col" class="staff-check"><input type="checkbox" aria-label="Select every application shown" data-select-all></th><th scope="col">Name</th><th scope="col">Positions</th><th scope="col">School</th><th scope="col">Submitted</th><th scope="col">Status</th><th scope="col">Assigned to</th></tr></thead>
    <tbody data-rows></tbody>
   </table>
  </div>
  <p class="staff-empty" data-empty hidden>No applications match these filters.</p>
+ <!-- Bulk actions: appears once rows are ticked. -->
+ <div class="staff-bulk" role="region" aria-label="Change the selected applications" data-bulk hidden>
+  <p class="staff-bulk-count" data-bulk-count></p>
+  <div><label for="bulk-assign">Assign to</label><select id="bulk-assign" data-bulk-assign></select></div>
+  <div><label for="bulk-status">Move to</label><select id="bulk-status" data-bulk-status></select></div>
+  <button class="staff-link-button" type="button" data-bulk-clear>Clear selection</button>
+ </div>
 </main>
 </body></html>

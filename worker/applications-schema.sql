@@ -98,3 +98,35 @@ CREATE TABLE IF NOT EXISTS meta (
   key TEXT PRIMARY KEY,
   value INTEGER NOT NULL
 );
+
+-- Interview scorecards (worker/hiring.js SCORECARD): scores is JSON {key: 1-5}; recommendation is approve or decline.
+CREATE TABLE IF NOT EXISTS scorecards (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  application_id TEXT NOT NULL,
+  author TEXT NOT NULL,
+  scores TEXT NOT NULL,
+  notes TEXT NOT NULL,
+  recommendation TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS scorecards_by_application ON scorecards (application_id, created_at);
+
+-- Emails to applicants from the templates in worker/hiring.js. sent = 0 when saved while APPLICANT_EMAILS is off.
+CREATE TABLE IF NOT EXISTS applicant_emails (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  application_id TEXT NOT NULL,
+  sender TEXT NOT NULL,
+  template TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  body TEXT NOT NULL,
+  sent INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS applicant_emails_by_application ON applicant_emails (application_id, created_at);
+
+-- Who has which application open (one row per staff member), for the "also viewing" dots.
+CREATE TABLE IF NOT EXISTS presence (
+  email TEXT PRIMARY KEY,
+  application_id TEXT,
+  seen_at INTEGER NOT NULL
+);

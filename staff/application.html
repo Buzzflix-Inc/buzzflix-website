@@ -19,6 +19,7 @@
    <p class="staff-eyebrow" data-submitted></p>
    <h1 data-name></h1>
    <p data-contact></p>
+   <div class="staff-detail-viewers" data-viewers aria-live="polite"></div>
   </header>
   <div class="staff-detail-grid">
    <div class="staff-detail-main">
@@ -27,15 +28,25 @@
      <ol class="staff-positions" data-positions></ol>
      <p class="staff-answer" data-additional hidden></p>
     </section>
+    <!-- The questions as worded on apply.html. -->
     <section class="staff-card" aria-labelledby="answers-title">
-     <h2 id="answers-title">Previous experience</h2>
-     <p class="staff-answer" data-experience></p>
-     <h2>Why Buzzflix</h2>
-     <p class="staff-answer" data-why></p>
+     <h2 id="answers-title">Answers</h2>
+     <div class="staff-qa">
+      <h3>What have you done before?</h3>
+      <p class="staff-answer" data-experience></p>
+     </div>
+     <div class="staff-qa">
+      <h3>Why are you interested in joining Buzzflix?</h3>
+      <p class="staff-answer" data-why></p>
+     </div>
     </section>
     <section class="staff-card" aria-labelledby="files-title">
      <h2 id="files-title">Resume and portfolio</h2>
      <ul class="staff-files" data-files></ul>
+    </section>
+    <section class="staff-card" aria-labelledby="scorecards-title" data-scorecards-card hidden>
+     <h2 id="scorecards-title">Interview scorecard</h2>
+     <div data-scorecards></div>
     </section>
     <section class="staff-card" aria-labelledby="notes-title">
      <h2 id="notes-title">Team notes</h2>
@@ -47,6 +58,12 @@
       <button class="button" type="submit">Add note</button>
       <p class="staff-message" role="status" data-note-status></p>
      </form>
+    </section>
+    <section class="staff-card" aria-labelledby="emails-title">
+     <h2 id="emails-title">Emails to the applicant</h2>
+     <p class="staff-muted staff-hint" data-email-hint></p>
+     <div class="staff-email-buttons" data-email-buttons></div>
+     <ol class="staff-emails" data-emails></ol>
     </section>
    </div>
    <aside class="staff-detail-side">
@@ -60,7 +77,8 @@
     </section>
     <section class="staff-card" aria-label="Status and assignment">
      <div class="staff-field"><label for="staff-status">Status</label><select id="staff-status" data-status aria-describedby="staff-status-hint"></select>
-      <p class="staff-status-hint" id="staff-status-hint" data-status-hint></p></div>
+      <p class="staff-status-hint" id="staff-status-hint" data-status-hint></p>
+      <button class="button staff-complete-button" type="button" data-complete hidden>Interview complete</button></div>
      <div class="staff-field"><label for="staff-assignee">Assigned to</label><select id="staff-assignee" data-assignee></select></div>
      <p class="staff-message" role="status" data-save-status></p>
     </section>
@@ -77,4 +95,42 @@
   </div>
  </article>
 </main>
+
+<!-- Interview complete: the scorecard. Filled in before the application can move on from Interview. -->
+<dialog class="staff-dialog" data-scorecard-dialog aria-labelledby="scorecard-dialog-title">
+ <form method="dialog" data-scorecard-form>
+  <div class="staff-dialog-head">
+   <h2 id="scorecard-dialog-title">Interview scorecard</h2>
+   <button class="staff-dialog-close" type="button" value="cancel" data-close aria-label="Close without saving">×</button>
+  </div>
+  <p class="staff-muted staff-hint" data-scorecard-for></p>
+  <div data-scorecard-questions></div>
+  <div class="staff-field"><label for="scorecard-notes">Interview notes</label>
+   <textarea id="scorecard-notes" name="notes" maxlength="5000" required placeholder="What stood out, any concerns, and which position fits best."></textarea></div>
+  <p class="staff-message is-error" role="alert" data-scorecard-error></p>
+  <div class="staff-dialog-actions">
+   <button class="button" type="submit" value="approve">Recommend</button>
+   <button class="staff-button-quiet staff-button-danger" type="submit" value="decline">Reject</button>
+  </div>
+ </form>
+</dialog>
+
+<!-- An email to the applicant from a template (worker/hiring.js), edited before sending. -->
+<dialog class="staff-dialog" data-email-dialog aria-labelledby="email-dialog-title">
+ <form method="dialog" data-email-form>
+  <div class="staff-dialog-head">
+   <h2 id="email-dialog-title" data-email-title>Email</h2>
+   <button class="staff-dialog-close" type="button" data-close aria-label="Close without sending">×</button>
+  </div>
+  <p class="staff-notice" data-email-off hidden>Email to applicants isn’t switched on yet, so this is saved to the application’s history but not sent.</p>
+  <p class="staff-muted staff-hint" data-email-to></p>
+  <div class="staff-field"><label for="email-subject">Subject</label><input id="email-subject" name="subject" maxlength="200" required></div>
+  <div class="staff-field"><label for="email-body">Message</label><textarea id="email-body" name="body" maxlength="10000" required rows="12"></textarea></div>
+  <p class="staff-message is-error" role="alert" data-email-error></p>
+  <div class="staff-dialog-actions">
+   <button class="button" type="submit" data-email-send>Send email</button>
+   <button class="staff-button-quiet" type="button" data-close>Cancel</button>
+  </div>
+ </form>
+</dialog>
 </body></html>

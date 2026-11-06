@@ -39,7 +39,12 @@ export async function addDemoApplications({store, files}) {
   }
   await store.addNote('00000000-0000-4000-8000-000000000006', 'example.megan@buzzflix.ca', 'Strong lighting reel. Worth an interview for gaffer.', now - 3_600_000);
   await store.addNote('00000000-0000-4000-8000-000000000007', 'example.owen@buzzflix.ca', 'Interviewed on Zoom. Organised, knows set etiquette, has run a call sheet before. Recommend AD.', now - 1_800_000, 'interview');
-  await store.addActivity('00000000-0000-4000-8000-000000000007', 'example.owen@buzzflix.ca', 'status', 'Interview → Approve (pending)', now - 1_700_000);
+  await store.addScorecard('00000000-0000-4000-8000-000000000007', 'jack@buzzflix.ca',
+    JSON.stringify({skills: 4, communication: 5, attitude: 5, teamwork: 4, reliability: 4}),
+    'Organised, knows set etiquette, has run a call sheet before. Best fit as Assistant Director.', 'approve', now - 1_700_000);
+  await store.addScorecard('00000000-0000-4000-8000-000000000009', 'example.megan@buzzflix.ca',
+    JSON.stringify({skills: 2, communication: 3, attitude: 4, teamwork: 3, reliability: 2}),
+    'Keen, but can only work two weekends over the summer. Worth encouraging to apply again next year.', 'decline', now - 1_600_000);
 }
 
 // Example teammates to assign applications to while the real team hasn't signed in yet. The same three are in
