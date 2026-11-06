@@ -180,8 +180,9 @@ if (form) {
     button.disabled = true;
     const data = answers();
     data.consent = form.elements.consent.checked ? 'agreed' : '';
+    data.eligibility = form.elements.eligibility.checked ? 'confirmed' : '';
     data.application_year = '2027';
-    data.consent_version = '2027-text-v1';
+    data.consent_version = '2027-text-v2';
     const files = documentFields.filter(name => form.elements[name].files[0]);
     if (files.length) status.textContent = 'Preparing your files…';
     try {

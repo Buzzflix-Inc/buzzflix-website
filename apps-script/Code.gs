@@ -119,7 +119,7 @@ function doPost(event) {
 function validateApplication_(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Please check your application details.');
   const limits = {submission_id: 36, application_year: 4, name: 150, email: 254, school: 250, program_year: 150, experience: 10000, why_join: 5000,
-    role_1: 150, role_2: 150, role_3: 150, additional_roles: 500, consent: 10, consent_version: 40, website: 500};
+    role_1: 150, role_2: 150, role_3: 150, additional_roles: 500, consent: 10, eligibility: 10, consent_version: 40, website: 500};
   const result = {};
   DOCUMENT_FIELDS.forEach(key => { result[key] = validateDocument_(input[key], DOCUMENT_LABELS[key]); });
   Object.keys(limits).forEach(key => {
@@ -144,7 +144,8 @@ function validateApplication_(input) {
     return [result.role_1, result.role_2, result.role_3].filter(role => positions.indexOf(role.toLowerCase()) >= 0).length > DEPARTMENT_LIMIT;
   });
   if (crowded) throw new Error('Please choose at most two ' + crowded + ' positions. Pick your third from another department.');
-  if (result.application_year !== '2027' || result.consent_version !== '2027-text-v1' || result.consent !== 'agreed') throw new Error('Please agree to the application terms.');
+  if (result.eligibility !== 'confirmed') throw new Error('Please confirm you are a Canadian citizen or permanent resident.');
+  if (result.application_year !== '2027' || result.consent_version !== '2027-text-v2' || result.consent !== 'agreed') throw new Error('Please agree to the privacy policy and application terms.');
   return result;
 }
 

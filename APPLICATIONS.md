@@ -28,7 +28,7 @@ Edit the named source pages before switching; the switch overwrites the active h
 
 ## Submission contract
 
-The browser POSTs a JSON string using `Content-Type: text/plain;charset=utf-8`. Fields are `name`, `email`, `school`, `experience`, `role_1`, `role_2`, `role_3`, `additional_roles`, `consent` (`agreed`), `consent_version` (`2027-text-v1`), `application_year` (`2027`), `submission_id` (UUID), and `website` (an empty spam-trap field).
+The browser POSTs a JSON string using `Content-Type: text/plain;charset=utf-8`. Fields are `name`, `email`, `school`, `experience`, `role_1`, `role_2`, `role_3`, `additional_roles`, `consent` (`agreed`: accurate answers and privacy policy), `eligibility` (`confirmed`: Canadian citizen or permanent resident), `consent_version` (`2027-text-v2`), `application_year` (`2027`), `submission_id` (UUID), and `website` (an empty spam-trap field).
 
 After saving, the script returns JSON with `accepted:true`, `submissionId`, `duplicate`, and `confirmationEmailQueued:false`. Apps Script returns errors in JSON with `accepted:false` and a message, rather than a custom HTTP error status. The browser checks `accepted`, not just the HTTP status, and preserves answers on failure.
 

@@ -82,7 +82,7 @@ Publish the changed homepage files. To restore the other homepage, use `node scr
 
 ## Behavior and limits
 
-The script checks required answers, email format, three distinct roles, consent, and answer lengths. It uses a script-wide lock and checks submission IDs before adding rows. Unchanged retries reuse the reference and do not create another row. Answers starting with formula-like characters are prefixed as text.
+The script checks required answers, email format, three distinct roles, privacy-policy consent, Canadian citizenship or permanent residence, and answer lengths. It uses a script-wide lock and checks submission IDs before adding rows. Unchanged retries reuse the reference and do not create another row. Answers starting with formula-like characters are prefixed as text.
 
 A hidden spam-trap field and a basic shared limit of 20 submissions per minute are included. The limit uses Google's cache, which can expire early. The public URL is not a secret and these protections do not replace CAPTCHA. Apps Script has Google-managed execution quotas; no separate paid backend is required for this text-only version.
 

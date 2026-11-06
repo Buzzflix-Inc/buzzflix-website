@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 const source = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
-const application = (changes = {}) => ({submission_id: '21c6c122-661e-4710-85db-5397543696c2', application_year: '2027', name: 'Test Applicant', email: 'test@example.com', school: 'Test School', program_year: 'Grade 11', experience: 'School films', why_join: 'I love movies', role_1: 'Camera', role_2: 'Sound', role_3: 'Editing', additional_roles: '', consent: 'agreed', consent_version: '2027-text-v1', website: '', ...changes});
+const application = (changes = {}) => ({submission_id: '21c6c122-661e-4710-85db-5397543696c2', application_year: '2027', name: 'Test Applicant', email: 'test@example.com', school: 'Test School', program_year: 'Grade 11', experience: 'School films', why_join: 'I love movies', role_1: 'Camera', role_2: 'Sound', role_3: 'Editing', additional_roles: '', consent: 'agreed', eligibility: 'confirmed', consent_version: '2027-text-v2', website: '', ...changes});
 function harness() {
   const tabs = {}, properties = {}, cache = {}, mail = [], folders = {};
   let releases = 0, locked = true, storageFails = false, uuids = 0;
@@ -65,9 +65,9 @@ test('unchanged retries do not duplicate; changing answers with the same ID is r
   assert.equal(h.submit(application({school: 'Changed School'})).accepted, false);
   assert.equal(h.releases(), 3);
 });
-test('validation rejects invalid email, duplicate roles, missing consent, spam and oversized answers', () => {
+test('validation rejects invalid email, duplicate roles, missing consent or eligibility, spam and oversized answers', () => {
   const h = harness(); h.setup();
-  for (const changes of [{email: 'bad'}, {program_year: ' '}, {why_join: ''}, {role_2: ' CAMERA '}, {consent: ''}, {website: 'spam'}, {experience: 'x'.repeat(10001)}]) {
+  for (const changes of [{email: 'bad'}, {program_year: ' '}, {why_join: ''}, {role_2: ' CAMERA '}, {consent: ''}, {eligibility: ''}, {consent_version: '2027-text-v1'}, {website: 'spam'}, {experience: 'x'.repeat(10001)}]) {
     assert.equal(h.submit(application(changes)).accepted, false);
   }
   assert.equal(h.rows.length, 1);

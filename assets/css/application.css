@@ -51,7 +51,8 @@
 .application-form input[type=file]::file-selector-button { font:inherit; border:0; border-radius:4px; padding:10px 14px; margin-right:10px; background:var(--yellow); color:var(--ink); cursor:var(--pointer); }
 .application-file-selection { margin:12px 0 0; overflow-wrap:anywhere; }
 .application-file-selection:empty { display:none; }
-.application-consent { display:flex; gap:14px; align-items:flex-start; margin:30px 0; font-size:15px; line-height:1.5; cursor:var(--pointer); }
+.application-consents { display:grid; gap:16px; margin:30px 0; }
+.application-consent { display:flex; gap:14px; align-items:flex-start; font-size:15px; line-height:1.5; cursor:var(--pointer); }
 .application-consent input { width:22px; height:22px; flex-shrink:0; margin:1px 0 0; accent-color:var(--orange); }
 .application-submit { border:0; }
 .application-error { color:#a52d16; font-size:16px; padding:16px; background:#fff0eb; border-left:3px solid var(--orange); }

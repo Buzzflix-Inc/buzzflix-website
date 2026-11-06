@@ -172,11 +172,16 @@
      <input id="applicant-video" name="video" type="file" accept=".mp4,.mov,.webm,video/mp4,video/quicktime,video/webm" aria-describedby="video-help video-format" disabled>
     </div>
    </div>
-   <label class="application-consent" for="applicant-consent">
-    <input id="applicant-consent" name="consent" type="checkbox" value="agreed" required>
-    <span>By submitting, I confirm my application is accurate and agree that Buzzflix may use my details to assess my application and contact me about it.</span>
-   </label>
-   <p class="application-help">How we use and protect your details: <a href="privacy.html">privacy policy</a>.</p>
+   <div class="application-consents">
+    <label class="application-consent" for="applicant-eligibility">
+     <input id="applicant-eligibility" name="eligibility" type="checkbox" value="confirmed" required>
+     <span>I confirm I am a Canadian citizen or a permanent resident of Canada.</span>
+    </label>
+    <label class="application-consent" for="applicant-consent">
+     <input id="applicant-consent" name="consent" type="checkbox" value="agreed" required>
+     <span>I confirm my application is accurate, and I agree to the Buzzflix <a href="privacy.html" target="_blank" rel="noopener">privacy policy<span class="visually-hidden"> (opens in a new tab)</span></a>, including how Buzzflix uses my details to assess my application and contact me about it.</span>
+    </label>
+   </div>
    <p class="application-error" id="application-error" role="alert" hidden></p>
    <button class="button application-submit" type="submit" disabled>Preview submission</button>
    <p class="application-help application-submit-status" role="status" aria-live="polite"></p>
