@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en-CA"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Add an application | Buzzflix staff</title><link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32-d042b60.png"><link rel="preload" href="/assets/fonts/latin-2735d88.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/latin-bf832b5.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/css/site.css"><link rel="stylesheet" href="/assets/css/staff.css"><script type="module" src="/assets/js/staff-new.js"></script></head>
+<!-- Staff area: worker/staff.js sends signed-out visitors to /login. The header is repeated in each staff/*.html page. -->
+<body class="staff"><a class="skip-link" href="#main">Skip to main content</a>
+<header class="staff-header">
+ <a class="staff-brand" href="/staff/"><img src="/assets/images/buzzflix-b-1--605ed9e.webp" alt="Buzzflix" width="500" height="114"><span>Staff</span></a>
+ <nav aria-label="Staff">
+  <a href="/staff/" aria-current="page">Applications</a>
+  <a href="/staff/team">Team</a>
+ </nav>
+ <div class="staff-account"><span data-me></span><button class="staff-button-quiet" type="button" data-sign-out>Sign out</button></div>
+</header>
+<main id="main">
+ <a class="staff-back" href="/staff/">← All applications</a>
+ <div class="staff-title-row"><h1>Add an application</h1></div>
+ <form class="staff-new-form" data-new-form novalidate>
+  <p class="staff-muted staff-hint">For an application that came in another way, such as by email or on paper. Only fields marked optional can be left blank.</p>
+  <section class="staff-card" aria-labelledby="applicant-title">
+   <h2 id="applicant-title">Applicant</h2>
+   <div class="staff-form-grid">
+    <div class="staff-field"><label for="new-name">Full name</label><input id="new-name" name="name" maxlength="150" autocomplete="off" required></div>
+    <div class="staff-field"><label for="new-email">Email</label><input id="new-email" name="email" type="email" maxlength="254" autocomplete="off" required></div>
+    <div class="staff-field"><label for="new-school">School</label><input id="new-school" name="school" maxlength="250" autocomplete="off" required></div>
+    <div class="staff-field"><label for="new-program">Program and year</label><input id="new-program" name="program_year" maxlength="150" autocomplete="off" required placeholder="Film, 2nd year"></div>
+   </div>
+  </section>
+  <section class="staff-card" aria-labelledby="new-positions-title">
+   <h2 id="new-positions-title">Positions</h2>
+   <p class="staff-muted staff-hint">Start typing to pick from the list, or type any other role.</p>
+   <div class="staff-form-grid staff-form-grid-3">
+    <div class="staff-field"><label for="new-role-1">First choice</label><input id="new-role-1" name="role_1" maxlength="150" list="new-positions" autocomplete="off" required></div>
+    <div class="staff-field"><label for="new-role-2">Second choice</label><input id="new-role-2" name="role_2" maxlength="150" list="new-positions" autocomplete="off" required></div>
+    <div class="staff-field"><label for="new-role-3">Third choice</label><input id="new-role-3" name="role_3" maxlength="150" list="new-positions" autocomplete="off" required></div>
+   </div>
+   <datalist id="new-positions" data-positions></datalist>
+   <div class="staff-field"><label for="new-additional">Other positions (optional)</label><input id="new-additional" name="additional_roles" maxlength="500" autocomplete="off" placeholder="Separate them with commas"></div>
+  </section>
+  <section class="staff-card" aria-labelledby="new-answers-title">
+   <h2 id="new-answers-title">Answers</h2>
+   <div class="staff-field"><label for="new-experience">Previous experience (optional)</label><textarea id="new-experience" name="experience" maxlength="10000"></textarea></div>
+   <div class="staff-field"><label for="new-why">Why Buzzflix (optional)</label><textarea id="new-why" name="why_join" maxlength="5000"></textarea></div>
+  </section>
+  <section class="staff-card" aria-labelledby="new-files-title">
+   <h2 id="new-files-title">Resume and portfolio</h2>
+   <div class="staff-form-grid">
+    <div class="staff-field"><label for="new-resume">Resume (optional, PDF up to 5 MB)</label><input id="new-resume" name="resume" type="file" accept=".pdf,application/pdf"></div>
+    <div class="staff-field"><label for="new-portfolio">Portfolio (optional, PDF up to 5 MB)</label><input id="new-portfolio" name="portfolio" type="file" accept=".pdf,application/pdf"></div>
+   </div>
+  </section>
+  <section class="staff-card" aria-labelledby="new-assign-title">
+   <h2 id="new-assign-title">Assign</h2>
+   <div class="staff-field"><label for="new-assignee">Assigned to</label><select id="new-assignee" name="assigned_to" data-assignee aria-describedby="new-assignee-hint"><option value="">No one yet</option></select>
+    <p class="staff-status-hint" id="new-assignee-hint">Assigning it now moves it straight to In review.</p></div>
+  </section>
+  <div class="staff-new-actions">
+   <button class="button" type="submit">Add application</button>
+   <p class="staff-message" role="status" data-status></p>
+  </div>
+ </form>
+</main>
+</body></html>

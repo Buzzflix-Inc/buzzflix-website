@@ -76,23 +76,31 @@ export const d1Store = db => {
       await db.batch(['notes', 'activity'].map(table => db.prepare(`DELETE FROM ${table} WHERE application_id = ?`).bind(id))
         .concat(db.prepare('DELETE FROM applications WHERE id = ?').bind(id)));
     },
-    clearAssignee: (email, now) => run('UPDATE applications SET assigned_to = NULL, updated_at = ? WHERE assigned_to = ?', now, email),
+    // When someone is blocked: their applications lose their assignee, and any In review go back to New.
+    clearAssignee: (email, now) => run(`UPDATE applications SET assigned_to = NULL, updated_at = ?,
+      status = CASE WHEN status = 'reviewing' THEN 'new' ELSE status END WHERE assigned_to = ?`, now, email),
 
-    addNote: (applicationId, author, body, now) =>
-      one('INSERT INTO notes (application_id, author, body, created_at) VALUES (?, ?, ?, ?) RETURNING *', applicationId, author, body, now),
+    addNote: (applicationId, author, body, now, kind = 'note') =>
+      one('INSERT INTO notes (application_id, author, body, kind, created_at) VALUES (?, ?, ?, ?, ?) RETURNING *', applicationId, author, body, kind, now),
     listNotes: applicationId => all('SELECT * FROM notes WHERE application_id = ? ORDER BY created_at, id', applicationId),
     addActivity: (applicationId, actor, action, detail, now) =>
       run('INSERT INTO activity (application_id, actor, action, detail, created_at) VALUES (?, ?, ?, ?, ?)', applicationId, actor, action, detail, now),
     listActivity: applicationId => all('SELECT * FROM activity WHERE application_id = ? ORDER BY created_at DESC, id DESC', applicationId),
 
     putDraft: (id, email, answers, now) => run('INSERT INTO drafts (id, email, answers, saved_at) VALUES (?, ?, ?, ?)', id, email, answers, now),
-    getDraft: id => one('SELECT * FROM drafts WHERE id = ?', id)
+    getDraft: id => one('SELECT * FROM drafts WHERE id = ?', id),
+
+    // A counter that goes up on every change, which open staff pages check to know when to reload.
+    bump: () => run("INSERT INTO meta (key, value) VALUES ('version', 1) ON CONFLICT (key) DO UPDATE SET value = value + 1"),
+    async version() {
+      return (await one("SELECT value FROM meta WHERE key = 'version'"))?.value || 0;
+    }
   };
 };
 
 export function memoryStore() {
   const rate = [], staff = new Map(), codes = [], sessions = new Map(), applications = new Map(), notes = [], activity = [], drafts = new Map();
-  let nextId = 1;
+  let nextId = 1, version = 0;
   const copy = row => row ? {...row} : null; // D1 gives null for a missing row
   const pick = (fields, allowed) => Object.fromEntries(Object.entries(fields).filter(([key]) => allowed.includes(key)));
   const byName = (a, b) => a.name.localeCompare(b.name, undefined, {sensitivity: 'base'});
@@ -144,11 +152,13 @@ export function memoryStore() {
       for (const list of [notes, activity]) for (let i = list.length - 1; i >= 0; i--) if (list[i].application_id === id) list.splice(i, 1);
     },
     async clearAssignee(email, now) {
-      for (const row of applications.values()) if (row.assigned_to === email) Object.assign(row, {assigned_to: null, updated_at: now});
+      for (const row of applications.values()) {
+        if (row.assigned_to === email) Object.assign(row, {assigned_to: null, updated_at: now, status: row.status === 'reviewing' ? 'new' : row.status});
+      }
     },
 
-    async addNote(application_id, author, body, created_at) {
-      const note = {id: nextId++, application_id, author, body, created_at};
+    async addNote(application_id, author, body, created_at, kind = 'note') {
+      const note = {id: nextId++, application_id, author, body, kind, created_at};
       notes.push(note);
       return copy(note);
     },
@@ -157,7 +167,10 @@ export function memoryStore() {
     listActivity: async id => activity.filter(row => row.application_id === id).reverse().map(copy),
 
     putDraft: async (id, email, answers, saved_at) => { drafts.set(id, {id, email, answers, saved_at}); },
-    getDraft: async id => copy(drafts.get(id))
+    getDraft: async id => copy(drafts.get(id)),
+
+    bump: async () => { version++; },
+    version: async () => version
   };
 }
 

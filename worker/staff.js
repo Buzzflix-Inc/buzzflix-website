@@ -7,11 +7,13 @@
  *   POST  /api/staff/verify {email, code}   sets the session cookie
  *   POST  /api/staff/logout
  *   GET   /api/staff/me
+ *   GET   /api/staff/changes                 {version}: goes up on every change, so open pages know to reload
  *   GET   /api/staff/applications?year=     summaries for the list, plus the team and years
  *   GET   /api/staff/applications/:id       everything, with notes and activity
- *   PATCH /api/staff/applications/:id {status?, assigned_to?}
+ *   POST  /api/staff/applications {...answers, resume?, portfolio?, assigned_to?}   adds one by hand → {id}
+ *   PATCH /api/staff/applications/:id {status?, assigned_to?}   see allowedStatuses and the assignment rules
  *   DELETE /api/staff/applications/:id      admins only; removes the files too
- *   POST  /api/staff/applications/:id/notes {body}
+ *   POST  /api/staff/applications/:id/notes {body, kind: note|interview}
  *   GET   /api/staff/applications/:id/resume|portfolio   the PDF
  *   GET   /api/staff/export.csv?year=
  *   GET   /api/staff/team
@@ -20,12 +22,36 @@
  *
  * ctx: {store, files, mailer, now, adminEmails: string[], secure: boolean}
  */
-import {DEPARTMENTS} from './apply.js';
+import {DEPARTMENTS, addApplicationByStaff} from './apply.js';
 import {emailHtml} from './mail.js';
 
 export const COOKIE = 'bz_staff';
-export const STATUSES = ['new', 'reviewing', 'interview', 'approved', 'denied', 'withdrawn'];
-export const STATUS_LABELS = {new: 'New', reviewing: 'In review', interview: 'Interview', approved: 'Approved', denied: 'Denied', withdrawn: 'Withdrawn'};
+// The hiring workflow: New → In review → Interview → Approve or Decline (pending, the interviewer's call)
+// → Hired or Not hired (an admin's final decision).
+// Assignment drives the start: an application is New exactly while no one is assigned. Assigning a New one
+// moves it to In review; unassigning one In review moves it back to New; past review it can only be reassigned.
+export const STATUSES = ['new', 'reviewing', 'interview', 'approve', 'decline', 'hired', 'not_hired'];
+export const STATUS_LABELS = {new: 'New', reviewing: 'In review', interview: 'Interview', approve: 'Approve (pending)',
+  decline: 'Decline (pending)', hired: 'Hired', not_hired: 'Not hired'};
+const RECOMMENDATIONS = ['approve', 'decline'], FINAL = ['hired', 'not_hired'];
+export const NOTE_KINDS = ['note', 'interview'];
+
+// The statuses someone can choose for an application at `from` (including staying put). Unassigned ones stay
+// New until someone is assigned. Admins can choose anything else; members can't make or change the final
+// decision, and choose Approve or Decline only after an interview.
+export function allowedStatuses(from, isAdmin, assigned) {
+  if (!assigned) return [from];
+  const choices = isAdmin ? STATUSES
+    : FINAL.includes(from) ? [from]
+    : STATUSES.filter(status => ['reviewing', 'interview'].includes(status)
+      || (['interview', ...RECOMMENDATIONS].includes(from) && RECOMMENDATIONS.includes(status)));
+  return STATUSES.filter(status => status === from || (choices.includes(status) && status !== 'new'));
+}
+const refusal = (from, to, assigned) => !assigned ? 'Assign it to someone first. It moves to In review when you do.'
+  : to === 'new' ? 'An assigned application is In review or further along. To start over, unassign it.'
+  : FINAL.includes(from) ? 'Only an admin can change a final decision.'
+  : FINAL.includes(to) ? 'Only an admin can make the final decision. Choose Approve or Decline instead.'
+  : 'Approve or Decline comes after the interview. Move it to Interview first.';
 const DOMAIN = '@buzzflix.ca';
 const CODE_LIFETIME = 10 * 60_000, CODE_ATTEMPTS = 5, SESSION_LIFETIME = 14 * 24 * 60 * 60_000;
 
@@ -105,10 +131,18 @@ export async function staffApi(request, ctx) {
 
   const me = await currentStaff(request, ctx);
   if (!me) return error('Please sign in.', 401);
+  const response = await signedIn(request, ctx, me, url, path, method, body);
+  // Every saved change moves the version on, so other people's open pages reload (GET /changes).
+  if (method !== 'GET' && response.ok) await ctx.store.bump();
+  return response;
+}
+
+async function signedIn(request, ctx, me, url, path, method, body) {
   const isAdmin = me.role === 'admin';
   const {store, now} = ctx;
 
   if (method === 'GET' && path === '/me') return json({me: publicStaff(me), statuses: STATUSES, statusLabels: STATUS_LABELS, departments: DEPARTMENTS});
+  if (method === 'GET' && path === '/changes') return json({version: await store.version()});
 
   if (method === 'GET' && path === '/applications') {
     const years = await store.years();
@@ -164,40 +198,30 @@ export async function staffApi(request, ctx) {
     return json({person: publicStaff(updated)});
   }
 
+  if (method === 'POST' && path === '/applications') {
+    const input = await body();
+    if (input.assigned_to) {
+      const person = await store.getStaff(normalEmail(input.assigned_to));
+      if (!person || person.blocked) return error('Choose someone on the team to assign it to.');
+    }
+    const added = await addApplicationByStaff(ctx, input, me.email);
+    if (added.error) return error(added.error);
+    if (input.assigned_to) await change(ctx, me, await store.getApplication(added.id), {assigned_to: input.assigned_to});
+    return json({id: added.id});
+  }
+
   const appMatch = path.match(/^\/applications\/([0-9a-f-]{36})(?:\/(notes|resume|portfolio))?$/);
   if (appMatch) {
     const [, id, part] = appMatch;
     const application = await store.getApplication(id);
     if (!application) return error('That application wasn’t found.', 404);
 
-    if (!part && method === 'GET') return json(await details(store, application));
+    if (!part && method === 'GET') return json(await details(store, application, isAdmin));
 
     if (!part && method === 'PATCH') {
-      const input = await body();
-      const fields = {}, changes = [];
-      if ('status' in input) {
-        if (!STATUSES.includes(input.status)) return error('Choose a status from the list.');
-        if (input.status !== application.status) {
-          fields.status = input.status;
-          changes.push(['status', `${STATUS_LABELS[application.status]} → ${STATUS_LABELS[input.status]}`]);
-        }
-      }
-      if ('assigned_to' in input) {
-        const email = input.assigned_to === null || input.assigned_to === '' ? null : normalEmail(input.assigned_to);
-        if (email) {
-          const person = await store.getStaff(email);
-          if (!person || person.blocked) return error('Choose someone on the team.');
-        }
-        if (email !== application.assigned_to) {
-          fields.assigned_to = email;
-          changes.push(['assigned', email || 'Unassigned']);
-        }
-      }
-      if (changes.length) {
-        await store.updateApplication(id, fields, now);
-        for (const [action, detail] of changes) await store.addActivity(id, me.email, action, detail, now);
-      }
-      return json(await details(store, await store.getApplication(id)));
+      const refused = await change(ctx, me, application, await body());
+      if (refused) return refused;
+      return json(await details(store, await store.getApplication(id), isAdmin));
     }
 
     if (!part && method === 'DELETE') {
@@ -211,9 +235,10 @@ export async function staffApi(request, ctx) {
       const input = await body();
       const text = typeof input.body === 'string' ? input.body.trim() : '';
       if (!text || text.length > 5000) return error('Write a note of up to 5,000 characters.');
-      await store.addNote(id, me.email, text, now);
-      await store.addActivity(id, me.email, 'note', '', now);
-      return json(await details(store, application));
+      const kind = NOTE_KINDS.includes(input.kind) ? input.kind : 'note';
+      await store.addNote(id, me.email, text, now, kind);
+      await store.addActivity(id, me.email, 'note', kind, now);
+      return json(await details(store, application, isAdmin));
     }
 
     if ((part === 'resume' || part === 'portfolio') && method === 'GET') {
@@ -230,6 +255,46 @@ export async function staffApi(request, ctx) {
   }
 
   return error('Not found.', 404);
+}
+
+// Applies {status?, assigned_to?} to an application and logs it. Returns an error response, or null when saved.
+async function change({store, now}, me, application, input) {
+  const isAdmin = me.role === 'admin';
+  const fields = {}, changes = [];
+  let assignee = application.assigned_to, status = application.status;
+  if ('assigned_to' in input) {
+    assignee = input.assigned_to === null || input.assigned_to === '' ? null : normalEmail(input.assigned_to);
+    if (assignee) {
+      const person = await store.getStaff(assignee);
+      if (!person || person.blocked) return error('Choose someone on the team.');
+    }
+    if (!assignee && application.assigned_to && !['new', 'reviewing'].includes(application.status)) {
+      return error('This application is past review, so it needs someone. Assign it to another teammate instead.');
+    }
+  }
+  if ('status' in input) {
+    if (!STATUSES.includes(input.status)) return error('Choose a status from the list.');
+    if (!allowedStatuses(application.status, isAdmin, Boolean(assignee)).includes(input.status)) {
+      return error(refusal(application.status, input.status, Boolean(assignee)), 403);
+    }
+    status = input.status;
+  }
+  // Assigning a New application starts its review; unassigning one In review sends it back to New.
+  if (assignee && status === 'new') status = 'reviewing';
+  if (!assignee && status === 'reviewing') status = 'new';
+  if (assignee !== application.assigned_to) {
+    fields.assigned_to = assignee;
+    changes.push(['assigned', assignee || 'Unassigned']);
+  }
+  if (status !== application.status) {
+    fields.status = status;
+    changes.push(['status', `${STATUS_LABELS[application.status] || application.status} → ${STATUS_LABELS[status]}`]);
+  }
+  if (changes.length) {
+    await store.updateApplication(application.id, fields, now);
+    for (const [action, detail] of changes) await store.addActivity(application.id, me.email, action, detail, now);
+  }
+  return null;
 }
 
 // TEMPORARY, until email sending works: DEV_LOGIN_EMAIL (wrangler.jsonc vars) signs in without a code.
@@ -294,12 +359,16 @@ async function startSession({store, now, adminEmails, secure}, email, existing) 
   return json({signedIn: true, me: publicStaff(person)}, 200, {'Set-Cookie': sessionCookie(token, SESSION_LIFETIME / 1000, secure)});
 }
 
-async function details(store, application) {
+async function details(store, application, isAdmin) {
   const {resume_key, portfolio_key, ...rest} = application;
+  const activity = await store.listActivity(application.id);
   return {
     application: {...rest, has_resume: Boolean(resume_key), has_portfolio: Boolean(portfolio_key)},
+    allowedStatuses: allowedStatuses(application.status, isAdmin, Boolean(application.assigned_to)),
+    // Whoever moved it to Approve or Decline, for the admin's decision box.
+    recommendedBy: RECOMMENDATIONS.includes(application.status) ? activity.find(row => row.action === 'status')?.actor || null : null,
     notes: await store.listNotes(application.id),
-    activity: await store.listActivity(application.id)
+    activity
   };
 }
 

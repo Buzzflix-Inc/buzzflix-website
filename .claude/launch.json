@@ -11,7 +11,7 @@
       "name": "buzzflix-staff-demo",
       "runtimeExecutable": "node",
       "runtimeArgs": ["scripts/serve.mjs"],
-      "env": {"PORT": "4175", "DEMO": "1", "APPLICATIONS_OPEN": "true"},
+      "env": {"PORT": "4175", "DEMO": "1"},
       "port": 4175
     }
   ]

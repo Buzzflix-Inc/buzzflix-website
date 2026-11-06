@@ -16,10 +16,15 @@
   <div class="staff-title-actions">
    <div><label for="staff-year">Year</label><select id="staff-year" data-year></select></div>
    <a class="staff-button-quiet" href="/api/staff/export.csv" data-export download>Export CSV</a>
+   <a class="button staff-add-application" href="/staff/new">Add application</a>
   </div>
  </div>
  <p class="staff-error" role="alert" data-error hidden></p>
- <div class="staff-tabs" role="group" aria-label="Show applications by status" data-status-tabs></div>
+ <div class="staff-tabs" role="group" aria-label="Show applications" data-status-tabs></div>
+ <div class="staff-progress" data-progress hidden>
+  <div class="staff-progress-bar" role="img" data-progress-bar></div>
+  <ul class="staff-progress-legend" data-progress-legend></ul>
+ </div>
  <div class="staff-filters">
   <div><label for="staff-search">Search</label><input id="staff-search" type="search" placeholder="Name, email, school or role" data-search></div>
   <div><label for="staff-department">Department</label><select id="staff-department" data-department><option value="">All departments</option></select></div>

@@ -4,7 +4,9 @@
 
 -- One row per submitted application. id is the form's submission_id (a UUID), so a retried submit can't save twice.
 -- resume_key and portfolio_key name the PDFs in the R2 bucket buzzflix-application-documents, or are NULL.
--- status: new, reviewing, interview, approved, denied or withdrawn. assigned_to is a staff email or NULL.
+-- status: new, reviewing, interview, approve, decline (pending an admin), hired or not_hired (worker/staff.js).
+-- assigned_to is a staff email or NULL; an application is new exactly while it's NULL.
+-- consent_version is 'added-by-staff' for applications typed in on /staff/new.
 CREATE TABLE IF NOT EXISTS applications (
   id TEXT PRIMARY KEY,
   year TEXT NOT NULL,
@@ -34,6 +36,7 @@ CREATE TABLE IF NOT EXISTS notes (
   application_id TEXT NOT NULL,
   author TEXT NOT NULL,
   body TEXT NOT NULL,
+  kind TEXT NOT NULL DEFAULT 'note', -- note or interview. Added 2026-11-06: ALTER TABLE notes ADD COLUMN kind TEXT NOT NULL DEFAULT 'note';
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS notes_by_application ON notes (application_id, created_at);
@@ -89,3 +92,9 @@ CREATE TABLE IF NOT EXISTS rate_events (
   at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS rate_events_by_bucket ON rate_events (bucket, at);
+
+-- One row, key 'version': goes up on every change so open staff pages know to reload (GET /api/staff/changes).
+CREATE TABLE IF NOT EXISTS meta (
+  key TEXT PRIMARY KEY,
+  value INTEGER NOT NULL
+);

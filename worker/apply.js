@@ -119,6 +119,36 @@ function validateDocument(value, label) {
   return bytes;
 }
 
+// An application a staff member types in (a paper or emailed application): the same answers and PDFs,
+// without the applicant-only checks (consent boxes, word limits, the two-per-department rule).
+// Returns {id} or {error}. ctx: {store, files, now}.
+export async function addApplicationByStaff({store, files, now}, input, staffEmail) {
+  try {
+    const data = strings(input, {name: 150, email: 254, school: 250, program_year: 150, experience: 10000, why_join: 5000,
+      role_1: 150, role_2: 150, role_3: 150, additional_roles: 500});
+    for (const key of ['name', 'email', 'school', 'program_year', 'role_1', 'role_2', 'role_3']) {
+      if (!data[key]) fail('Fill in the name, email, school, program and three positions.');
+    }
+    if (!EMAIL.test(data.email)) fail('Enter a valid email address for the applicant.');
+    if (new Set([data.role_1, data.role_2, data.role_3].map(role => role.toLowerCase())).size !== 3) fail('List three different positions.');
+    const documents = {};
+    for (const key of DOCUMENT_FIELDS) documents[key] = validateDocument(input[key], DOCUMENT_LABELS[key]);
+    const id = crypto.randomUUID();
+    const row = {id, year: APPLICATION_YEAR, submitted_at: now, updated_at: now, consent_version: 'added-by-staff', ...data};
+    for (const key of DOCUMENT_FIELDS) {
+      if (!documents[key]) continue;
+      row[`${key}_key`] = `${APPLICATION_YEAR}/${id}/${key}.pdf`;
+      await files.put(row[`${key}_key`], documents[key]);
+    }
+    await store.insertApplication(row);
+    await store.addActivity(id, staffEmail, 'added', '', now);
+    return {id};
+  } catch (error) {
+    if (error instanceof ApplicantError) return {error: error.message.replace(/^Your /, 'The ')};
+    throw error;
+  }
+}
+
 async function submit(ctx, data) {
   const {store, files, mailer, now} = ctx;
   // TEMPORARY: ctx.testSubmissions (TEST_SUBMISSIONS in wrangler.jsonc) lets the preview addresses accept applications.
@@ -137,6 +167,7 @@ async function submit(ctx, data) {
   // Two submits with the same id at once: the second insert is ignored, and it reports a duplicate.
   if (!await store.insertApplication(row)) return duplicate(await store.getApplication(data.submission_id), data);
   await store.addActivity(row.id, row.email, 'submitted', '', now);
+  await store.bump(); // open staff pages show it without a reload
 
   const sending = mailer.send({
     to: data.email, replyTo: REPLY_TO,

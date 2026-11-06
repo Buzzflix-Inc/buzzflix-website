@@ -186,7 +186,7 @@ test('staff list, change status, assign, add notes, download files and export', 
   assert.equal(updated.body.application.has_resume, true);
   assert.deepEqual(updated.body.activity.map(row => [row.action, row.detail]).slice(0, 2).sort(),
     [['assigned', 'megan@buzzflix.ca'], ['status', 'New → Interview']]);
-  assert.equal((await staff('PATCH', `/applications/${id}`, {status: 'hired'}, jack)).status, 400);
+  assert.equal((await staff('PATCH', `/applications/${id}`, {status: 'approved'}, jack)).status, 400, 'not a status');
   assert.equal((await staff('PATCH', `/applications/${id}`, {assigned_to: 'nobody@buzzflix.ca'}, jack)).status, 400);
 
   const noted = await staff('POST', `/applications/${id}/notes`, {body: 'Great reel.'}, jack);
@@ -202,6 +202,68 @@ test('staff list, change status, assign, add notes, download files and export', 
   assert.match(exported.body, /Submitted,Name,Email/);
   assert.match(exported.body, /Test Applicant,test@example\.com/);
   assert.match(exported.body, /Interview,Megan,/);
+});
+
+test('hiring workflow: assigning starts the review, members interview and recommend, only admins decide', async () => {
+  const {ctx, apply, staff, signIn} = setup();
+  const before = await ctx.store.version();
+  await apply(application());
+  assert.ok(await ctx.store.version() > before, 'a new application counts as a change');
+  const jack = await signIn('jack@buzzflix.ca');
+  const megan = await signIn('megan@buzzflix.ca');
+  const move = (status, who) => staff('PATCH', `/applications/${id}`, {status}, who);
+  const assign = (email, who) => staff('PATCH', `/applications/${id}`, {assigned_to: email}, who);
+
+  assert.deepEqual((await staff('GET', `/applications/${id}`, undefined, megan)).body.allowedStatuses, ['new'], 'unassigned stays New');
+  assert.equal((await move('reviewing', jack)).status, 403, 'even admins assign first');
+  const version = (await staff('GET', '/changes', undefined, megan)).body.version;
+  const assigned = await assign('megan@buzzflix.ca', megan);
+  assert.equal(assigned.body.application.status, 'reviewing', 'assigning moves it to In review');
+  assert.deepEqual(assigned.body.allowedStatuses, ['reviewing', 'interview']);
+  assert.ok((await staff('GET', '/changes', undefined, jack)).body.version > version, 'every save moves the version on');
+  assert.equal((await assign(null, megan)).body.application.status, 'new', 'unassigning In review goes back to New');
+  await assign('megan@buzzflix.ca', megan);
+  assert.equal((await move('new', megan)).status, 403, 'New only by unassigning');
+  assert.equal((await move('approve', megan)).status, 403, 'approve comes after the interview');
+  assert.equal((await move('interview', megan)).body.allowedStatuses.includes('approve'), true);
+  assert.equal((await assign(null, megan)).status, 400, 'past review it needs someone');
+  assert.equal((await assign('jack@buzzflix.ca', megan)).body.application.status, 'interview', 'but can be reassigned');
+  assert.equal((await move('hired', megan)).status, 403, 'members can’t make the final decision');
+
+  const noted = await staff('POST', `/applications/${id}/notes`, {body: 'Interviewed. Great fit.', kind: 'interview'}, megan);
+  assert.equal(noted.body.notes[0].kind, 'interview');
+  assert.equal(noted.body.activity[0].detail, 'interview');
+  assert.equal((await staff('POST', `/applications/${id}/notes`, {body: 'Odd kind', kind: 'secret'}, megan)).body.notes[1].kind, 'note');
+
+  const recommended = await move('approve', megan);
+  assert.equal(recommended.body.application.status, 'approve');
+  assert.equal(recommended.body.recommendedBy, 'megan@buzzflix.ca');
+  assert.equal((await staff('GET', `/applications/${id}`, undefined, jack)).body.recommendedBy, 'megan@buzzflix.ca');
+
+  assert.equal((await move('hired', jack)).body.application.status, 'hired');
+  assert.deepEqual((await staff('GET', `/applications/${id}`, undefined, megan)).body.allowedStatuses, ['hired']);
+  assert.equal((await move('interview', megan)).status, 403, 'members can’t undo a final decision');
+  assert.equal((await move('not_hired', jack)).status, 200, 'admins can change it');
+});
+
+test('staff can add an application by hand, with a PDF and an assignee', async () => {
+  const {ctx, staff, signIn} = setup({open: false});
+  const megan = await signIn('megan@buzzflix.ca');
+  const emails = ctx.mailer.sent.length;
+  const entry = {name: 'Paper Applicant', email: 'paper@example.com', school: 'St. Clair College', program_year: 'Film, 1st year',
+    role_1: 'Gaffer', role_2: 'Grip', role_3: 'Key Grip'};
+  assert.equal((await staff('POST', '/applications', {...entry, role_3: 'grip'}, megan)).status, 400, 'three different positions');
+  assert.equal((await staff('POST', '/applications', {...entry, email: 'nope'}, megan)).status, 400);
+  assert.equal((await staff('POST', '/applications', {...entry, resume: {name: 'x.pdf', data: btoa('not a pdf')}}, megan)).body.error, 'The resume must be a PDF file.');
+  assert.equal((await staff('POST', '/applications', {...entry, assigned_to: 'nobody@buzzflix.ca'}, megan)).status, 400);
+  const added = await staff('POST', '/applications', {...entry, resume: {name: 'cv.pdf', data: pdf}, assigned_to: 'megan@buzzflix.ca'}, megan);
+  const saved = (await staff('GET', `/applications/${added.body.id}`, undefined, megan)).body;
+  assert.equal(saved.application.name, 'Paper Applicant');
+  assert.equal(saved.application.status, 'reviewing', 'assigned, so In review');
+  assert.equal(saved.application.has_resume, true);
+  assert.equal(saved.application.consent_version, 'added-by-staff');
+  assert.deepEqual(saved.activity.map(row => row.action).sort(), ['added', 'assigned', 'status']);
+  assert.equal(ctx.mailer.sent.length, emails, 'no confirmation email for a typed-in application');
 });
 
 test('admins manage the team and delete applications; members cannot', async () => {

@@ -14,15 +14,14 @@ const people = [
   ['Drew Kowalski', 'St. Clair College', 'Fashion, 2nd year', 'Costume Designer', 'Wardrobe Stylist', 'Makeup Artist'],
   ['Skyler Bennett', 'Western University', 'Media, 3rd year', 'Location Scout', 'Production Accountant', 'Grip']
 ];
-const statuses = ['new', 'new', 'new', 'reviewing', 'reviewing', 'interview', 'interview', 'approved', 'denied', 'new', 'reviewing', 'withdrawn'];
+const statuses = ['new', 'new', 'new', 'reviewing', 'reviewing', 'interview', 'approve', 'hired', 'decline', 'new', 'reviewing', 'interview'];
 const pdf = new TextEncoder().encode('%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF');
 
 export async function addDemoApplications({store, files}) {
   const now = Date.now();
-  for (const [email, name, role] of [['jack@buzzflix.ca', 'Jack', 'admin'], ['megan@buzzflix.ca', 'Megan', 'member'], ['owen@buzzflix.ca', 'Owen', 'member']]) {
-    await store.addStaff({email, name, role}, now);
-  }
-  const team = ['megan@buzzflix.ca', 'owen@buzzflix.ca', 'jack@buzzflix.ca', null];
+  await store.addStaff({email: 'jack@buzzflix.ca', name: 'Jack', role: 'admin'}, now);
+  await addExampleTeam(store, now);
+  const team = ['example.megan@buzzflix.ca', 'example.owen@buzzflix.ca', 'jack@buzzflix.ca', 'example.priya@buzzflix.ca'];
   for (const [index, [name, school, program_year, role_1, role_2, role_3]] of people.entries()) {
     const id = `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`;
     const submitted = now - (index + 1) * 26 * 60 * 60_000;
@@ -38,5 +37,15 @@ export async function addDemoApplications({store, files}) {
     await store.insertApplication(row);
     await store.addActivity(id, row.email, 'submitted', '', submitted);
   }
-  await store.addNote('00000000-0000-4000-8000-000000000006', 'megan@buzzflix.ca', 'Strong lighting reel. Worth an interview for gaffer.', now - 3_600_000);
+  await store.addNote('00000000-0000-4000-8000-000000000006', 'example.megan@buzzflix.ca', 'Strong lighting reel. Worth an interview for gaffer.', now - 3_600_000);
+  await store.addNote('00000000-0000-4000-8000-000000000007', 'example.owen@buzzflix.ca', 'Interviewed on Zoom. Organised, knows set etiquette, has run a call sheet before. Recommend AD.', now - 1_800_000, 'interview');
+  await store.addActivity('00000000-0000-4000-8000-000000000007', 'example.owen@buzzflix.ca', 'status', 'Interview → Approve (pending)', now - 1_700_000);
+}
+
+// Example teammates to assign applications to while the real team hasn't signed in yet. The same three are in
+// the Cloudflare database; remove them there with: DELETE FROM staff WHERE email LIKE 'example.%';
+export const EXAMPLE_TEAM = [['example.megan@buzzflix.ca', 'Megan Tran (example)'], ['example.owen@buzzflix.ca', 'Owen Laurent (example)'],
+  ['example.priya@buzzflix.ca', 'Priya Shah (example)']];
+export async function addExampleTeam(store, now = Date.now()) {
+  for (const [email, name] of EXAMPLE_TEAM) await store.addStaff({email, name}, now);
 }

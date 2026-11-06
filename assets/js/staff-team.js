@@ -1,6 +1,6 @@
 // /staff/team: everyone who can sign in. Each person can change their own name; admins can add people,
 // make someone an admin, and block or unblock them.
-import {api, h, formatDate, loadMe} from './staff-common.js';
+import {api, h, formatDate, loadMe, watchChanges} from './staff-common.js';
 
 const $ = selector => document.querySelector(selector);
 const list = $('[data-team]'), nameForm = $('[data-name-form]'), addForm = $('[data-add-form]');
@@ -88,6 +88,8 @@ addForm.addEventListener('submit', async event => {
     nameForm.elements.name.value = info.me.name;
     $('[data-admin-only]').hidden = info.me.role !== 'admin';
     await refresh();
+    // Other admins' changes appear without a reload (not while a role dropdown is open).
+    watchChanges(() => list.contains(document.activeElement) ? null : refresh());
   } catch (failure) {
     showError(failure.message);
   }

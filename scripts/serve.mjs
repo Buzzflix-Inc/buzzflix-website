@@ -27,6 +27,7 @@ const staffCtx = {store: applicationStore(), files: memoryFiles(), mailer: memor
   devLoginEmail: String(config.vars.DEV_LOGIN_EMAIL || '').toLowerCase(),
   adminEmails: config.vars.ADMIN_EMAILS.split(',').map(email => email.trim().toLowerCase()), secure: false};
 if (process.env.DEMO) await (await import('./demo-applications.mjs')).addDemoApplications(staffCtx);
+else await (await import('./demo-applications.mjs')).addExampleTeam(staffCtx.store); // like the Cloudflare database
 const types = {'.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json',
   '.xml': 'application/xml', '.txt': 'text/plain', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
   '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ico': 'image/x-icon'};

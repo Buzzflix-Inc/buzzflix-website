@@ -57,3 +57,25 @@ document.querySelector('[data-sign-out]')?.addEventListener('click', async () =>
 // Which department a position belongs to, or '' for a free-text role.
 export const departmentOf = (role, departments) =>
   Object.keys(departments).find(name => departments[name].some(position => position.toLowerCase() === String(role).toLowerCase())) || '';
+
+// Live updates: every 10 seconds while the page is in view (and straight away when it comes back into view),
+// asks whether anything changed (GET /api/staff/changes, one tiny read) and calls `reload` if it did.
+export function watchChanges(reload, every = 10_000) {
+  let version = null, checking = false;
+  const check = async () => {
+    if (document.hidden || checking) return;
+    checking = true;
+    try {
+      const latest = (await api('/changes')).version;
+      if (version !== null && latest !== version) await reload();
+      version = latest;
+    } catch {
+      // Offline or a hiccup: try again next time.
+    } finally {
+      checking = false;
+    }
+  };
+  check();
+  setInterval(check, every);
+  document.addEventListener('visibilitychange', check);
+}

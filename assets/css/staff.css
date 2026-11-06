@@ -2,6 +2,8 @@
    Order: shared, sign-in, header, list, application, team. Each part has its own 800px block. */
 
 /* Shared */
+/* No bee cursor in the staff area: the regular arrow and hand (site.css sets the bee in --cursor and --pointer). */
+html:root { --cursor:auto; --pointer:pointer; }
 .staff { background:var(--muted); min-height:100vh; }
 .staff [hidden] { display:none!important; }
 .staff main { padding:32px var(--gutter) 80px; max-width:1400px; margin:0 auto; }
@@ -39,9 +41,15 @@
 .status-new { background:var(--yellow); }
 .status-reviewing { background:var(--teal-soft); color:var(--teal-text); }
 .status-interview { background:var(--teal-pale); color:#0b4f5e; }
-.status-approved { background:#dcf2e1; color:#1d6131; }
-.status-denied { background:#fff0eb; color:#a52d16; }
-.status-withdrawn { background:#ebebeb; color:#595959; }
+/* Approve/Decline are pending an admin, so they're outlined; Hired/Not hired are the filled final versions. */
+.status-approve { background:var(--paper); color:#1d6131; box-shadow:inset 0 0 0 1px #1d6131; }
+.status-decline { background:var(--paper); color:#a52d16; box-shadow:inset 0 0 0 1px #a52d16; }
+.status-hired { background:#dcf2e1; color:#1d6131; }
+.status-not_hired { background:#fff0eb; color:#a52d16; }
+/* A row or note someone else just changed fades in from yellow. */
+@keyframes staff-updated { from { background:var(--yellow); } }
+.is-updated { animation:staff-updated 2.4s ease-out; }
+@media(prefers-reduced-motion:reduce) { .is-updated { animation:none; } }
 
 /* Sign-in (/login) */
 .staff-login { display:grid; place-items:center; padding:40px 16px; background:var(--yellow); }
@@ -79,10 +87,25 @@
 .staff-title-row { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
 .staff-title-actions { display:flex; align-items:flex-end; gap:12px; }
 .staff-title-actions select { width:auto; min-width:110px; }
+.staff .staff-add-application { display:inline-flex; align-items:center; min-height:46px; padding:0 22px; text-decoration:none; }
 .staff-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
 .staff-tabs button { border:1px solid #bbb; background:var(--paper); border-radius:999px; padding:8px 16px; font-size:15px; white-space:nowrap; }
 .staff-tabs button[aria-pressed=true] { background:var(--ink); border-color:var(--ink); color:var(--paper); }
 .staff-tabs button span { font-variant-numeric:tabular-nums; margin-left:4px; opacity:.75; }
+/* All tab: the thin bar split by status, and its key. */
+.staff-progress { margin:-4px 0 18px; }
+.staff-progress-bar { display:flex; gap:2px; height:8px; border-radius:999px; overflow:hidden; background:#ddd; }
+.staff-progress-bar span { flex:0 1 0; min-width:4px; }
+.staff-progress-legend { display:flex; flex-wrap:wrap; gap:6px 18px; list-style:none; padding:0; margin:10px 0 0; font-size:14px; color:#595959; }
+.staff-progress-legend strong { color:var(--ink); font-weight:700; }
+.staff-progress-dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:0; }
+.staff-progress-new { background:#f5c400; }
+.staff-progress-reviewing { background:var(--teal); }
+.staff-progress-interview { background:var(--teal-text); }
+.staff-progress-approve { background:#7cc48f; }
+.staff-progress-decline { background:#f2a48f; }
+.staff-progress-hired { background:#1d6131; }
+.staff-progress-not_hired { background:#a52d16; }
 .staff-filters { display:grid; grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
 .staff-count { font-size:15px; margin:0 0 10px; color:#595959; }
 .staff-table-wrap { background:var(--paper); border-radius:var(--radius); overflow:hidden; }
@@ -95,6 +118,7 @@
 .staff-table td:first-child a:hover { text-decoration:underline; }
 .staff-table small { display:block; font-size:14px; color:#595959; margin-top:2px; overflow-wrap:anywhere; }
 .staff-roles { margin:0; padding:0; list-style:none; }
+.staff-table td select { min-height:40px; padding:7px 36px 7px 10px; font-size:15px; min-width:150px; }
 .staff-roles li { line-height:1.4; }
 .staff-empty { background:var(--paper); border-radius:var(--radius); padding:40px 24px; text-align:center; margin:0; }
 @media(max-width:1000px) {
@@ -103,8 +127,9 @@
 /* Phone: each row becomes a card with the name on top. */
 @media(max-width:800px) {
   .staff-title-row { align-items:stretch; }
-  .staff-title-actions { width:100%; }
+  .staff-title-actions { width:100%; flex-wrap:wrap; }
   .staff-title-actions>div { flex:1; }
+  .staff .staff-add-application { order:-1; width:100%; justify-content:center; }
   .staff-title-actions select { width:100%; }
   .staff-tabs { flex-wrap:nowrap; overflow-x:auto; margin:0 -16px 16px; padding:0 16px 4px; scrollbar-width:none; }
   .staff-filters { grid-template-columns:1fr 1fr; }
@@ -117,6 +142,9 @@
   .staff-table td:nth-child(1) { grid-column:1; }
   .staff-table td:nth-child(5) { grid-column:2; grid-row:1; }
   .staff-table td:nth-child(2),.staff-table td:nth-child(4),.staff-table td:nth-child(6) { grid-column:1/-1; font-size:15px; }
+  .staff-table td:nth-child(6) { display:flex; align-items:center; gap:8px; margin-top:4px; }
+  .staff-table td:nth-child(6)::before { flex:none; }
+  .staff-table td select { flex:1; }
   .staff-table td:nth-child(3) { display:none; }
   .staff-table td[data-label]::before { content:attr(data-label) ': '; color:#595959; }
   .staff-table .staff-roles { display:inline; }
@@ -147,6 +175,13 @@
 .staff-note-meta { font-size:14px; color:#595959; }
 .staff-note-meta strong { font-family:var(--heading); font-weight:500; color:var(--ink); }
 .staff-note-form .button { margin-top:12px; }
+.staff-note-form .staff-field { margin-bottom:12px; }
+.staff-note-kind { display:inline-block; margin-left:6px; font-size:13px; padding:1px 8px; border-radius:999px; background:var(--teal-pale); color:#0b4f5e; }
+.staff-decision { border:2px solid var(--ink); }
+.staff-decision p { font-size:16px; line-height:1.5; margin:0 0 14px; }
+.staff-decision-buttons { display:flex; flex-wrap:wrap; gap:8px; }
+.staff-decision-buttons button { flex:1; }
+.staff-status-hint { font-size:14px; line-height:1.45; color:#595959; margin:8px 0 0; }
 .staff-activity { list-style:none; padding:0; margin:0; font-size:15px; }
 .staff-activity li { padding:8px 0; border-bottom:1px solid #eee; line-height:1.4; }
 .staff-activity li:last-child { border-bottom:0; }
@@ -156,11 +191,24 @@
 }
 @media(max-width:800px) {
   .staff-detail-grid { grid-template-columns:1fr; }
-  /* Status and assignee first, then the answers, then history. */
+  /* Final decision, status and assignee first, then the answers, then history. */
   .staff-detail-side { display:contents; }
   .staff-detail-side>.staff-card { margin-top:0; }
-  .staff-detail-side>.staff-card:first-child { order:-1; }
+  .staff-detail-side>.staff-card:nth-child(-n+2) { order:-1; }
   .staff-card { padding:20px 18px; }
+}
+
+/* Add an application (/staff/new) */
+.staff-new-form { max-width:900px; }
+.staff-new-form>.staff-hint { margin:-8px 0 20px; }
+.staff-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 16px; }
+.staff-form-grid-3 { grid-template-columns:repeat(3,minmax(0,1fr)); margin-bottom:18px; }
+.staff-form-grid .staff-field+.staff-field { margin-top:0; }
+.staff-new-form input[type=file] { padding:9px 12px; font-size:15px; }
+.staff-new-actions { margin-top:20px; }
+@media(max-width:800px) {
+  .staff-form-grid,.staff-form-grid-3 { grid-template-columns:1fr; }
+  .staff-new-actions .button { width:100%; }
 }
 
 /* Team (/staff/team) */
