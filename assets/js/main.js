@@ -250,7 +250,7 @@ function initBeeCursor(){
  bee.className='bee-cursor';
  bee.innerHTML=wearLayers()+'<i class="bee-glasses"></i><i class="bee-specs"></i><i class="bee-stars"><b></b><b></b><b></b></i><i class="bee-antenna"></i><i class="bee-holding"></i><i class="bee-hand"></i>';
  // The first video to play with sound startles the bee: its antenna springs up (initVideos sends bee:startle).
- if(document.querySelector('[data-video]'))new Image().src=new URL('../images/bee-cursor-startled-2x-98c8b8a.png',import.meta.url).href;
+ if(document.querySelector('[data-video]'))new Image().src=new URL('../images/bee-cursor-startled-ab9bbb6.svg',import.meta.url).href;
  document.addEventListener('bee:startle',()=>{ // only the first sound on the page startles it
   bee.classList.add('is-startled');
   setTimeout(()=>bee.classList.remove('is-startled'),1600);
@@ -463,7 +463,7 @@ function initLogoSwarm(){
   for(let i=0;i<18;i++){
    // The outer box flies the path, the middle one turns the bee to face where it's heading, the image flaps.
    const bee=document.createElement('div'),face=document.createElement('span'),img=document.createElement('img');
-   img.src=new URL('../images/bee-32d3992.png',import.meta.url).href;
+   img.src=new URL('../images/bee-c2c9a15.svg',import.meta.url).href;
    img.alt='';img.width=160;img.height=129;
    img.style.animationDelay=`${-rand(0,.2)}s`;
    face.append(img);bee.append(face);box.append(bee);

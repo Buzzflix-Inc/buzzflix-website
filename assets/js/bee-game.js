@@ -12,7 +12,7 @@ const INK = '#1a1a1a', YELLOW = '#fbe274', ORANGE = '#ee5934', PAPER = '#fff';
 const BEST_KEY = 'buzzflix-buzz-run-best', NAME_KEY = 'buzzflix-buzz-run-name', API = '/api/buzz-run';
 
 const bee = new Image();
-bee.src = new URL('../images/bee-32d3992.png', import.meta.url).href; // 160 × 129, the logo's bee alone
+bee.src = new URL('../images/bee-c2c9a15.svg', import.meta.url).href; // 160 × 129, the logo's bee alone
 
 const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
 const saveBest = n => { try { localStorage.setItem(BEST_KEY, String(n)); } catch {} };
@@ -321,7 +321,7 @@ export function openGame() {
   });
 
   dialog.showModal();
-  egg('buzzrun'); // after showModal, so the hive's "easter egg found" note shows inside the game
+  egg('buzzrun');
   canvas.focus({ preventScroll: true });
   fit();
   frame = requestAnimationFrame(loop);

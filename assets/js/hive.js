@@ -1,9 +1,10 @@
 /**
  * The hive: a secret corner of the footer. Bring the mouse to the footer's bottom-right corner and a hive peeks out;
  * clicking it opens a menu of the site's easter eggs. Each egg found unlocks something for the bee cursor to wear
- * (one per slot: hat, eyes, neck, trail), equipped and taken off from the menu. Found eggs and the outfit are kept
- * per browser. main.js and bee-game.js call egg() when an easter egg happens; the hive itself is mouse and trackpad
- * only, like the bee cursor (eggs found on a touch screen are still remembered).
+ * (one per slot: jacket, hat, eyes, neck, trail), equipped and taken off from the menu. Finding every egg unlocks the
+ * Buzzflixian jacket. Found eggs and the outfit are kept per browser. main.js and bee-game.js call egg() when an
+ * easter egg happens; the hive itself is mouse and trackpad only, like the bee cursor (eggs found on a touch
+ * screen are still remembered).
  */
 
 const KEY = 'bee-hive';
@@ -11,6 +12,8 @@ const fine = matchMedia('(hover:hover) and (pointer:fine)');
 const reduced = matchMedia('(prefers-reduced-motion:reduce)');
 
 // In the order the menu lists them. slot: where the reward goes on the bee; item: its look (.bee-wear[data-item]).
+// label: the reward's name in button labels, when it isn't just the reward in lower case.
+// bonus: unlocked by finding every other egg, and not counted as an easter egg itself.
 export const EGGS = [
   {id: 'hive', name: 'The hive', found: 'Found the secret hive in the corner of the footer.', hint: '', reward: 'Queen bee crown', slot: 'hat', item: 'crown'},
   {id: 'swarm', name: 'Swarm!', found: 'Knocked on the logo until the bees burst out.', hint: 'The logo is crowded. Try knocking, quickly, a few times.', reward: 'Director’s beret', slot: 'hat', item: 'beret'},
@@ -20,10 +23,13 @@ export const EGGS = [
   {id: 'specs', name: 'Bookworm', found: 'Highlighted some text, and the bee put its reading specs on.', hint: 'Find the bee something to read.', reward: 'Bow tie', slot: 'neck', item: 'bowtie'},
   {id: 'buzzrun', name: 'Buzz Run', found: 'Clapped the slate on the lost page until Buzz Run started.', hint: 'Lost pages have a slate. Keep calling takes.', reward: 'Flying scarf', slot: 'neck', item: 'scarf'},
   {id: 'flip', name: 'Backflip', found: 'Double-clicked and the bee did a backflip.', hint: 'Some clicks come in pairs.', reward: 'Sparkle trail', slot: 'trail', item: 'sparkle'},
-  {id: 'poof', name: 'Window bump', found: 'Flew the bee off the edge of the window. Poof.', hint: 'What happens when the bee leaves the page?', reward: 'Honey trail', slot: 'trail', item: 'honey'}
+  {id: 'poof', name: 'Window bump', found: 'Flew the bee off the edge of the window. Poof.', hint: 'What happens when the bee leaves the page?', reward: 'Honey trail', slot: 'trail', item: 'honey'},
+  {id: 'all', name: 'Every last egg', found: 'Found every easter egg on the site. Officially one of the crew.', hint: 'Find every other easter egg first.', reward: 'Buzzflixian', label: 'Buzzflixian jacket', slot: 'body', item: 'jacket', bonus: true}
 ];
-export const SLOTS = ['hat', 'eyes', 'neck'];
+export const SLOTS = ['body', 'hat', 'eyes', 'neck']; // drawn in this order, so the jacket sits under the bow tie and scarf
 
+const BONUS = EGGS.filter(e => e.bonus).map(e => e.id);
+const HIDDEN = EGGS.filter(e => !e.bonus);
 const read = () => {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY)) || {};
@@ -31,19 +37,24 @@ const read = () => {
   } catch { return {found: new Set(), wear: {}}; }
 };
 const state = read();
+/** The bonus is earned, never stored: it follows from having found every other egg. */
+const award = () => {
+  const all = HIDDEN.every(e => state.found.has(e.id));
+  BONUS.forEach(id => all ? state.found.add(id) : state.found.delete(id));
+};
+award();
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify({found: [...state.found], wear: state.wear})); } catch {} };
 
-let hiveReady = false; // the hive exists on this page (mouse and trackpad, with a footer)
 const listeners = new Set();
 const changed = () => listeners.forEach(fn => fn());
 
-/** Record an easter egg. The first time, a note says what it unlocked. */
+/** Record an easter egg, unlocking its reward in the hive. */
 export function egg(id) {
-  if (state.found.has(id) || !EGGS.some(e => e.id === id)) return;
+  if (state.found.has(id) || !HIDDEN.some(e => e.id === id)) return;
   state.found.add(id);
+  award();
   save();
   changed();
-  if (id !== 'hive') toast(EGGS.find(e => e.id === id));
 }
 
 /** What the bee is wearing: the item in each slot, or none. Only items whose egg has been found count. */
@@ -69,31 +80,6 @@ export function dress(el, look) {
   });
 }
 
-/* Unlock note: bottom right, a few seconds, read out politely. */
-let toastEl, toastTimer;
-function toast(e) {
-  if (!fine.matches || !document.body) return;
-  if (!toastEl) {
-    toastEl = document.createElement('div');
-    toastEl.className = 'hive-toast';
-    toastEl.setAttribute('role', 'status');
-  }
-  // Inside an open modal (Buzz Run) so it shows above the backdrop.
-  const host = document.querySelector('dialog[open]') || document.body;
-  if (toastEl.parentNode !== host) host.append(toastEl);
-  const knowsHive = state.found.has('hive');
-  toastEl.innerHTML = '<span class="hive-toast-icon" aria-hidden="true"></span><span><strong></strong><span></span></span>';
-  toastEl.querySelector('strong').textContent = `Easter egg found: ${e.name}`;
-  toastEl.querySelector('strong + span').textContent = knowsHive || !hiveReady
-    ? `${e.reward} unlocked. Wear it from the hive.`
-    : 'Something is buzzing at the bottom of the page…';
-  toastEl.classList.remove('is-shown');
-  void toastEl.offsetWidth; // restart the slide-in
-  toastEl.classList.add('is-shown');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove('is-shown'), 5000);
-}
-
 const HIVE_SVG = `<svg viewBox="0 0 100 92" aria-hidden="true" focusable="false">
  <g stroke="#1a1a1a" stroke-width="2.6" stroke-linejoin="round">
   <rect x="45" y="5" width="10" height="9" rx="4.5" fill="#f4a61d"/>
@@ -112,13 +98,12 @@ const HIVE_SVG = `<svg viewBox="0 0 100 92" aria-hidden="true" focusable="false"
 export function initHive() {
   const footer = document.querySelector('.site-footer');
   if (!footer || !fine.matches) return;
-  hiveReady = true;
   const hive = document.createElement('button');
   hive.type = 'button';
   hive.className = 'hive';
   hive.setAttribute('aria-label', 'Secret hive: easter eggs and bee outfits');
   hive.setAttribute('aria-haspopup', 'dialog');
-  hive.innerHTML = `${HIVE_SVG}<img class="hive-bee" src="${new URL('../images/bee-32d3992.png', import.meta.url).href}" alt="" width="160" height="129">`;
+  hive.innerHTML = `${HIVE_SVG}<img class="hive-bee" src="${new URL('../images/bee-c2c9a15.svg', import.meta.url).href}" alt="" width="160" height="129">`;
   footer.append(hive);
 
   // Peek when the mouse comes near the footer's bottom-right corner (or the hive has focus).
@@ -135,11 +120,15 @@ export function initHive() {
     if (!frame) frame = requestAnimationFrame(check);
   }, {passive: true});
   document.documentElement.addEventListener('pointerleave', () => hive.classList.remove('is-peeking'));
-  hive.addEventListener('click', () => { egg('hive'); openMenu(hive); });
+  // Opened with the mouse: focus comes back without the keyboard ring (Escape would otherwise show it).
+  hive.addEventListener('click', e => { egg('hive'); openMenu(hive, e.detail > 0); });
+  const quiet = () => hive.classList.remove('is-quiet-focus');
+  hive.addEventListener('blur', quiet);
+  hive.addEventListener('keydown', quiet);
 }
 
 let dialog;
-function openMenu(opener) {
+function openMenu(opener, byMouse) {
   if (dialog?.open) return;
   dialog = document.createElement('dialog');
   dialog.className = 'hive-menu';
@@ -154,7 +143,7 @@ function openMenu(opener) {
       <button type="button" class="hive-menu-close" aria-label="Close the hive">×</button>
     </div>
     <div class="hive-menu-bar" aria-hidden="true"><span></span></div>
-    <p class="hive-menu-intro">Every easter egg you find on the site unlocks something for your bee to wear. One hat, one pair of eyes, one neck and one trail at a time.</p>
+    <p class="hive-menu-intro">Every easter egg you find on the site unlocks something for your bee to wear. One jacket, one hat, one pair of eyes, one neck and one trail at a time.</p>
     <p class="hive-menu-off" hidden>Turn the bee cursor on (the switch at the bottom of the page) to see your bee dressed up.</p>
     <ul class="hive-menu-list"></ul>`;
   document.body.append(dialog);
@@ -181,9 +170,9 @@ function openMenu(opener) {
   }));
 
   const render = () => {
-    const count = EGGS.filter(e => state.found.has(e.id)).length;
-    dialog.querySelector('.hive-menu-count').textContent = `${count} of ${EGGS.length} easter eggs found`;
-    dialog.querySelector('.hive-menu-bar span').style.width = `${count / EGGS.length * 100}%`;
+    const count = HIDDEN.filter(e => state.found.has(e.id)).length;
+    dialog.querySelector('.hive-menu-count').textContent = `${count} of ${HIDDEN.length} easter eggs found`;
+    dialog.querySelector('.hive-menu-bar span').style.width = `${count / HIDDEN.length * 100}%`;
     dialog.querySelector('.hive-menu-off').hidden = !document.documentElement.classList.contains('regular-cursor');
     list.querySelectorAll('.hive-egg').forEach(li => {
       const e = EGGS.find(x => x.id === li.dataset.egg), found = state.found.has(e.id), on = found && wearing(e.slot) === e.item;
@@ -196,7 +185,7 @@ function openMenu(opener) {
       button.disabled = !found;
       button.textContent = !found ? 'Locked' : on ? 'Take off' : 'Wear';
       button.setAttribute('aria-pressed', String(on));
-      button.setAttribute('aria-label', !found ? 'Reward locked' : `${on ? 'Take off' : 'Wear'} the ${e.reward.toLowerCase()}`);
+      button.setAttribute('aria-label', !found ? 'Reward locked' : `${on ? 'Take off' : 'Wear'} the ${e.label || e.reward.toLowerCase()}`);
     });
   };
   listeners.add(render);
@@ -208,7 +197,8 @@ function openMenu(opener) {
   dialog.addEventListener('close', () => {
     listeners.delete(render);
     dialog.remove();
-    opener?.focus({preventScroll: true});
+    opener?.classList.toggle('is-quiet-focus', byMouse);
+    opener?.focus({preventScroll: true, focusVisible: !byMouse});
   });
   dialog.showModal();
 }

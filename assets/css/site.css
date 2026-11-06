@@ -103,26 +103,26 @@
 * {
   box-sizing:border-box
 }
-/* Bee cursor: the Buzz Run bee (bee-32d3992.png) flipped so its antenna is the click point; links and
+/* Bee cursor: the Buzz Run bee (bee-c2c9a15.svg) flipped so its antenna is the click point; links and
    buttons get it tilted nose-up, as when it flaps (the no-JS fallback; see .bee-cursor). Use var(--pointer) and var(--cursor) for new rules
    instead of cursor:pointer and cursor:default. */
 :root {
-  --cursor:url('../images/bee-cursor-16cc316.png') 1 7,auto;
-  --pointer:url('../images/bee-cursor-tilt-4c319d5.png') 4 2,pointer;
+  --cursor:url('../images/bee-cursor-9e0cd28.png') 1 7,auto;
+  --pointer:url('../images/bee-cursor-tilt-7cff1c4.png') 4 2,pointer;
   --grab:grab;
   --grabbing:grabbing
 }
 @supports (cursor:image-set(url('x.png') 1x) 1 1,auto) {
   :root {
-    --cursor:image-set(url('../images/bee-cursor-16cc316.png') 1x,url('../images/bee-cursor-2x-d676e31.png') 2x) 1 7,auto;
-    --pointer:image-set(url('../images/bee-cursor-tilt-4c319d5.png') 1x,url('../images/bee-cursor-tilt-2x-373a52e.png') 2x) 4 2,pointer
+    --cursor:image-set(url('../images/bee-cursor-9e0cd28.png') 1x,url('../images/bee-cursor-2x-d5da8c7.png') 2x) 1 7,auto;
+    --pointer:image-set(url('../images/bee-cursor-tilt-7cff1c4.png') 1x,url('../images/bee-cursor-tilt-2x-12bafc6.png') 2x) 4 2,pointer
   }
 }
 @supports not (cursor:image-set(url('x.png') 1x) 1 1,auto) {
   @supports (cursor:-webkit-image-set(url('x.png') 1x) 1 1,auto) {
     :root {
-      --cursor:-webkit-image-set(url('../images/bee-cursor-16cc316.png') 1x,url('../images/bee-cursor-2x-d676e31.png') 2x) 1 7,auto;
-      --pointer:-webkit-image-set(url('../images/bee-cursor-tilt-4c319d5.png') 1x,url('../images/bee-cursor-tilt-2x-373a52e.png') 2x) 4 2,pointer
+      --cursor:-webkit-image-set(url('../images/bee-cursor-9e0cd28.png') 1x,url('../images/bee-cursor-2x-d5da8c7.png') 2x) 1 7,auto;
+      --pointer:-webkit-image-set(url('../images/bee-cursor-tilt-7cff1c4.png') 1x,url('../images/bee-cursor-tilt-2x-12bafc6.png') 2x) 4 2,pointer
     }
   }
 }
@@ -160,7 +160,7 @@ html.bee-cursor-on {
   z-index:2147483647;
   width:32px;
   height:32px;
-  background:url('../images/bee-cursor-2x-d676e31.png') 0 0/32px 32px no-repeat;
+  background:url('../images/bee-cursor-fa90ddb.svg') 0 0/32px 32px no-repeat;
   background-image:var(--bee-open);
   pointer-events:none;
   transform-origin:1px 7px;
@@ -183,7 +183,7 @@ html.bee-cursor-on {
 /* Left still for 20 seconds (main.js), the bee nods off: eyes closed (an SVG layer painted over them),
    breathing slowly, with z's drifting up. */
 .bee-cursor {
-  --bee-face:url('../images/bee-cursor-2x-d676e31.png');
+  --bee-face:url('../images/bee-cursor-fa90ddb.svg');
   --bee-shut:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='%23fff'%3E%3Cellipse cx='8.8' cy='26.7' rx='3' ry='4.4'/%3E%3Cellipse cx='15.3' cy='27.2' rx='3' ry='4.4'/%3E%3C/g%3E%3Cpath d='M6.6 27.4q2.2 2.4 4.4 0M13.1 27.9q2.2 2.4 4.4 0' fill='none' stroke='%231a1a1a' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
   --bee-open:var(--bee-face);
   --bee-eyes-shut:var(--bee-shut),var(--bee-face)
@@ -356,7 +356,7 @@ html.bee-cursor-on {
 /* Startled (main.js, when a video starts with sound): the curled antenna (left out of this copy of the
    image) springs up straight, boinging, with little shock lines. */
 .bee-cursor.is-startled {
-  --bee-face:url('../images/bee-cursor-startled-2x-98c8b8a.png')
+  --bee-face:url('../images/bee-cursor-startled-ab9bbb6.svg')
 }
 .bee-antenna {
   position:absolute;
@@ -558,7 +558,7 @@ html.bee-cursor-on {
     transition:none
   }
 }
-/* The hive (hive.js): easter eggs found unlock things for the bee to wear, one per slot. Each look is drawn in
+/* The hive (hive.js): easter eggs found unlock things for the bee to wear, one per slot (the jacket is for finding them all). Each look is drawn in
    the bee image's own 64-unit frame, on a layer twice the bee's size (viewBox -32 -32 128 128) so hats can rise
    above its head. */
 .bee-wear {
@@ -576,6 +576,9 @@ html.bee-cursor-on {
 /* The 3D glasses and reading specs take the place of the shades while they're on. */
 .bee-cursor:is(.has-glasses,.has-specs) .bee-wear[data-slot=eyes] {
   opacity:0
+}
+.bee-wear[data-item=jacket] {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-32 -32 128 128'%3E%3Cg stroke='%231a1a1a' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M27.2 22C30.4 23.7 33 25.6 36 25.6H45C47.8 25.4 49.7 23.8 51 21.6C51.6 22.8 52.2 24.2 53 26.4C55 29 56.6 33 57.6 36L59.4 38.2V41C57.5 42.6 55 44.6 52.5 46.2C49 48.5 45.5 49.6 42 50.2H28C24 50 20.2 49 17.4 47.2C20.6 43.6 23.6 39.6 24.8 35.5C26 31 27.2 26.4 27.2 22z' fill='%231f2d4d'/%3E%3Cpath d='M27.2 22C29.4 23.2 30.6 24.1 31.6 24.9L29.6 31.4 26 32.6C26.6 29 27.1 25.6 27.2 22z' fill='%2333456e'/%3E%3Cpath d='M29.4 31.4C28.8 37 27.6 43 26.6 49.9' fill='none' stroke-width='1.2'/%3E%3Cpath d='M37 31.4h7v5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1z' fill='%2333456e' stroke-width='1.2'/%3E%3Cpath d='M36.6 30.8h7.8l-.9 2.4h-6z' fill='%231f2d4d' stroke-width='1.2'/%3E%3Cg stroke-width='.9' fill='%23ffcf33'%3E%3Ccircle cx='31.2' cy='35.6' r='1'/%3E%3Ccircle cx='30.4' cy='40.6' r='1'/%3E%3Ccircle cx='29.6' cy='45.6' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
 }
 .bee-wear[data-item=crown] {
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-32 -32 128 128'%3E%3Cg transform='translate(15 18) rotate(-10) scale(1.25) translate(-14 -18.5)' stroke='%231a1a1a' stroke-width='1.3' stroke-linejoin='round'%3E%3Cpath d='M7 19.5 6 9l4.5 4.5L14 6.5l3.5 6.5L22 9l-1 10.5z' fill='%23ffcf33'/%3E%3Cpath d='M7.2 17h13.8' fill='none'/%3E%3Ccircle cx='14' cy='14.6' r='1.3' fill='%23e63946'/%3E%3Ccircle cx='6' cy='8.6' r='1' fill='%23ffcf33'/%3E%3Ccircle cx='14' cy='6.2' r='1' fill='%23ffcf33'/%3E%3Ccircle cx='22' cy='8.6' r='1' fill='%23ffcf33'/%3E%3C/g%3E%3C/svg%3E")
@@ -653,7 +656,7 @@ html.bee-cursor-on {
   height:auto;
   transform-origin:50% 100%
 }
-.hive.is-peeking,.hive:focus-visible {
+.hive.is-peeking,.hive:focus-visible:not(.is-quiet-focus) {
   translate:0 44%
 }
 .hive:hover {
@@ -665,7 +668,7 @@ html.bee-cursor-on {
 .hive:focus-visible {
   outline:none
 }
-.hive:focus-visible svg {
+.hive:focus-visible:not(.is-quiet-focus) svg {
   outline:2px solid var(--ink);
   outline-offset:4px;
   border-radius:40px 40px 12px 12px
@@ -704,52 +707,6 @@ html.bee-cursor-on {
   }
   .hive svg,.hive-bee {
     animation:none!important
-  }
-}
-/* "Easter egg found" note, bottom right, for a few seconds. */
-.hive-toast {
-  position:fixed;
-  right:20px;
-  bottom:20px;
-  z-index:2147483645;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  max-width:min(360px,calc(100% - 40px));
-  padding:12px 18px 12px 12px;
-  border-radius:16px;
-  background:var(--ink);
-  color:#fff;
-  font-size:15px;
-  line-height:1.35;
-  box-shadow:0 12px 32px #1a1a1a40;
-  opacity:0;
-  transform:translateY(calc(100% + 24px));
-  visibility:hidden;
-  transition:transform .45s cubic-bezier(.34,1.4,.64,1),opacity .3s,visibility 0s .45s
-}
-.hive-toast.is-shown {
-  opacity:1;
-  transform:none;
-  visibility:visible;
-  transition:transform .45s cubic-bezier(.34,1.4,.64,1),opacity .2s
-}
-.hive-toast strong {
-  display:block;
-  font:500 17px/1.2 var(--heading);
-  letter-spacing:-.01em
-}
-.hive-toast-icon {
-  flex:none;
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:var(--yellow) url('../images/bee-32d3992.png') 50% 55%/28px auto no-repeat
-}
-@media(prefers-reduced-motion:reduce) {
-  .hive-toast,.hive-toast.is-shown {
-    transform:none;
-    transition:opacity .2s,visibility 0s
   }
 }
 /* The hive's menu: every easter egg as a card with the bee wearing its reward, and Wear / Take off. */
@@ -893,7 +850,7 @@ html.bee-cursor-on {
   width:32px;
   height:32px;
   margin:6px 0 0 -4px;
-  background:url('../images/bee-cursor-2x-d676e31.png') 0 0/32px 32px no-repeat;
+  background:url('../images/bee-cursor-fa90ddb.svg') 0 0/32px 32px no-repeat;
   scale:1.9
 }
 .is-locked .bee-figure {
