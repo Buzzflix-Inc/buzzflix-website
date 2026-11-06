@@ -17,6 +17,8 @@ export default {
         mailer: resendMailer(env.RESEND_API_KEY, env.MAIL_FROM || DEFAULT_FROM),
         now: Date.now(),
         open: env.APPLICATIONS_OPEN === 'true',
+        // TEMPORARY: accept test applications before they open, except on buzzflix.ca. Remove with TEST_SUBMISSIONS.
+        testSubmissions: env.TEST_SUBMISSIONS === 'true' && !/(^|\.)buzzflix\.ca$/.test(new URL(request.url).hostname),
         devLoginEmail: String(env.DEV_LOGIN_EMAIL || '').trim().toLowerCase(), // TEMPORARY: see worker/staff.js
         adminEmails: String(env.ADMIN_EMAILS || '').split(',').map(email => email.trim().toLowerCase()).filter(Boolean),
         secure: new URL(request.url).protocol === 'https:',

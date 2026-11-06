@@ -47,6 +47,9 @@
 		// TEMPORARY while email can't send: this address signs in at /login without a code, except on
 		// buzzflix.ca and once APPLICATIONS_OPEN is "true". Delete this line before merging into main.
 		"DEV_LOGIN_EMAIL": "jack@buzzflix.ca",
+		// TEMPORARY for testing the staff area: the apply page really submits, except on buzzflix.ca (also
+		// testSubmissions in assets/js/application-config.js). Delete both before merging into main.
+		"TEST_SUBMISSIONS": "true",
 		// Resend's test sender until buzzflix.ca is verified in Resend. It only delivers to the Resend account's own email.
 		"MAIL_FROM": "Buzzflix <onboarding@resend.dev>"
 	},

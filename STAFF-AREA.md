@@ -28,6 +28,8 @@ The Worker stops signed-out visitors at `/staff` and sends them to `/login`. Sig
 
 While email can't be sent (no `RESEND_API_KEY` yet, and only Resend's test sender), `DEV_LOGIN_EMAIL` in `wrangler.jsonc` (jack@buzzflix.ca) signs in at /login with no code. Every other address still needs one. It's turned off automatically on buzzflix.ca and www.buzzflix.ca and once `APPLICATIONS_OPEN` is `"true"`, so it only works on the local preview and the modern-look-preview address. Anyone who knows the preview address and that email could sign in as an admin there, so keep real applicant data off the preview. **Delete `DEV_LOGIN_EMAIL` before merging into main.**
 
+Also temporary: `TEST_SUBMISSIONS` in `wrangler.jsonc` and `testSubmissions` in `assets/js/application-config.js` make the apply page really submit (instead of previewing) everywhere except buzzflix.ca, so test applications show up in /staff. **Delete both before merging into main**, and delete the test applications from the staff area.
+
 ## One-time setup
 
 Run these from the website folder. `npx wrangler` asks you to log in to Cloudflare the first time.

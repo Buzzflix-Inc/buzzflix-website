@@ -23,6 +23,7 @@ const port = Number(process.env.PORT) || 4173;
 const scores = memoryStore();
 const config = JSON.parse((await readFile(join(root, 'wrangler.jsonc'), 'utf8')).replace(/^\s*\/\/.*$/gm, ''));
 const staffCtx = {store: applicationStore(), files: memoryFiles(), mailer: memoryMailer(), open: process.env.APPLICATIONS_OPEN === 'true',
+  testSubmissions: config.vars.TEST_SUBMISSIONS === 'true', // TEMPORARY, see wrangler.jsonc
   devLoginEmail: String(config.vars.DEV_LOGIN_EMAIL || '').toLowerCase(),
   adminEmails: config.vars.ADMIN_EMAILS.split(',').map(email => email.trim().toLowerCase()), secure: false};
 if (process.env.DEMO) await (await import('./demo-applications.mjs')).addDemoApplications(staffCtx);

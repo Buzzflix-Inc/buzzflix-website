@@ -65,6 +65,9 @@ test('a retried submit is a duplicate; changed answers under the same id are ref
 
 test('refuses applications before they open, and bad input with applicant-facing messages', async () => {
   assert.match((await setup({open: false}).apply(application())).message, /not open yet/);
+  const testing = setup({open: false});
+  testing.ctx.testSubmissions = true; // TEMPORARY switch for testing the staff area
+  assert.equal((await testing.apply(application())).accepted, true);
   const {apply} = setup();
   const cases = [
     [{website: 'spam'}, /try submitting/], [{email: 'nope'}, /valid email/], [{role_3: 'editor'}, /three different/],

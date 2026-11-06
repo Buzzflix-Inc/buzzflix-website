@@ -1,9 +1,11 @@
-import {applicationEndpoint} from './application-config.js';
+import {applicationEndpoint, testSubmissions} from './application-config.js';
 
 const form = document.querySelector('[data-application-form]');
 if (form) {
   const endpoint = applicationEndpoint.trim();
-  const preview = !endpoint || form.hasAttribute('data-preview');
+  // TEMPORARY: testSubmissions turns preview mode off everywhere but buzzflix.ca (application-config.js).
+  const testing = testSubmissions && !/(^|\.)buzzflix\.ca$/.test(location.hostname);
+  const preview = !endpoint || (form.hasAttribute('data-preview') && !testing);
   const button = form.querySelector('[type=submit]');
   const error = form.querySelector('.application-error');
   const status = form.querySelector('.application-submit-status');
@@ -118,7 +120,7 @@ if (form) {
   };
 
   // Before applications open, applicants can email themselves a link that brings their answers back.
-  if (draftSave && endpoint && form.hasAttribute('data-preview')) {
+  if (draftSave && endpoint && preview) {
     draftSave.hidden = false;
     // Nothing can be submitted yet, so the save box takes the submit button's place.
     button.hidden = true;

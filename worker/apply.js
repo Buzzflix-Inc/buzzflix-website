@@ -121,7 +121,8 @@ function validateDocument(value, label) {
 
 async function submit(ctx, data) {
   const {store, files, mailer, now} = ctx;
-  if (!ctx.open) fail('Applications are not open yet. Please try again later.');
+  // TEMPORARY: ctx.testSubmissions (TEST_SUBMISSIONS in wrangler.jsonc) lets the preview addresses accept applications.
+  if (!ctx.open && !ctx.testSubmissions) fail('Applications are not open yet. Please try again later.');
   const existing = await store.getApplication(data.submission_id);
   if (existing) return duplicate(existing, data);
   if (!await store.hit('applications', now, 60_000, 20)) fail('We are receiving several applications right now. Please wait a minute and try again.');
